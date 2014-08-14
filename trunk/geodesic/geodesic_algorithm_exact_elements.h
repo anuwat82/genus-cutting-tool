@@ -20,7 +20,7 @@ class Interval						//interval of the edge
 {
 public:
 	
-	Interval(): test_collision(false){};
+	Interval(){};
 	~Interval(){};
 
 	enum DirectionType
@@ -153,7 +153,7 @@ protected:
 	unsigned m_source_index;			//the source it belongs to
 	DirectionType m_direction;			//where the interval is coming from
 public:
-	bool test_collision;
+	bool inverted;
 };
 
 struct IntervalWithStop : public Interval

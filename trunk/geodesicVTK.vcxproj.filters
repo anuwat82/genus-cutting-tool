@@ -66,6 +66,9 @@
     <ClInclude Include="geodesic\geodesic_algorithm_base.h">
       <Filter>geodesic</Filter>
     </ClInclude>
+    <ClInclude Include="MouseInteractorStylePP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -75,6 +78,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="geodesic\geodesic_algorithm_exact.cpp">
+      <Filter>geodesic</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseInteractorStylePP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
