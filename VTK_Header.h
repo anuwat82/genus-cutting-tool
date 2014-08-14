@@ -52,4 +52,5 @@
 #include <vtkAdjacentVertexIterator.h>
 #include <vtkEdgeListIterator.h>
 #include <vtkCellPicker.h>
+#include <vtkPickingManager.h>
 

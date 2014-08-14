@@ -442,6 +442,23 @@ inline bool operator == (const HalfEdge &x, const HalfEdge &y)
 	return x.vertex_0 == y.vertex_0 && x.vertex_1 == y.vertex_1;
 }
 
+inline face_pointer belongToFace(edge_pointer e0, edge_pointer e1)
+{
+	for (int i = 0 ; i < e0->adjacent_faces().size(); i++)
+	{
+		for (int j = 0 ; j < e1->adjacent_faces().size(); j++)
+		{
+			if (e0->adjacent_faces()[i] == e1->adjacent_faces()[j])
+			{
+				//found
+				return e0->adjacent_faces()[i];
+			}
+		}		
+	}
+	return NULL;
+}
+
+
 } //geodesic
 
 #endif	

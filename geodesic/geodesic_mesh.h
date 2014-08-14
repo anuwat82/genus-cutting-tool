@@ -44,7 +44,7 @@ public:
 
 	unsigned closest_vertices(SurfacePoint* p, 
 								 std::vector<vertex_pointer>* storage = NULL);		//list vertices closest to the point
-
+	void clear_memory();
 private:
 
 	void build_adjacencies();		//build internal structure of the mesh
@@ -63,6 +63,13 @@ private:
 	SimlpeMemoryAllocator<void_pointer> m_pointer_allocator;	//fast memory allocating for Face/Vertex/Edge cross-references
 };
 
+
+inline void Mesh::clear_memory()
+{
+	m_vertices.clear();
+	m_edges.clear();
+	m_faces.clear();
+}
 inline unsigned Mesh::closest_vertices(SurfacePoint* p, 
 										  std::vector<vertex_pointer>* storage)
 {

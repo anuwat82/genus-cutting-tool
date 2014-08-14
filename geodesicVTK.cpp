@@ -4,10 +4,13 @@
 #include <Windows.h>
 #include "utils.h"
 #include "VTK_Header.h"
+#include "MouseInteractorStylePP.h"
 #include <ostream>
 #include <string>     // std::string, std::stoi
 #include "geodesic\geodesic_algorithm_exact.h"
-
+vtkWeakPointer<vtkPolyData> polydata;
+vtkWeakPointer<vtkPoints> source_point;
+	
 vtkWeakPointer<vtkActor> actorEdge1;
 vtkWeakPointer<vtkActor> actorEdge2;
 geodesic::Mesh geosesic_mesh;
@@ -20,6 +23,7 @@ struct collisionEdgeInfo
 };
 void ColoredPoint(vtkSmartPointer<vtkRenderer> _renderer , double pts[3],  double r, double g, double b);
 void keyPressCallbackFunc(vtkObject*, unsigned long eid, void* clientdata, void *calldata);
+
 void pickCallbackFunc(vtkObject*, unsigned long eid, void* clientdata, void *calldata);
 void LoadToGeodesic(vtkSmartPointer<vtkPolyData> polydata);
 bool GenerateGeodesicDistance(int vertexID , std::vector<collisionEdgeInfo>& collision_edges);
@@ -28,6 +32,50 @@ vtkSmartPointer<vtkMutableUndirectedGraph> TruncateGraph(vtkSmartPointer<vtkMuta
 
 vtkSmartPointer<vtkActor> CreateBeforeTruncatePipeline(vtkSmartPointer<vtkMutableUndirectedGraph> BTGraph,std::vector<collisionEdgeInfo>& collision_edges);
 vtkSmartPointer<vtkActor> CreateAfterTruncatePipeline(vtkSmartPointer<vtkMutableUndirectedGraph> ATGraph,std::vector<collisionEdgeInfo>& collision_edges);
+
+void Process(vtkSmartPointer<vtkPolyData> polydata ,int sourceVertexID);
+
+
+void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID)
+{
+	std::vector<collisionEdgeInfo> collision_edges;
+	
+	if (polydata)	
+		LoadToGeodesic(polydata);
+
+	int numVertex = polydata->GetNumberOfPoints();
+	if (sourceVertexID >= numVertex)
+	{
+		std::cout << "invalid source vertex id ... reset to id 0." << endl;
+		sourceVertexID = 0;
+	}
+	std::cout << "==========================" << endl;
+	std::cout << "source vertex id " << sourceVertexID << endl;
+
+
+	GenerateGeodesicDistance(sourceVertexID,collision_edges);
+	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphBeforeTruncate = GenerateCollisionEdgeGraph(polydata,collision_edges);
+	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphAfterTruncate =  TruncateGraph(collisionEdgesGraphBeforeTruncate);
+	
+ 
+	vtkSmartPointer<vtkActor> edge_actor1 = CreateBeforeTruncatePipeline(collisionEdgesGraphBeforeTruncate, collision_edges); 
+	vtkSmartPointer<vtkActor> edge_actor2 = CreateAfterTruncatePipeline(collisionEdgesGraphAfterTruncate, collision_edges);
+	
+	if (edge_actor1->GetReferenceCount() == 1)
+		edge_actor1->SetReferenceCount(2);
+	if (edge_actor2->GetReferenceCount() == 1)
+		edge_actor2->SetReferenceCount(2);
+	
+	if (actorEdge1)
+		actorEdge1->ShallowCopy(edge_actor1);
+	else
+		actorEdge1 = edge_actor1;
+	if (actorEdge2)
+		actorEdge2->ShallowCopy(edge_actor2);
+	else
+		actorEdge2 = edge_actor2;
+
+}
 
 
 int main(int argc, char* argv[])
@@ -56,11 +104,15 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 	}
-	std::vector<collisionEdgeInfo> collision_edges;
+	
 	vtkSmartPointer<vtkPLYReader> PLYReader = vtkSmartPointer<vtkPLYReader>::New();
 	PLYReader->SetFileName(filename.c_str());
 	PLYReader->Update();
+	polydata = PLYReader->GetOutput();
+	Process(PLYReader->GetOutput() , sourceVertex);
 
+	/*
+	std::vector<collisionEdgeInfo> collision_edges;
 	int numVertex = PLYReader->GetOutput()->GetNumberOfPoints();
 	if (sourceVertex >= numVertex)
 	{
@@ -81,7 +133,7 @@ int main(int argc, char* argv[])
 	
 	actorEdge1 = edge_actor1;
 	actorEdge2 = edge_actor2;
-
+	*/
 	vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 	mapper->SetInputConnection(PLYReader->GetOutputPort());
  
@@ -89,20 +141,27 @@ int main(int argc, char* argv[])
 	actor->SetMapper(mapper);
 	actor->GetProperty()->SetEdgeVisibility(1);
 	actor->GetProperty()->SetLineWidth(0.5);
+
+
 	// Visualize
 	vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
 	vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
 	renderWindow->AddRenderer(renderer);
-	vtkSmartPointer<vtkInteractorStyleTrackballCamera> TrackballStyle = vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New();		
-	vtkSmartPointer<vtkCellPicker> cellPicker =  vtkSmartPointer<vtkCellPicker>::New();
+	vtkSmartPointer<MouseInteractorStylePP> TrackballStyle = vtkSmartPointer<MouseInteractorStylePP>::New();		
+	vtkSmartPointer<vtkPointPicker> picker =  vtkSmartPointer<vtkPointPicker>::New();
+	double tol = picker->GetTolerance();
+	picker->SetTolerance(tol*0.25);
+
 		
 	vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
 	renderWindowInteractor->SetRenderWindow(renderWindow);
 	renderWindowInteractor->SetInteractorStyle(TrackballStyle);
-	renderWindowInteractor->SetPicker(cellPicker);
+	renderWindowInteractor->SetPicker(picker);
+	
+	//renderWindowInteractor->SetPicker(cellPicker);
 	TrackballStyle->SetPickColor(1.0,0.0,0.0);
 	renderer->AddActor(actor);
-	renderer->AddActor(edge_actor2);
+	renderer->AddActor(actorEdge2);
 	
 	vtkSmartPointer<vtkCallbackCommand> keypressCallback = vtkSmartPointer<vtkCallbackCommand>::New();
 	keypressCallback->SetCallback ( keyPressCallbackFunc );
@@ -110,7 +169,8 @@ int main(int argc, char* argv[])
 
 	vtkSmartPointer<vtkCallbackCommand> pickCallback = vtkSmartPointer<vtkCallbackCommand>::New();
 	pickCallback->SetCallback ( pickCallbackFunc );
-	cellPicker->AddObserver(vtkCommand::EndPickEvent,pickCallback);	
+	pickCallback->SetClientData(TrackballStyle);
+	picker->AddObserver(vtkCommand::EndPickEvent,pickCallback);	
 	
 
 
@@ -146,16 +206,30 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			iren->GetRenderWindow()->Render();
 			break;
 	}
-	std::cout << "Pressed: " << iren->GetKeySym() << endl;
+	//std::cout << "Pressed: " << iren->GetKeySym() << endl;
 }
 void pickCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata, void *calldata)
 {
 	
-	vtkCellPicker* cellPicker = static_cast<vtkCellPicker*>(caller);
-	if (cellPicker->GetCellId() != -1)
+	vtkPointPicker* picker = static_cast<vtkPointPicker*>(caller);
+	MouseInteractorStylePP* TrackballStyle = static_cast<MouseInteractorStylePP*>(clientdata);
+
+	if (picker->GetPointId() >= 0 )
 	{
-		std::cout << "Pick:" <<cellPicker->GetCellId()  <<  std::endl;
+		int vertexID = picker->GetPointId();
+		std::cout << "Pick Point:" << vertexID <<  std::endl;
+
+		if (TrackballStyle->GetInteractor()->GetControlKey() != 0)
+		{
+			vtkSmartPointer<vtkPolyData> PolyData = polydata;
+			Process(PolyData,picker->GetPointId());
+			ColoredPoint( TrackballStyle->GetInteractor()->GetRenderWindow()->GetRenderers()->GetFirstRenderer(),PolyData->GetPoint(vertexID), 0.0,1.0,0.0);
+			actorEdge1->Modified();
+			actorEdge2->Modified();
+			TrackballStyle->GetInteractor()->GetRenderWindow()->Render();
+		}
 	}
+	
 
 }
 void LoadToGeodesic(vtkSmartPointer<vtkPolyData> polydata)
@@ -182,7 +256,7 @@ void LoadToGeodesic(vtkSmartPointer<vtkPolyData> polydata)
 		*faceItr++ = (int)pts[2];
 	}
 	
-	
+	geosesic_mesh.clear_memory();
 	geosesic_mesh.initialize_mesh_data(vertices,faces);
 }
 
@@ -228,14 +302,15 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GenerateCollisionEdgeGraph(vtkSmartPo
 		points->InsertNextPoint(source_polydata->GetPoint(p));
 	*/
  
-  // Add the coordinates of the points to the graph
-  graph->SetPoints(points);
+	// Add the coordinates of the points to the graph
+	graph->SetPoints(points);
  
 	//graph->GetVertexData()->PassData(source_polydata->GetPointData());
 	int numCollisionEdge = (int) collision_edges.size();
 	for (int i = 0 ; i < numCollisionEdge ; i++)
 	{
-		graph->AddEdge(collision_edges[i].v0,collision_edges[i].v1);
+		if (collision_edges[i].type == 1 || collision_edges[i].type == 2)
+			graph->AddEdge(collision_edges[i].v0,collision_edges[i].v1);
 	}
 	return graph;
 }
@@ -302,14 +377,31 @@ vtkSmartPointer<vtkActor> CreateBeforeTruncatePipeline(vtkSmartPointer<vtkMutabl
 	unsigned char red[3] = {255, 0, 0};
 	unsigned char green[3] = {0, 255, 0};
 	unsigned char blue[3] = {0, 0, 255};
+	unsigned char yellow[3] = {255, 255, 0};
 	int numEdge = collisionEdgesBTPolydata->GetLines()->GetNumberOfCells();
 	for (int cellID = 0 ; cellID < collisionEdgesBTPolydata->GetLines()->GetNumberOfCells(); cellID++)
 	{
 		if (collision_edges[cellID].type == 1)
 			colors->InsertNextTupleValue(red);	
-		else
+		else if (collision_edges[cellID].type == 2)
 			colors->InsertNextTupleValue(green);
+
 	}
+	
+	//special edges former FROM_BOTHFACE tag
+	int numCollisionEdge = (int) collision_edges.size();
+	for (int i = 0 ; i < numCollisionEdge ; i++)
+	{
+		if (collision_edges[i].type == -1)
+		{
+			vtkIdType eid[2] = {collision_edges[i].v0,collision_edges[i].v1};			
+
+			vtkIdType newID = collisionEdgesBTPolydata->GetLines()->InsertNextCell(2,eid);
+			
+			colors->InsertNextTupleValue(yellow);
+		}
+	}
+	
 	collisionEdgesBTPolydata->GetCellData()->SetScalars(colors);
 
 	vtkSmartPointer<vtkPolyDataMapper> edge_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -337,13 +429,15 @@ vtkSmartPointer<vtkActor> CreateAfterTruncatePipeline(vtkSmartPointer<vtkMutable
 	unsigned char red[3] = {255, 0, 0};
 	unsigned char green[3] = {0, 255, 0};
 	unsigned char blue[3] = {0, 0, 255};
+	unsigned char yellow[3] = {255, 255, 0};
 	int numEdge = collisionEdgesATPolydata->GetLines()->GetNumberOfCells();
 	for (int cellID = 0 ; cellID < collisionEdgesATPolydata->GetLines()->GetNumberOfCells(); cellID++)
 	{
 		if (collision_edges[cellID].type == 1)
 			colors->InsertNextTupleValue(blue);	
-		else
+		else if (collision_edges[cellID].type == 2)
 			colors->InsertNextTupleValue(green);
+		
 	}
 	collisionEdgesATPolydata->GetCellData()->SetScalars(colors);
 
@@ -362,22 +456,31 @@ void ColoredPoint(vtkSmartPointer<vtkRenderer> _renderer ,  double pt[3],double 
 {
 	vtkSmartPointer<vtkPoints> point = vtkSmartPointer<vtkPoints>::New();
 	point->InsertNextPoint(pt);
-	vtkSmartPointer<vtkPolyData> pointsPolydata =  vtkSmartPointer<vtkPolyData>::New();
-	pointsPolydata->SetPoints(point);
-	vtkSmartPointer<vtkVertexGlyphFilter> vertexGlyphFilter =  vtkSmartPointer<vtkVertexGlyphFilter>::New();
-	vertexGlyphFilter->AddInputData(pointsPolydata);
-	vertexGlyphFilter->Update();
+	
+	if (source_point)
+	{
+		source_point->ShallowCopy(point);
+		source_point->Modified();
+	}
+	else
+	{
+		source_point = point;
+		vtkSmartPointer<vtkPolyData> pointsPolydata =  vtkSmartPointer<vtkPolyData>::New();
+		pointsPolydata->SetPoints(source_point);
+		vtkSmartPointer<vtkVertexGlyphFilter> vertexGlyphFilter =  vtkSmartPointer<vtkVertexGlyphFilter>::New();
+		vertexGlyphFilter->AddInputData(pointsPolydata);
+		vertexGlyphFilter->Update();
  
-	vtkSmartPointer<vtkPolyDataMapper> pointsMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-	pointsMapper->SetInputConnection(vertexGlyphFilter->GetOutputPort());
+		vtkSmartPointer<vtkPolyDataMapper> pointsMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+		pointsMapper->SetInputConnection(vertexGlyphFilter->GetOutputPort());
 
-	vtkSmartPointer<vtkActor> pointsActor =  vtkSmartPointer<vtkActor>::New();
-	pointsActor->SetMapper(pointsMapper);
-	pointsActor->GetProperty()->SetPointSize(5);
-	pointsActor->GetProperty()->SetColor(r,g,b);
+		vtkSmartPointer<vtkActor> pointsActor =  vtkSmartPointer<vtkActor>::New();
+		pointsActor->SetMapper(pointsMapper);
+		pointsActor->GetProperty()->SetPointSize(5);
+		pointsActor->GetProperty()->SetColor(r,g,b);
 
-	_renderer->AddActor(pointsActor);
-
+		_renderer->AddActor(pointsActor);
+	}
 }
 
 
