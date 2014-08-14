@@ -1,0 +1,30 @@
+\begin{thebibliography}{1}
+
+\bibitem{Kimmel98}
+R.~Kimmel and J.~Sethian.
+\newblock Computing geodesic paths on manifolds.
+\newblock In {\em Procedings of the National Academy of Sciences}, volume~95,
+  July 1998.
+
+\bibitem{PeyreCode}
+G.~Peyre.
+\newblock \texttt{http://geodesics4meshes.googlecode.com}.
+
+\bibitem{Peyre06}
+Gabriel Peyre and Laurent~D. Cohen.
+\newblock Geodesic remeshing using front propagation.
+\newblock {\em International Journal of Computer Vision}, pages 145--156, 2006.
+
+\bibitem{Sethian98}
+J.~A. Sethian.
+\newblock Fast marching methods.
+\newblock {\em SIAM Review}, 41:199--235, 1998.
+
+\bibitem{Hoppes05}
+V.~Surazhsky, T.~Surazhsky, D.~Kirsanov, S.~Gortler, and H.~Hoppe.
+\newblock Computing geodesic paths on manifolds.
+\newblock 24, 2005.
+\newblock
+  \texttt{http://research.microsoft.com/en-us/um/people/hoppe/geodesics.pdf}.
+
+\end{thebibliography}

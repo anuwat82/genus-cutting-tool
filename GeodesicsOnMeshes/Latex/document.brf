@@ -1,0 +1,6 @@
+\backcite {Peyre06}{{1}{(document)}{Doc-Start}}
+\backcite {Sethian98}{{2}{1}{equation.1.2}}
+\backcite {Kimmel98}{{2}{1}{equation.1.2}}
+\backcite {Sethian98,Kimmel98,Peyre06}{{2}{1}{equation.1.3}}
+\backcite {PeyreCode}{{2}{2}{section.2}}
+\backcite {Hoppes05}{{4}{2.3}{subsection.2.3}}

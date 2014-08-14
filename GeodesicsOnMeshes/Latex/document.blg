@@ -1,0 +1,56 @@
+This is BibTeX, Version 0.99d (TeX Live 2012/Cygwin)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: document.aux
+The style file: plain.bst
+Database file #1: references.bib
+I was expecting a `,' or a `}'---line 27 of file references.bib
+ :   
+ :   pages = {8431 -- 8435},
+(Error may have been on previous line)
+I'm skipping whatever remains of this entry
+Warning--empty title in PeyreCode
+Warning--empty booktitle in PeyreCode
+Warning--empty year in PeyreCode
+Warning--empty journal in Hoppes05
+You've used 5 entries,
+            2118 wiz_defined-function locations,
+            529 strings with 4617 characters,
+and the built_in function-call counts, 1584 in all, are:
+= -- 148
+> -- 68
+< -- 2
++ -- 27
+- -- 22
+* -- 101
+:= -- 265
+add.period$ -- 15
+call.type$ -- 5
+change.case$ -- 25
+chr.to.int$ -- 0
+cite$ -- 9
+duplicate$ -- 68
+empty$ -- 130
+format.name$ -- 22
+if$ -- 331
+int.to.chr$ -- 0
+int.to.str$ -- 5
+missing$ -- 5
+newline$ -- 28
+num.names$ -- 10
+pop$ -- 34
+preamble$ -- 1
+purify$ -- 21
+quote$ -- 0
+skip$ -- 49
+stack$ -- 0
+substring$ -- 78
+swap$ -- 15
+text.length$ -- 2
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 20
+warning$ -- 4
+while$ -- 14
+width$ -- 6
+write$ -- 54
+(There was 1 error message)

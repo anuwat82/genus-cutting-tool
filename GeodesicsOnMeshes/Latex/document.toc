@@ -1,0 +1,16 @@
+\contentsline {section}{\numberline {1}Theoretical background}{2}{section.1}
+\contentsline {section}{\numberline {2}VTK Interface}{2}{section.2}
+\contentsline {subsection}{\numberline {2.1}Geodesic distances - vtkFastMarchingGeodesicDistance}{2}{subsection.2.1}
+\contentsline {subsubsection}{Propagation weights}{3}{section*.2}
+\contentsline {subsubsection}{Exclusion Regions}{3}{section*.3}
+\contentsline {subsubsection}{Termination Criteria}{3}{section*.4}
+\contentsline {subsubsection}{Events}{3}{section*.5}
+\contentsline {subsubsection}{Miscellaneous}{3}{section*.6}
+\contentsline {subsection}{\numberline {2.2}Tracing geodesic paths}{3}{subsection.2.2}
+\contentsline {subsection}{\numberline {2.3}Computation time}{4}{subsection.2.3}
+\contentsline {section}{\numberline {3}Examples}{5}{section.3}
+\contentsline {subsection}{\numberline {3.1}Computing Geodesic distance}{5}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}Specifying distance termination criteria}{5}{subsection.3.2}
+\contentsline {subsection}{\numberline {3.3}Propagation Weights}{6}{subsection.3.3}
+\contentsline {subsection}{\numberline {3.4}Exclusion Regions / Boundaries}{6}{subsection.3.4}
+\contentsline {subsection}{\numberline {3.5}Tracing geodesic paths}{7}{subsection.3.5}
