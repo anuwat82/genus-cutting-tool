@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "VTK_Header.h"
 #include "MouseInteractorStylePP.h"
+#include "vtkOFFReader.h"
 #include <ostream>
 #include <string>     // std::string, std::stoi
 #include "geodesic\geodesic_algorithm_exact.h"
@@ -34,7 +35,12 @@ vtkSmartPointer<vtkActor> CreateBeforeTruncatePipeline(vtkSmartPointer<vtkMutabl
 vtkSmartPointer<vtkActor> CreateAfterTruncatePipeline(vtkSmartPointer<vtkMutableUndirectedGraph> ATGraph,std::vector<collisionEdgeInfo>& collision_edges);
 
 void Process(vtkSmartPointer<vtkPolyData> polydata ,int sourceVertexID);
-
+std::string GetFileExtension(const std::string& FileName)
+{
+    if(FileName.find_last_of(".") != std::string::npos)
+        return FileName.substr(FileName.find_last_of(".")+1);
+    return "";
+}
 
 void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID)
 {
@@ -104,12 +110,26 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 	}
-	
-	vtkSmartPointer<vtkPLYReader> PLYReader = vtkSmartPointer<vtkPLYReader>::New();
-	PLYReader->SetFileName(filename.c_str());
-	PLYReader->Update();
-	polydata = PLYReader->GetOutput();
-	Process(PLYReader->GetOutput() , sourceVertex);
+	std::string ext = GetFileExtension(filename);
+	vtkSmartPointer<vtkPolyDataAlgorithm> modelReader;
+	if (ext == "ply")
+	{
+		vtkSmartPointer<vtkPLYReader> PLYReader = vtkSmartPointer<vtkPLYReader>::New();
+		PLYReader->SetFileName(filename.c_str());
+		PLYReader->Update();
+		modelReader = PLYReader;
+		
+	}
+	else if (ext == "off")
+	{
+		vtkSmartPointer<vtkOFFReader> OFFReader = vtkSmartPointer<vtkOFFReader>::New();
+		OFFReader->SetFileName(filename.c_str());
+		OFFReader->Update();
+		modelReader = OFFReader;
+		
+	}
+	polydata = modelReader->GetOutput();
+	Process(modelReader->GetOutput() , sourceVertex);
 
 	/*
 	std::vector<collisionEdgeInfo> collision_edges;
@@ -135,7 +155,7 @@ int main(int argc, char* argv[])
 	actorEdge2 = edge_actor2;
 	*/
 	vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-	mapper->SetInputConnection(PLYReader->GetOutputPort());
+	mapper->SetInputConnection(modelReader->GetOutputPort());
  
 	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
 	actor->SetMapper(mapper);
@@ -174,7 +194,7 @@ int main(int argc, char* argv[])
 	
 
 
-	ColoredPoint( renderer,PLYReader->GetOutput()->GetPoint(sourceVertex), 0.0,1.0,0.0);
+	ColoredPoint( renderer,modelReader->GetOutput()->GetPoint(sourceVertex), 1.0,0.5,0.0);
 
 	renderWindow->Render(); 	
 	renderWindowInteractor->Start();
