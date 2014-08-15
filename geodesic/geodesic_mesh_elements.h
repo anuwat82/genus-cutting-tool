@@ -458,6 +458,21 @@ inline face_pointer belongToFace(edge_pointer e0, edge_pointer e1)
 	return NULL;
 }
 
+inline vertex_pointer shareVertex(edge_pointer e0, edge_pointer e1)
+{
+	for (int i = 0 ; i < e0->adjacent_vertices().size(); i++)
+	{
+		for (int j = 0 ; j < e1->adjacent_vertices().size(); j++)
+		{
+			if (e0->adjacent_vertices()[i] == e1->adjacent_vertices()[j])
+			{
+				//found
+				return e0->adjacent_vertices()[i];
+			}
+		}		
+	}
+	return NULL;
+}
 
 } //geodesic
 

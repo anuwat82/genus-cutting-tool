@@ -17,7 +17,7 @@ int GetModelFileName(std::string &filename)
 	// use the contents of szFile to initialize itself.
 	ofn.lpstrFile[0] = '\0';
 	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = "All\0*.*\0PLY\0*.ply\0";
+	ofn.lpstrFilter = "All\0*.*\0PLY\0*.ply\0OFF\0*.off\0";
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
