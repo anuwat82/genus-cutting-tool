@@ -72,6 +72,9 @@
     <ClInclude Include="vtkOFFReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OpenMesh_Header.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
