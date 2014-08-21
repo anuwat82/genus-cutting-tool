@@ -35,3 +35,30 @@ int GetModelFileName(std::string &filename)
 		return 0;
 		
 }
+
+
+void vtkPolydata2OpenMesh(vtkPolyData *polydata, OmMesh *mesh)
+{
+	vtkIdType numOfPoints =polydata->GetNumberOfPoints();
+	vtkIdType numOfFaces = polydata->GetPolys()->GetNumberOfCells();
+	OmMesh::VertexHandle *vh = new OmMesh::VertexHandle[numOfPoints];
+	for (vtkIdType vid = 0  ; vid < numOfPoints; vid++)
+	{
+		vh[vid] = mesh->add_vertex(OmMesh::Point(polydata->GetPoint(vid)));
+	}
+
+	polydata->GetPolys()->InitTraversal();
+	vtkIdType npts;
+	vtkIdType *pointID;
+	while(polydata->GetPolys()->GetNextCell(npts,pointID) != 0)
+	{
+		if (npts != 3)
+			throw;
+		mesh->add_face(vh[*pointID],vh[*(pointID+1)],vh[*(pointID+2)]);
+	}
+
+	if (mesh->n_faces() != numOfFaces)
+		throw;
+	if (mesh->n_vertices() != numOfPoints)
+		throw;
+}

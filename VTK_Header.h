@@ -23,6 +23,7 @@
 #include <vtkParallelCoordinatesInteractorStyle.h>
 #include <vtkPlane.h>
 #include <vtkPlaneSource.h>
+#include <vtkPoints.h>
 #include <vtkPointData.h>
 #include <vtkPointPicker.h>
 #include <vtkPolyDataMapper.h>
