@@ -16,6 +16,7 @@ vtkWeakPointer<vtkActor> actorEdge1;
 vtkWeakPointer<vtkActor> actorEdge2;
 vtkWeakPointer<vtkActor> actorEdge3;
 vtkWeakPointer<vtkActor> actorEdge4;
+vtkWeakPointer<vtkActor> actorEdge5;
 
 geodesic::Mesh geosesic_mesh;
 
@@ -40,6 +41,7 @@ vtkSmartPointer<vtkActor> CreateBeforeTruncatePipeline(vtkSmartPointer<vtkMutabl
 vtkSmartPointer<vtkActor> CreateAfterTruncatePipeline(vtkSmartPointer<vtkMutableUndirectedGraph> ATGraph,std::vector<collisionEdgeInfo>& collision_edges);
 vtkSmartPointer<vtkActor> CreateStrightUpPipeline(vtkSmartPointer<vtkMutableUndirectedGraph> SUGraph);
 vtkSmartPointer<vtkActor> CreateCleanPipeline(vtkSmartPointer<vtkMutableUndirectedGraph> CleanGraph);
+vtkSmartPointer<vtkActor> CreateFinalPipeline(vtkSmartPointer<vtkMutableUndirectedGraph> FinalGraph);
 
 void Process(vtkSmartPointer<vtkPolyData> polydata ,int sourceVertexID);
 std::string GetFileExtension(const std::string& FileName)
@@ -73,11 +75,24 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID)
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesStraight			 = StraightupGraph(collisionEdgesGraphAfterTruncate,mesh);
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesClean				 = CleanGraph(collisionEdgesStraight,mesh);
 
+	vtkSmartPointer<vtkMutableUndirectedGraph> graph  = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
+	graph->DeepCopy(collisionEdgesClean);
+	int numGraphEdges = 0;
+	do 
+	{
+		numGraphEdges = graph->GetNumberOfEdges();
+		graph = TruncateGraph(graph);
+		graph = StraightupGraph(graph,mesh);
+		graph = CleanGraph(collisionEdgesStraight,mesh);
+	
+	}
+	while (numGraphEdges > graph->GetNumberOfEdges());
+
 	vtkSmartPointer<vtkActor> edge_actor1 = CreateBeforeTruncatePipeline(collisionEdgesGraphBeforeTruncate, collision_edges); 
 	vtkSmartPointer<vtkActor> edge_actor2 = CreateAfterTruncatePipeline(collisionEdgesGraphAfterTruncate, collision_edges);
 	vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(collisionEdgesStraight);
 	vtkSmartPointer<vtkActor> edge_actor4 = CreateCleanPipeline(collisionEdgesClean);
-	
+	vtkSmartPointer<vtkActor> edge_actor5 = CreateCleanPipeline(graph);
 	if (edge_actor1->GetReferenceCount() == 1)
 		edge_actor1->SetReferenceCount(2);
 	if (edge_actor2->GetReferenceCount() == 1)
@@ -86,6 +101,8 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID)
 		edge_actor3->SetReferenceCount(2);
 	if (edge_actor4->GetReferenceCount() == 1)
 		edge_actor4->SetReferenceCount(2);
+	if (edge_actor5->GetReferenceCount() == 1)
+		edge_actor5->SetReferenceCount(2);
 	
 	if (actorEdge1)
 		actorEdge1->ShallowCopy(edge_actor1);
@@ -105,6 +122,11 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID)
 		actorEdge4->ShallowCopy(edge_actor4);
 	else
 		actorEdge4 = edge_actor4;
+
+	if (actorEdge5)
+		actorEdge5->ShallowCopy(edge_actor5);
+	else
+		actorEdge5 = edge_actor5;
 
 }
 
@@ -224,6 +246,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			renderer->RemoveActor(actorEdge2);
 			renderer->RemoveActor(actorEdge3);
 			renderer->RemoveActor(actorEdge4);
+			renderer->RemoveActor(actorEdge5);
 			renderer->AddActor(actorEdge1);
 			renderer->Modified();
 			iren->GetRenderWindow()->Render();
@@ -233,6 +256,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			renderer->RemoveActor(actorEdge2);
 			renderer->RemoveActor(actorEdge3);
 			renderer->RemoveActor(actorEdge4);
+			renderer->RemoveActor(actorEdge5);
 			renderer->AddActor(actorEdge2);
 			renderer->Modified();
 			iren->GetRenderWindow()->Render();
@@ -242,6 +266,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			renderer->RemoveActor(actorEdge2);
 			renderer->RemoveActor(actorEdge3);
 			renderer->RemoveActor(actorEdge4);
+			renderer->RemoveActor(actorEdge5);
 			renderer->AddActor(actorEdge3);
 			renderer->Modified();
 			iren->GetRenderWindow()->Render();
@@ -251,7 +276,18 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			renderer->RemoveActor(actorEdge2);
 			renderer->RemoveActor(actorEdge3);
 			renderer->RemoveActor(actorEdge4);
+			renderer->RemoveActor(actorEdge5);
 			renderer->AddActor(actorEdge4);
+			renderer->Modified();
+			iren->GetRenderWindow()->Render();
+			break;
+		case '5':
+			renderer->RemoveActor(actorEdge1);
+			renderer->RemoveActor(actorEdge2);
+			renderer->RemoveActor(actorEdge3);
+			renderer->RemoveActor(actorEdge4);
+			renderer->RemoveActor(actorEdge5);
+			renderer->AddActor(actorEdge5);
 			renderer->Modified();
 			iren->GetRenderWindow()->Render();
 			break;
@@ -494,9 +530,9 @@ vtkSmartPointer<vtkMutableUndirectedGraph> CleanGraph(vtkSmartPointer<vtkMutable
 {
 	vtkSmartPointer<vtkMutableUndirectedGraph> graph = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
 	graph->DeepCopy(source_graph);
-	
-	//clean parallel edge paths
 	int numEdgesBefore = 0;
+	
+	//clean parallel edge paths	
 	do
 	{
 		numEdgesBefore = graph->GetNumberOfEdges();
@@ -506,7 +542,14 @@ vtkSmartPointer<vtkMutableUndirectedGraph> CleanGraph(vtkSmartPointer<vtkMutable
 		while (eit->HasNext())
 		{
 			vtkEdgeType e = eit->Next();
-			vtkIdType vid[2] = {e.Source,e.Target};
+			vtkIdType vid[2*3] = {e.Source,e.Target};
+			if (vid[0] > vid[1])
+			{
+				vid[0] = e.Target;
+				vid[1] = e.Source;
+			}
+			if (vid[0] == 19 && vid[1] == 29)
+				int aaa = 0;
 			bool val2 = true;
 			for (int i = 0 ; i < 2 ; i++)
 			{
@@ -521,43 +564,70 @@ vtkSmartPointer<vtkMutableUndirectedGraph> CleanGraph(vtkSmartPointer<vtkMutable
 			if (!val2)
 				continue;
 			
-			//check if radius of opposite vertex has vertex in cutting path
-			OmMesh::VertexHandle vh[2] = {mesh.vertex_handle(vid[0]), mesh.vertex_handle(vid[1])};
-			OmMesh::HalfedgeHandle heh[2] ;
-			heh[0] = mesh.find_halfedge(vh[0],vh[1]);
-			if (!heh[0].is_valid())
+			
+			for (int i = 0 ; i< 2; i++)
 			{
-				heh[0] = mesh.find_halfedge(vh[1],vh[0]);
-			}
-			else
-			{
-				heh[1] = mesh.opposite_halfedge_handle(heh[0]);
+				vtkSmartPointer<vtkAdjacentVertexIterator> adjacent =vtkSmartPointer<vtkAdjacentVertexIterator>::New();
+				graph->GetAdjacentVertices(vid[i],adjacent);
+				vid[2 + i*2 + 0] = vid[i];
+				
+				
+				vid[2 + i*2 + 1] = adjacent->Next();
+				if (vid[2 + i*2 + 1] == vid[(i+1)%2])
+					vid[2 + i*2 + 1] = adjacent->Next();
 			}
 
-			bool reset = false;
-			for (int i = 0; i < 2; i ++)
-			{
-				if (!heh[i].is_valid())
-					continue;
-				int faceid = mesh.face_handle(heh[i]).idx(); 
-				int vertexid = mesh.opposite_vh(heh[i]).idx();
+			bool delete_edge = true;
 
-				//search vertexid in graph
-				if (graph->GetDegree(vertexid) >= 2)
+			for (int i = 0 ; i < 3 ;i++) //3 edges
+			{
+				//check if radius of opposite vertex has vertex in cutting path
+				OmMesh::VertexHandle vh[2] = {mesh.vertex_handle(vid[i*2 + 0]), mesh.vertex_handle(vid[i*2 + 1])};
+				OmMesh::HalfedgeHandle heh[2] ;
+				heh[0] = mesh.find_halfedge(vh[0],vh[1]);
+				if (!heh[0].is_valid())
 				{
-					graph->RemoveEdge(e.Id);
-					vtkSmartPointer<vtkMutableUndirectedGraph> newGraph = TruncateGraph(graph);
-					graph->ShallowCopy(newGraph);
-					reset = true;
-					
+					heh[0] = mesh.find_halfedge(vh[1],vh[0]);
+				}
+				else
+				{
+					heh[1] = mesh.opposite_halfedge_handle(heh[0]);
+				}
+			
+				bool hitted = false;
+				for (int i = 0; i < 2; i ++)
+				{
+					if (!heh[i].is_valid())
+						continue;
+					int faceid = mesh.face_handle(heh[i]).idx(); 
+					int vertexid = mesh.opposite_vh(heh[i]).idx();
+
+					//search vertexid in graph
+					if (graph->GetDegree(vertexid) >= 2)
+					{
+						hitted = true;					
+						break;
+					}				
+				}
+				if (!hitted)
+				{
+					delete_edge = false;
 					break;
-				}				
+				}
 			}
-			if (reset)
+			
+			if (delete_edge)
+			{
+				graph->RemoveEdge(e.Id);
+				vtkSmartPointer<vtkMutableUndirectedGraph> newGraph = TruncateGraph(graph);
+				newGraph = StraightupGraph(newGraph,mesh);
+				graph->ShallowCopy(newGraph);
 				break;					
+			}
 		}
 	}
 	while (numEdgesBefore > graph->GetNumberOfEdges());
+
 	//return graph;
 	//clean small cycle edge paths
 	do
@@ -627,7 +697,10 @@ vtkSmartPointer<vtkMutableUndirectedGraph> CleanGraph(vtkSmartPointer<vtkMutable
 								{
 									graph->RemoveEdge(vtkEdgeID0);
 									vtkSmartPointer<vtkMutableUndirectedGraph> newGraph = TruncateGraph(graph);
+									
+									newGraph = StraightupGraph(newGraph,mesh);
 									graph->ShallowCopy(newGraph);
+									
 									break;
 								}
 							}
@@ -801,6 +874,39 @@ vtkSmartPointer<vtkActor> CreateCleanPipeline(vtkSmartPointer<vtkMutableUndirect
 
 	vtkSmartPointer<vtkPolyDataMapper> edge_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 	edge_mapper->SetInputData(cleanPolydata);
+ 
+	vtkSmartPointer<vtkActor> edge_actor = vtkSmartPointer<vtkActor>::New();
+	edge_actor->SetMapper(edge_mapper);
+	edge_actor->GetProperty()->SetLineWidth(2.0);
+	return edge_actor;
+}
+
+vtkSmartPointer<vtkActor> CreateFinalPipeline(vtkSmartPointer<vtkMutableUndirectedGraph> FinalGraph)
+{
+	vtkSmartPointer<vtkGraphToPolyData> g2pAT = vtkSmartPointer<vtkGraphToPolyData>::New(); 
+	g2pAT->SetInputData(FinalGraph);
+	g2pAT->Update();
+	vtkSmartPointer<vtkPolyData> finalPolydata = vtkSmartPointer<vtkPolyData>::New();
+	finalPolydata->ShallowCopy(g2pAT->GetOutput());
+
+	// Setup the colors array
+	vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+	colors->SetNumberOfComponents(3);
+	colors->SetName("Colors");
+	// Setup two colors 
+	unsigned char purple[3] = {163, 73, 164};
+	int numEdge = finalPolydata->GetLines()->GetNumberOfCells();
+	for (int cellID = 0 ; cellID < finalPolydata->GetLines()->GetNumberOfCells(); cellID++)
+	{
+		
+		colors->InsertNextTupleValue(purple);
+		
+	}
+	finalPolydata->GetCellData()->SetScalars(colors);
+
+
+	vtkSmartPointer<vtkPolyDataMapper> edge_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+	edge_mapper->SetInputData(finalPolydata);
  
 	vtkSmartPointer<vtkActor> edge_actor = vtkSmartPointer<vtkActor>::New();
 	edge_actor->SetMapper(edge_mapper);
