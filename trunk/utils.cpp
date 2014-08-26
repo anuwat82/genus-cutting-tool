@@ -62,3 +62,52 @@ void vtkPolydata2OpenMesh(vtkPolyData *polydata, OmMesh *mesh)
 	if (mesh->n_vertices() != numOfPoints)
 		throw;
 }
+
+vtkIdType GetCellID(vtkPolyData *polydata, vtkIdType v1,vtkIdType v2,vtkIdType v3)
+{
+	unsigned short int n1;
+	int i, j, tVerts[3];
+	vtkIdType *cells, *tVerts2, n2;
+
+	tVerts[0] = v1;
+	tVerts[1] = v2;
+	tVerts[2] = v3;
+
+	for (i=0; i<3; i++)
+	{
+		polydata->GetPointCells(tVerts[i], n1, cells);
+		for (j=0; j<n1; j++)
+		{
+			polydata->GetCellPoints(cells[j], n2, tVerts2);
+			if ( (tVerts[0] == tVerts2[0] || tVerts[0] == tVerts2[1] ||
+				tVerts[0] == tVerts2[2]) &&
+				(tVerts[1] == tVerts2[0] || tVerts[1] == tVerts2[1] ||
+				tVerts[1] == tVerts2[2]) &&
+				(tVerts[2] == tVerts2[0] || tVerts[2] == tVerts2[1] ||
+				tVerts[2] == tVerts2[2]) )
+			{
+				return cells[j];
+			}
+		}
+	}
+	return -1;
+}
+
+
+vtkIdType GetCellID(vtkPolyData *polydata, OmMesh &mesh , OmMesh::FaceHandle fh)
+{
+	OmMesh::HalfedgeHandle _heh[3];
+	_heh[0] = mesh.halfedge_handle(fh);
+	_heh[1] = mesh.next_halfedge_handle(_heh[0]);
+	_heh[2] = mesh.next_halfedge_handle(_heh[1]);
+	if (_heh[0].is_valid() && _heh[1].is_valid() && _heh[2].is_valid())
+	{
+		vtkIdType v1,v2,v3;
+		v1 = mesh.to_vertex_handle(_heh[0]).idx();	
+		v2 = mesh.to_vertex_handle(_heh[1]).idx();
+		v3 = mesh.to_vertex_handle(_heh[2]).idx();
+		return GetCellID(polydata,v1,v2,v3);
+	}
+	else
+		return -1;
+}

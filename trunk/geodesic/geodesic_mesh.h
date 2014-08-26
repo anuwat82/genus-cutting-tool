@@ -45,6 +45,9 @@ public:
 	unsigned closest_vertices(SurfacePoint* p, 
 								 std::vector<vertex_pointer>* storage = NULL);		//list vertices closest to the point
 	void clear_memory();
+
+	face_pointer find_face(unsigned int vid0,unsigned int vid1,unsigned int vid2);
+	edge_pointer find_edge(unsigned int vid0,unsigned int vid1);
 private:
 
 	void build_adjacencies();		//build internal structure of the mesh
@@ -529,6 +532,44 @@ inline void fill_surface_point_double(geodesic::SurfacePoint* point,
 	}
 }
 
+inline face_pointer Mesh::find_face(unsigned int vid0,unsigned int vid1,unsigned int vid2)
+{
+	Vertex &v0 = this->vertices()[vid0];
+	
+	for (int i = 0 ; i < v0.adjacent_faces().size(); i++)
+	{
+		face_pointer _face = v0.adjacent_faces()[i];
+		bool h0(false),h1(false),h2(false);
+		for (int vf = 0 ; vf < _face->adjacent_vertices().size(); vf++)
+		{
+			vertex_pointer vp = _face->adjacent_vertices()[vf];
+			if (_face->adjacent_vertices()[vf]->id() == vid0)
+				h0 = true;
+			if (_face->adjacent_vertices()[vf]->id() == vid1)
+				h1 = true;
+			if (_face->adjacent_vertices()[vf]->id() == vid2)
+				h2 = true;
+
+		}
+
+		if (h0 && h1 && h2)
+			return _face;
+	}
+	return NULL;
+}	
+	
+inline edge_pointer Mesh::find_edge(unsigned int vid0,unsigned int vid1)
+{
+	Vertex &v0 = this->vertices()[vid0];
+	
+	for (int i = 0 ; i < v0.adjacent_edges().size(); i++)
+	{
+		edge_pointer edge = v0.adjacent_edges()[i];
+		if (edge->isVertices(vid0,vid1))
+			return edge;
+	}
+	return NULL;
+}
 } //geodesic
 
 #endif	

@@ -54,4 +54,4 @@
 #include <vtkEdgeListIterator.h>
 #include <vtkCellPicker.h>
 #include <vtkPickingManager.h>
-
+#include <vtkBoostBreadthFirstSearch.h>
