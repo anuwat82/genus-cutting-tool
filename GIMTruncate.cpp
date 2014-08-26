@@ -138,9 +138,27 @@ void GIMTruncate::Step()
 	}
 	else
 	{
-		EliminateBranchPath();
-		//EliminateSelfCycle();
+		int numEdge = 0;
+		do
+		{
+			numEdge = graph->GetNumberOfEdges();
+			EliminateSelfCycle();
+		}
+		while(numEdge > graph->GetNumberOfEdges());
 		TruncateGraph();
+
+		do
+		{
+			numEdge = graph->GetNumberOfEdges();
+			EliminateBranchPath();
+			TruncateGraph();
+		}
+		while(numEdge > graph->GetNumberOfEdges());
+		
+		
+		
+		
+		
 	}
 }
 
@@ -442,13 +460,14 @@ void GIMTruncate::EliminateBranchPath()
 			bfs->Update();
 			int numvertbfs = bfs->GetOutput()->GetNumberOfVertices();
 			vtkIntArray* level = vtkIntArray::SafeDownCast(bfs->GetOutput()->GetVertexData()->GetArray("BFS"));
-			vtkIdType result = level->GetValue(vid[1]);
+			int result = level->GetValue(vid[1]);
 
-			if (result == 0)
+			if (result == level->GetDataTypeValueMax())
 			{
 				//branch detect
 				graph->RemoveEdge(e.Id);
-				break;
+				cout<< "found branch path!" <<endl;
+				return ;
 
 			}
 		}
