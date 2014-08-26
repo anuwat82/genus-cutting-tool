@@ -9,6 +9,9 @@
 #include <ostream>
 #include <string>     // std::string, std::stoi
 #include "geodesic\geodesic_algorithm_exact.h"
+#include "GIMTruncate.h"
+
+GIMTruncate gimTruncate;
 vtkWeakPointer<vtkPolyData> polydata;
 vtkWeakPointer<vtkPoints> source_point;
 	
@@ -17,6 +20,9 @@ vtkWeakPointer<vtkActor> actorEdge2;
 vtkWeakPointer<vtkActor> actorEdge3;
 vtkWeakPointer<vtkActor> actorEdge4;
 vtkWeakPointer<vtkActor> actorEdge5;
+
+vtkWeakPointer<vtkActor> actorPoly1;
+vtkWeakPointer<vtkActor> actorPoly2;
 
 geodesic::Mesh geosesic_mesh;
 
@@ -31,11 +37,16 @@ void keyPressCallbackFunc(vtkObject*, unsigned long eid, void* clientdata, void 
 
 void pickCallbackFunc(vtkObject*, unsigned long eid, void* clientdata, void *calldata);
 void LoadToGeodesic(vtkSmartPointer<vtkPolyData> polydata);
-bool GenerateGeodesicDistance(int vertexID , std::vector<collisionEdgeInfo>& collision_edges);
+bool GenerateGeodesicDistance(geodesic::GeodesicAlgorithmExact &geo ,int vertexID , std::vector<collisionEdgeInfo>& collision_edges);
 vtkSmartPointer<vtkMutableUndirectedGraph> GenerateCollisionEdgeGraph(vtkSmartPointer<vtkPolyData> source_polydata, std::vector<collisionEdgeInfo>& collision_edges);
 vtkSmartPointer<vtkMutableUndirectedGraph> TruncateGraph(vtkSmartPointer<vtkMutableUndirectedGraph> source_graph);
 vtkSmartPointer<vtkMutableUndirectedGraph> StraightupGraph(vtkSmartPointer<vtkMutableUndirectedGraph> source_graph, OmMesh& mesh);
 vtkSmartPointer<vtkMutableUndirectedGraph> CleanGraph(vtkSmartPointer<vtkMutableUndirectedGraph> source_graph, OmMesh& mesh);
+
+
+vtkSmartPointer<vtkPolyData> CreateSurroundGraphPolydata(vtkSmartPointer<vtkMutableUndirectedGraph> source_graph, vtkSmartPointer<vtkPolyData> source_polydata,int level = 1);
+vtkSmartPointer<vtkMutableUndirectedGraph> GIMtruncate(vtkSmartPointer<vtkPolyData> polydata, geodesic::GeodesicAlgorithmExact &geo);
+
 
 vtkSmartPointer<vtkActor> CreateBeforeTruncatePipeline(vtkSmartPointer<vtkMutableUndirectedGraph> BTGraph,std::vector<collisionEdgeInfo>& collision_edges);
 vtkSmartPointer<vtkActor> CreateAfterTruncatePipeline(vtkSmartPointer<vtkMutableUndirectedGraph> ATGraph,std::vector<collisionEdgeInfo>& collision_edges);
@@ -50,8 +61,8 @@ std::string GetFileExtension(const std::string& FileName)
         return FileName.substr(FileName.find_last_of(".")+1);
     return "";
 }
-
-void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID)
+/*
+void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 {
 	std::vector<collisionEdgeInfo> collision_edges;
 	OmMesh mesh;
@@ -68,26 +79,31 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID)
 	std::cout << "==========================" << endl;
 	std::cout << "source vertex id " << sourceVertexID << endl;
 
-
-	GenerateGeodesicDistance(sourceVertexID,collision_edges);
+	geodesic::GeodesicAlgorithmExact exact_algorithm(&geosesic_mesh);
+	GenerateGeodesicDistance(exact_algorithm,sourceVertexID,collision_edges);
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphBeforeTruncate = GenerateCollisionEdgeGraph(polydata,collision_edges);
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphAfterTruncate  = TruncateGraph(collisionEdgesGraphBeforeTruncate);
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesStraight			 = StraightupGraph(collisionEdgesGraphAfterTruncate,mesh);
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesClean				 = CleanGraph(collisionEdgesStraight,mesh);
+	
+
 
 	vtkSmartPointer<vtkMutableUndirectedGraph> graph  = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
 	graph->DeepCopy(collisionEdgesClean);
+	int adjnum = graph->GetDegree(140);
+	adjnum = graph->GetDegree(152);
+	
 	int numGraphEdges = 0;
 	do 
 	{
 		numGraphEdges = graph->GetNumberOfEdges();
 		graph = TruncateGraph(graph);
 		graph = StraightupGraph(graph,mesh);
-		graph = CleanGraph(collisionEdgesStraight,mesh);
+		graph = CleanGraph(graph,mesh);
 	
 	}
 	while (numGraphEdges > graph->GetNumberOfEdges());
-
+	
 	vtkSmartPointer<vtkActor> edge_actor1 = CreateBeforeTruncatePipeline(collisionEdgesGraphBeforeTruncate, collision_edges); 
 	vtkSmartPointer<vtkActor> edge_actor2 = CreateAfterTruncatePipeline(collisionEdgesGraphAfterTruncate, collision_edges);
 	vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(collisionEdgesStraight);
@@ -128,6 +144,110 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID)
 	else
 		actorEdge5 = edge_actor5;
 
+	vtkSmartPointer<vtkPolyData> surroundPolydata = CreateSurroundGraphPolydata(collisionEdgesGraphAfterTruncate,polydata);
+	GIMtruncate(surroundPolydata,exact_algorithm);
+	vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+	mapper->SetInputData (surroundPolydata);
+ 
+	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+	actor->SetMapper(mapper);
+	actor->GetProperty()->SetEdgeVisibility(1);
+	actor->GetProperty()->SetLineWidth(0.5);
+	if (actor->GetReferenceCount() == 1)
+		actor->SetReferenceCount(2);
+
+	if (actorPoly2)
+		actorPoly2->ShallowCopy(actor);
+	else
+		actorPoly2 = actor;
+	 
+
+	
+}
+*/
+
+void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
+{
+	std::vector<collisionEdgeInfo> collision_edges;
+	OmMesh mesh;
+	vtkPolydata2OpenMesh(polydata,&mesh );
+	if (polydata)	
+		LoadToGeodesic(polydata);
+
+	int numVertex = polydata->GetNumberOfPoints();
+	if (sourceVertexID >= numVertex)
+	{
+		std::cout << "invalid source vertex id ... reset to id 0." << endl;
+		sourceVertexID = 0;
+	}
+	std::cout << "==========================" << endl;
+	std::cout << "source vertex id " << sourceVertexID << endl;
+
+	geodesic::GeodesicAlgorithmExact *exact_algorithm = new geodesic::GeodesicAlgorithmExact(&geosesic_mesh);
+	GenerateGeodesicDistance(*exact_algorithm,sourceVertexID,collision_edges);
+	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphBeforeTruncate = GenerateCollisionEdgeGraph(polydata,collision_edges);
+	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphAfterTruncate  = TruncateGraph(collisionEdgesGraphBeforeTruncate);
+	vtkSmartPointer<vtkPolyData> surroundPolydata = CreateSurroundGraphPolydata(collisionEdgesGraphAfterTruncate,polydata,1);
+	//vtkSmartPointer<vtkMutableUndirectedGraph> graphState3 = GIMtruncate(surroundPolydata,exact_algorithm);
+	vtkSmartPointer<vtkMutableUndirectedGraph> graphState3 = gimTruncate.Init(surroundPolydata,exact_algorithm);
+
+
+	vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+	mapper->SetInputData (surroundPolydata);
+ 
+	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+	actor->SetMapper(mapper);
+	actor->GetProperty()->SetEdgeVisibility(1);
+	actor->GetProperty()->SetLineWidth(0.5);
+	if (actor->GetReferenceCount() == 1)
+		actor->SetReferenceCount(2);
+	if (actorPoly2)
+		actorPoly2->ShallowCopy(actor);
+	else
+		actorPoly2 = actor;
+	
+
+	vtkSmartPointer<vtkActor> edge_actor1 = CreateBeforeTruncatePipeline(collisionEdgesGraphBeforeTruncate, collision_edges); 
+	vtkSmartPointer<vtkActor> edge_actor2 = CreateAfterTruncatePipeline(collisionEdgesGraphAfterTruncate, collision_edges);
+	vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(graphState3);
+	
+	if (edge_actor1->GetReferenceCount() == 1)
+		edge_actor1->SetReferenceCount(2);
+	if (edge_actor2->GetReferenceCount() == 1)
+		edge_actor2->SetReferenceCount(2);
+	if (edge_actor3->GetReferenceCount() == 1)
+		edge_actor3->SetReferenceCount(2);
+	/*
+	if (edge_actor4->GetReferenceCount() == 1)
+		edge_actor4->SetReferenceCount(2);
+	if (edge_actor5->GetReferenceCount() == 1)
+		edge_actor5->SetReferenceCount(2);
+	*/
+	if (actorEdge1)
+		actorEdge1->ShallowCopy(edge_actor1);
+	else
+		actorEdge1 = edge_actor1;
+	if (actorEdge2)
+		actorEdge2->ShallowCopy(edge_actor2);
+	else
+		actorEdge2 = edge_actor2;
+
+	if (actorEdge3)
+		actorEdge3->ShallowCopy(edge_actor3);
+	else
+		actorEdge3 = edge_actor3;
+	/*
+	if (actorEdge4)
+		actorEdge4->ShallowCopy(edge_actor4);
+	else
+		actorEdge4 = edge_actor4;
+
+	if (actorEdge5)
+		actorEdge5->ShallowCopy(edge_actor5);
+	else
+		actorEdge5 = edge_actor5;
+
+	*/
 }
 
 
@@ -210,7 +330,8 @@ int main(int argc, char* argv[])
 	
 	//renderWindowInteractor->SetPicker(cellPicker);
 	TrackballStyle->SetPickColor(1.0,0.0,0.0);
-	renderer->AddActor(actor);
+	actorPoly1 = actor;
+	renderer->AddActor(actorPoly1);
 	renderer->AddActor(actorEdge2);
 	
 	vtkSmartPointer<vtkCallbackCommand> keypressCallback = vtkSmartPointer<vtkCallbackCommand>::New();
@@ -291,6 +412,30 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			renderer->Modified();
 			iren->GetRenderWindow()->Render();
 			break;
+		case '7':
+			renderer->RemoveActor(actorPoly1);
+			renderer->RemoveActor(actorPoly2);
+			renderer->AddActor(actorPoly1);
+			renderer->Modified();
+			iren->GetRenderWindow()->Render();
+			break;
+		case '8':
+			renderer->RemoveActor(actorPoly1);
+			renderer->RemoveActor(actorPoly2);
+			renderer->AddActor(actorPoly2);
+			renderer->Modified();
+			iren->GetRenderWindow()->Render();
+			break;
+		case 't':
+			gimTruncate.Step();
+			vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(gimTruncate.GetGraph());
+			if (actorEdge3)
+				actorEdge3->ShallowCopy(edge_actor3);
+			else
+				actorEdge3 = edge_actor3;
+			renderer->Modified();
+			iren->GetRenderWindow()->Render();
+			break;
 	}
 	//std::cout << "Pressed: " << iren->GetKeySym() << endl;
 }
@@ -347,20 +492,21 @@ void LoadToGeodesic(vtkSmartPointer<vtkPolyData> polydata)
 }
 
 
-bool GenerateGeodesicDistance(int vertexID , std::vector<collisionEdgeInfo>& collision_edges)
+bool GenerateGeodesicDistance(geodesic::GeodesicAlgorithmExact &geoAlgo,int vertexID , std::vector<collisionEdgeInfo>& collision_edges)
 {
-	if (vertexID < 0 || vertexID >= geosesic_mesh.vertices().size())
+	
+	if (vertexID < 0 || vertexID >= geoAlgo.mesh()->vertices().size())
 		return false;
-	geodesic::GeodesicAlgorithmExact exact_algorithm(&geosesic_mesh);
-	geodesic::SurfacePoint source(&geosesic_mesh.vertices()[vertexID]);		//create source 
+	
+	geodesic::SurfacePoint source(&geoAlgo.mesh()->vertices()[vertexID]);		//create source 
 	std::vector<geodesic::SurfacePoint> all_sources(1,source);					//in general, there could be multiple sources, but now we have only one
-	exact_algorithm.propagate(all_sources);	//cover the whole mesh
+	geoAlgo.propagate(all_sources);	//cover the whole mesh
 
 	
 	collision_edges.clear();
-	for (int i = 0 ; i < exact_algorithm.CollisionEdges().size() ; i++)
+	for (int i = 0 ; i < geoAlgo.CollisionEdges().size() ; i++)
 	{
-		geodesic::edge_pointer e = exact_algorithm.CollisionEdges()[i];	
+		geodesic::edge_pointer e = geoAlgo.CollisionEdges()[i];	
 		collisionEdgeInfo info;
 		info.v0 = e->adjacent_vertices()[0]->id();
 		info.v1 = e->adjacent_vertices()[1]->id();
@@ -548,8 +694,7 @@ vtkSmartPointer<vtkMutableUndirectedGraph> CleanGraph(vtkSmartPointer<vtkMutable
 				vid[0] = e.Target;
 				vid[1] = e.Source;
 			}
-			if (vid[0] == 19 && vid[1] == 29)
-				int aaa = 0;
+			
 			bool val2 = true;
 			for (int i = 0 ; i < 2 ; i++)
 			{
@@ -945,4 +1090,247 @@ void ColoredPoint(vtkSmartPointer<vtkRenderer> _renderer ,  double pt[3],double 
 	}
 }
 
+void GetNeighborCell(vtkSmartPointer<vtkPolyData> source_polydata, vtkIdType vid , int level, std::vector<vtkIdType> &storeIDs)
+{
+	vtkIdType *cellid;
+	unsigned short numCell;
+	source_polydata->GetPointCells(vid,numCell,cellid);
+			
+	for (int j = 0 ; j < numCell; j++)
+	{
+		storeIDs.push_back(cellid[j]);
+		if (level > 1)
+		{
+			vtkIdType npts(0);
+			vtkIdType *pts;
+			source_polydata->GetCellPoints(cellid[j], npts,pts);
+			for (int k = 0 ; k < npts; k++)
+			{
+				if (pts[k] != vid)
+					GetNeighborCell(source_polydata,pts[k],level-1,storeIDs);
+			}
+			
+		}
+		
+	}
+}
 
+vtkSmartPointer<vtkPolyData> CreateSurroundGraphPolydata(vtkSmartPointer<vtkMutableUndirectedGraph> source_graph, vtkSmartPointer<vtkPolyData> source_polydata,int level)
+{
+	if (level < 1)
+		return NULL;
+	vtkSmartPointer<vtkEdgeListIterator> eit =vtkSmartPointer<vtkEdgeListIterator>::New();
+	source_graph->GetEdges(eit);
+	vtkSmartPointer<vtkPolyData> outputPoly = vtkSmartPointer<vtkPolyData>::New();
+	outputPoly->DeepCopy(source_polydata);
+	source_polydata->BuildLinks();
+	bool *cellCheck = new bool[source_polydata->GetPolys()->GetNumberOfCells()];
+	memset(cellCheck,0,sizeof(bool)*source_polydata->GetPolys()->GetNumberOfCells());
+
+	
+
+	vtkSmartPointer<vtkCellArray> cellArray = vtkSmartPointer<vtkCellArray>::New();
+	while (eit->HasNext())
+	{
+		vtkEdgeType e = eit->Next();
+		vtkIdType vid[2] = {e.Source,e.Target};
+		
+		for (int i = 0 ; i < 2 ; i++)
+		{
+			std::vector<vtkIdType> add_cellIDs;
+			GetNeighborCell(source_polydata,vid[i],level,add_cellIDs);
+			for (int j = 0 ; j < add_cellIDs.size(); j++)
+			{
+				if (!cellCheck[add_cellIDs[j]])
+				{
+					vtkCell *cell = source_polydata->GetCell(add_cellIDs[j]);
+				
+					cellArray->InsertNextCell(cell);
+					cellCheck[add_cellIDs[j]] = true;
+				}
+			}
+		}		
+	}
+
+	outputPoly->SetPolys(cellArray);
+	outputPoly->BuildLinks();
+	delete [] cellCheck;
+	return outputPoly;
+
+}
+
+
+
+bool seedRemoved = false;
+struct hedge_data
+	{	
+		vtkIdType startID;
+		vtkIdType endID;
+		hedge_data( vtkIdType start, vtkIdType end)
+		{		
+			startID = start;
+			endID = end;
+		}
+	};
+vtkSmartPointer<vtkMutableUndirectedGraph> GIMtruncate(vtkSmartPointer<vtkPolyData> polydata, geodesic::GeodesicAlgorithmExact &geo)
+{
+	OmMesh mesh;
+	vtkPolydata2OpenMesh(polydata,&mesh );	
+
+	vtkSmartPointer<vtkMutableUndirectedGraph> graph = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
+	for(vtkIdType i = 0; i < polydata->GetNumberOfPoints(); i++)
+    {
+		graph->AddVertex();
+    }
+  
+	vtkSmartPointer<vtkPoints> points = 
+    vtkSmartPointer<vtkPoints>::New();
+	points->ShallowCopy(polydata->GetPoints());
+	graph->SetPoints(points);
+	for (OmMesh::EdgeIter e_it=mesh.edges_begin(); e_it!=mesh.edges_end(); ++e_it) 
+	{
+		OmMesh::EdgeHandle eh = *e_it;
+		if (!mesh.is_boundary(eh))
+		{
+			OmMesh::HalfedgeHandle heh = mesh.halfedge_handle(eh,0);
+			if (!heh.is_valid())
+				heh = mesh.halfedge_handle(eh,1);
+			OmMesh::HalfedgeHandle heh_prev = mesh.prev_halfedge_handle(heh);
+			int a = mesh.to_vertex_handle(heh).idx();
+			int b = mesh.to_vertex_handle(heh_prev).idx();
+			graph->AddEdge(a,b);		
+		}
+	}
+
+	//return graph;
+	//remove seed triangle (nearest (geodesic) from source point)
+	
+	OmMesh::FaceHandle seedFace;
+	double distanceSeed = geodesic::GEODESIC_INF;
+	
+	for (OmMesh::FaceIter f_it=mesh.faces_begin(); f_it!=mesh.faces_end(); ++f_it)
+	{
+		OmMesh::FaceHandle fh = *f_it;
+		OmMesh::HalfedgeHandle heh = mesh.halfedge_handle(fh);
+		unsigned int pts[3];
+		pts[0] = mesh.to_vertex_handle(heh).idx();
+		
+		heh = mesh.next_halfedge_handle(heh);
+		pts[1] = mesh.to_vertex_handle(heh).idx();
+
+		heh = mesh.next_halfedge_handle(heh);
+		pts[2] = mesh.to_vertex_handle(heh).idx();
+
+		geodesic::face_pointer faceG =  geo.mesh()->find_face(pts[0],pts[1],pts[2]);
+		if (faceG)
+		{
+			double best_distance;
+			geodesic::SurfacePoint p(faceG);
+			geo.best_source(p,best_distance);
+			if (distanceSeed > best_distance)
+			{
+				seedFace = fh;
+				distanceSeed = best_distance;
+				
+			}		
+		}
+	}
+
+	std::map<double,hedge_data> candidate_edges;
+	//remove seed triangle
+	{
+		OmMesh::FaceHandle removeFaceHandle = seedFace;
+		OmMesh::HalfedgeHandle candidate_heh[3];
+			
+		candidate_heh[0] = mesh.halfedge_handle(removeFaceHandle);
+		candidate_heh[1] = mesh.next_halfedge_handle(candidate_heh[0]);
+		candidate_heh[2] = mesh.next_halfedge_handle(candidate_heh[1]);
+		for (int i = 0 ; i < 3 ; i++)
+		{
+			vtkIdType endID,startID ;
+			endID = mesh.to_vertex_handle(candidate_heh[i]).idx();
+			startID = mesh.to_vertex_handle( mesh.prev_halfedge_handle(candidate_heh[i])).idx();
+			vtkIdType edgeID =  graph->GetEdgeId(endID,startID);
+			
+			if (!mesh.is_boundary(mesh.edge_handle(candidate_heh[i])))
+			{		
+				geodesic::edge_pointer edgeG = geo.mesh()->find_edge(endID,startID);
+				double best_distance;
+				geodesic::SurfacePoint p(edgeG);
+				geo.best_source(p,best_distance);	
+				hedge_data hedata(endID,startID); //reserve input because opposite hedge
+				candidate_edges.insert(std::pair<double,hedge_data>(best_distance,hedata));
+			}
+			else
+			{
+				//graph->RemoveEdge(edgeID);
+			}		
+		}
+		polydata->DeleteCell(seedFace.idx());
+		mesh.delete_face(seedFace,false);
+		mesh.garbage_collection();
+		polydata->RemoveDeletedCells();
+	}
+
+	return graph;
+
+	
+	//remove non-boundary edge that adjacent only triangle
+	int count = 0;
+	while (candidate_edges.size() > 0 && count < 6)
+	{
+		count ++;
+		hedge_data checkingEdge = candidate_edges.begin()->second;
+		OmMesh::HalfedgeHandle checkingHeh = mesh.find_halfedge( mesh.vertex_handle(checkingEdge.startID) , mesh.vertex_handle(checkingEdge.endID));
+		if (!checkingHeh.is_valid())
+		{
+			//this edge (of graph) have adjacent 0 edge
+			//remove from map -> will be cutpath
+			int aaa = 0;
+			
+		}
+		else
+		{
+			//remove face and edge
+			OmMesh::FaceHandle removeFaceHandle = mesh.face_handle(checkingHeh);
+			OmMesh::HalfedgeHandle candidate_heh[2];
+			
+			candidate_heh[0] = mesh.next_halfedge_handle(checkingHeh);
+			candidate_heh[1] = mesh.next_halfedge_handle(candidate_heh[0]);
+			for (int i = 0 ; i < 2 ; i++)
+			{
+				vtkIdType endID,startID ;
+				endID = mesh.to_vertex_handle(candidate_heh[i]).idx();
+				startID = mesh.to_vertex_handle( mesh.prev_halfedge_handle(candidate_heh[i])).idx();
+				vtkIdType edgeID =  graph->GetEdgeId(endID,startID);
+				if (!mesh.is_boundary(mesh.edge_handle(candidate_heh[i])))
+				{		
+					geodesic::edge_pointer edgeG = geo.mesh()->find_edge(startID,endID);
+					double best_distance;
+					geodesic::SurfacePoint p(edgeG);
+					geo.best_source(p,best_distance);		
+					hedge_data hedata(endID,startID); //reserve input because of opposite hedge
+					candidate_edges.insert(std::pair<double,hedge_data>(best_distance,hedata ));
+				}
+				else
+				{
+					//graph->RemoveEdge(edgeID);
+				}		
+			}
+
+			vtkIdType edgeID =  graph->GetEdgeId(checkingEdge.startID,checkingEdge.endID);
+			graph->RemoveEdge(edgeID);
+			polydata->DeleteCell(removeFaceHandle.idx());
+			mesh.delete_face( removeFaceHandle,false);
+			mesh.garbage_collection();
+			polydata->RemoveDeletedCells();
+		}
+		
+		candidate_edges.erase( candidate_edges.begin());
+
+
+	}
+
+
+	return graph;
+}

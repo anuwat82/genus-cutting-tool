@@ -257,13 +257,16 @@ public:
 
 	bool isVertices(int v1_id,int v2_id)
 	{
-		if (adjacent_vertices()[0]->id() == v1_id || 
-			adjacent_vertices()[1]->id() == v1_id)
+		if (v1_id != v2_id)
 		{
-			if (adjacent_vertices()[0]->id() == v2_id || 
-				adjacent_vertices()[1]->id() == v2_id)
+			if (adjacent_vertices()[0]->id() == v1_id || 
+				adjacent_vertices()[1]->id() == v1_id)
 			{
-				return true;
+				if (adjacent_vertices()[0]->id() == v2_id || 
+					adjacent_vertices()[1]->id() == v2_id)
+				{
+					return true;
+				}
 			}
 		}
 		return false;
