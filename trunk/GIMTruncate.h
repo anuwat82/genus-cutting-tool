@@ -31,6 +31,8 @@ protected:
 	bool seedRemoved;
 	bool allFaceRemoved;
 	bool firstTruncateDone;
+	bool branchRemoved;
+	bool largestGraphDone;
 	std::map<double,hedge_data> candidate_edges;
 
 	void RemoveSeed();
@@ -38,5 +40,6 @@ protected:
 	void EliminateSelfCycle();
 	void EliminateBranchPath();
 	void TruncateGraph();
+	void EliminateUnusedPath();
 };
 

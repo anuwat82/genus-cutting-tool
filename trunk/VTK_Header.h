@@ -55,3 +55,5 @@
 #include <vtkCellPicker.h>
 #include <vtkPickingManager.h>
 #include <vtkBoostBreadthFirstSearch.h>
+#include <vtkBoostConnectedComponents.h>
+#include <vtkBoostExtractLargestComponent.h>

@@ -964,6 +964,8 @@ vtkSmartPointer<vtkActor> CreateStrightUpPipeline(vtkSmartPointer<vtkMutableUndi
 	g2pAT->Update();
 	vtkSmartPointer<vtkPolyData> suPolydata = vtkSmartPointer<vtkPolyData>::New();
 	suPolydata->ShallowCopy(g2pAT->GetOutput());
+	
+	vtkSmartPointer<vtkUnsignedCharArray> edgecolors = vtkUnsignedCharArray::SafeDownCast( SUGraph->GetEdgeData()->GetArray("EdgeColors"));
 
 	// Setup the colors array
 	vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
@@ -977,12 +979,13 @@ vtkSmartPointer<vtkActor> CreateStrightUpPipeline(vtkSmartPointer<vtkMutableUndi
 	int numEdge = suPolydata->GetLines()->GetNumberOfCells();
 	for (int cellID = 0 ; cellID < suPolydata->GetLines()->GetNumberOfCells(); cellID++)
 	{
-		
-		colors->InsertNextTupleValue(yellow);
+		unsigned char edgeColor[3];
+		edgecolors->GetTupleValue(cellID,edgeColor);
+		colors->InsertNextTupleValue(edgeColor);
 		
 	}
 	suPolydata->GetCellData()->SetScalars(colors);
-
+	
 
 	vtkSmartPointer<vtkPolyDataMapper> edge_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 	edge_mapper->SetInputData(suPolydata);
