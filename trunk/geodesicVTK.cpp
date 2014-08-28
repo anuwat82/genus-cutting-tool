@@ -284,23 +284,17 @@ int main(int argc, char* argv[])
 		vtkSmartPointer<vtkPLYReader> PLYReader = vtkSmartPointer<vtkPLYReader>::New();
 		PLYReader->SetFileName(filename.c_str());
 		PLYReader->Update();
-		modelReader = PLYReader;
-		
+		modelReader = PLYReader;		
 	}
 	else if (ext == "off")
 	{
 		vtkSmartPointer<vtkOFFReader> OFFReader = vtkSmartPointer<vtkOFFReader>::New();
 		OFFReader->SetFileName(filename.c_str());
 		OFFReader->Update();
-		modelReader = OFFReader;
-		
+		modelReader = OFFReader;		
 	}
 	polydata = modelReader->GetOutput();
-
-	
-
 	Process(modelReader->GetOutput() , sourceVertex);
-
 	
 	vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 	mapper->SetInputConnection(modelReader->GetOutputPort());
@@ -309,7 +303,6 @@ int main(int argc, char* argv[])
 	actor->SetMapper(mapper);
 	actor->GetProperty()->SetEdgeVisibility(1);
 	actor->GetProperty()->SetLineWidth(0.5);
-
 
 	// Visualize
 	vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
@@ -427,6 +420,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			iren->GetRenderWindow()->Render();
 			break;
 		case 't':
+			{
 			gimTruncate.Step();
 			vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(gimTruncate.GetGraph());
 			if (actorEdge3)
@@ -435,6 +429,19 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 				actorEdge3 = edge_actor3;
 			renderer->Modified();
 			iren->GetRenderWindow()->Render();
+			}
+			break;
+		case 'g':
+			{
+			gimTruncate.Process();
+			vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(gimTruncate.GetGraph());
+			if (actorEdge3)
+				actorEdge3->ShallowCopy(edge_actor3);
+			else
+				actorEdge3 = edge_actor3;
+			renderer->Modified();
+			iren->GetRenderWindow()->Render();
+			}
 			break;
 	}
 	//std::cout << "Pressed: " << iren->GetKeySym() << endl;

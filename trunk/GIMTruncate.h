@@ -22,6 +22,7 @@ public:
 	virtual ~GIMTruncate(void);
 	vtkSmartPointer<vtkMutableUndirectedGraph> Init( vtkSmartPointer<vtkPolyData> polydata, geodesic::GeodesicAlgorithmExact *geo);
 	void Step();
+	void Process();
 	vtkSmartPointer<vtkMutableUndirectedGraph> GetGraph();
 protected:
 	vtkWeakPointer<vtkPolyData> polydata;
@@ -36,10 +37,11 @@ protected:
 	std::map<double,hedge_data> candidate_edges;
 
 	void RemoveSeed();
-	void RemoveBoundarySeed();
-	void EliminateSelfCycle();
-	void EliminateBranchPath();
-	void TruncateGraph();
-	void EliminateUnusedPath();
+	void RemoveBoundarySeed(bool step);
+	void RemoveEdgesThatAdjacentOnlyOneFace(bool step);
+	void EliminateSelfCycle(bool step);
+	void EliminateBranchPath(bool step);
+	void TruncateGraph(bool step);
+	void EliminateUnusedPath(bool step);
 };
 
