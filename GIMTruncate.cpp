@@ -18,6 +18,9 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMTruncate::Init( vtkSmartPointer<vt
 	seedRemoved = false;
 	allFaceRemoved =false;
 	firstTruncateDone = false;
+	branchRemoved = false;
+	largestGraphDone = false;
+	mesh.clear();
 	vtkPolydata2OpenMesh(_polydata,&mesh );	
 	this->geodesicExact = _geo;	
 	this->polydata = _polydata;	
@@ -32,20 +35,40 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMTruncate::Init( vtkSmartPointer<vt
     vtkSmartPointer<vtkPoints>::New();
 	points->ShallowCopy(polydata->GetPoints());
 	_graph->SetPoints(points);
+
+	// Setup the colors array
+	vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+	colors->SetNumberOfComponents(3);
+	colors->SetName("EdgeColors");
+	// Setup two colors 
+	unsigned char red[3] = {255, 0, 0};
+	unsigned char green[3] = {0, 255, 0};
+	unsigned char blue[3] = {0, 0, 255};
+	unsigned char yellow[3] = {255, 255, 0};
+	
+	
+	
+
 	for (OmMesh::EdgeIter e_it=mesh.edges_begin(); e_it!=mesh.edges_end(); ++e_it) 
 	{
 		OmMesh::EdgeHandle eh = *e_it;
-		//if (!mesh.is_boundary(eh))
-		{
-			OmMesh::HalfedgeHandle heh = mesh.halfedge_handle(eh,0);
-			if (!heh.is_valid())
-				heh = mesh.halfedge_handle(eh,1);
-			OmMesh::HalfedgeHandle heh_prev = mesh.prev_halfedge_handle(heh);
-			int a = mesh.to_vertex_handle(heh).idx();
-			int b = mesh.to_vertex_handle(heh_prev).idx();
-			_graph->AddEdge(a,b);		
-		}
+		
+		
+		OmMesh::HalfedgeHandle heh = mesh.halfedge_handle(eh,0);
+		if (!heh.is_valid())
+			heh = mesh.halfedge_handle(eh,1);
+		OmMesh::HalfedgeHandle heh_prev = mesh.prev_halfedge_handle(heh);
+		int a = mesh.to_vertex_handle(heh).idx();
+		int b = mesh.to_vertex_handle(heh_prev).idx();
+		_graph->AddEdge(a,b);		
+		
+		if (mesh.is_boundary(eh))
+			colors->InsertNextTupleValue(red);
+		else
+			colors->InsertNextTupleValue(yellow);
+
 	}
+	_graph->GetEdgeData()->AddArray(colors);
 	this->graph = _graph;
 	return _graph;
 }
@@ -114,16 +137,17 @@ void GIMTruncate::Step()
 				vtkIdType edgeID =  graph->GetEdgeId(checkingEdge.startID,checkingEdge.endID);
 				graph->RemoveEdge(edgeID);
 				vtkIdType cellID = GetCellID(polydata,mesh,removeFaceHandle);
-
+				polydata->RemoveCellReference(cellID);
 				polydata->DeleteCell(cellID);
 				mesh.delete_face( removeFaceHandle,false);
 				mesh.garbage_collection();
-				polydata->RemoveDeletedCells();
-				polydata->BuildLinks();
+				
+				
 				graph->Modified();			
 			}			
 		} //end while
-		
+		polydata->RemoveDeletedCells();
+		polydata->BuildLinks();
 		allFaceRemoved = true;
 	}
 	else if (!firstTruncateDone)
@@ -136,30 +160,45 @@ void GIMTruncate::Step()
 			return;
 		}
 	}
-	else
+	else if (!branchRemoved)
 	{
-		int numEdge = 0;
+		
+		int numEdgeBefore = 0; graph->GetNumberOfEdges();
 		do
 		{
-			numEdge = graph->GetNumberOfEdges();
-			EliminateSelfCycle();
-		}
-		while(numEdge > graph->GetNumberOfEdges());
-		TruncateGraph();
 
-		do
-		{
-			numEdge = graph->GetNumberOfEdges();
-			EliminateBranchPath();
+			numEdgeBefore = 0; graph->GetNumberOfEdges();
+			int numEdge = 0;
+			/*
+			do
+			{
+				numEdge = graph->GetNumberOfEdges();
+				EliminateSelfCycle();
+			}
+			while(numEdge > graph->GetNumberOfEdges());
 			TruncateGraph();
+			*/
+			do
+			{
+				numEdge = graph->GetNumberOfEdges();
+				EliminateBranchPath();
+				TruncateGraph();
+			}
+			while(numEdge > graph->GetNumberOfEdges());		
 		}
-		while(numEdge > graph->GetNumberOfEdges());
+		while (numEdgeBefore > graph->GetNumberOfEdges());
 		
 		
-		
-		
-		
+		branchRemoved = true;
 	}
+	else if (!largestGraphDone)
+	{
+		EliminateUnusedPath();
+		largestGraphDone = true;
+
+	}
+
+
 }
 
 
@@ -250,16 +289,29 @@ void GIMTruncate::RemoveBoundarySeed()
 	//(emulate original gim truncate)
 
 	std::vector<OmMesh::FaceHandle> removeFaces;
+	int count =0;
 	for (OmMesh::EdgeIter e_it=mesh.edges_begin(); e_it!=mesh.edges_end(); ++e_it) 
 	{
 		OmMesh::EdgeHandle eh = *e_it;
+		count++;
 		if (mesh.is_boundary(eh))
 		{
+			
 			OmMesh::HalfedgeHandle checkingHeh = mesh.halfedge_handle(eh,0);			
 			if (mesh.is_boundary(checkingHeh))
 				checkingHeh = mesh.halfedge_handle(eh,1);
+			/*
+			vtkIdType endID,startID ;
+			endID = mesh.to_vertex_handle(checkingHeh).idx();
+			startID = mesh.to_vertex_handle( mesh.prev_halfedge_handle(checkingHeh)).idx();
+			geodesic::edge_pointer edgeG = geodesicExact->mesh()->find_edge(startID,endID);
+			double best_distance;
+			geodesic::SurfacePoint p(edgeG);
+			geodesicExact->best_source(p,best_distance);
+			hedge_data hedata(startID,endID);
+			candidate_edges.insert(std::pair<double,hedge_data>(best_distance,hedata ));
+			*/
 			
-
 			OmMesh::FaceHandle removeFaceHandle = mesh.face_handle(checkingHeh);
 			OmMesh::HalfedgeHandle candidate_heh[2];
 			
@@ -281,11 +333,11 @@ void GIMTruncate::RemoveBoundarySeed()
 					geodesic::SurfacePoint p(edgeG);
 					geodesicExact->best_source(p,best_distance);		
 					
-					/*
-					OmMesh::Point opfaceCenter;
-					mesh.calc_face_centroid(oppositeFace,opfaceCenter);
-					double best_distance = (opfaceCenter - faceCenter).length();
-					*/
+					
+					//OmMesh::Point opfaceCenter;
+					//mesh.calc_face_centroid(oppositeFace,opfaceCenter);
+					//double best_distance = (opfaceCenter - faceCenter).length();
+					
 					hedge_data hedata(endID,startID); //reserve input because of opposite hedge
 					candidate_edges.insert(std::pair<double,hedge_data>(best_distance,hedata ));
 				}
@@ -297,24 +349,27 @@ void GIMTruncate::RemoveBoundarySeed()
 			vtkIdType edgeID =  graph->GetEdgeId(startID,endID);
 			graph->RemoveEdge(edgeID);
 
-			vtkIdType cellID = GetCellID(polydata,mesh,removeFaceHandle);
-			polydata->DeleteCell(cellID);
+			
 
-			//mesh.delete_face(removeFaceHandle);
+			
 			removeFaces.push_back(removeFaceHandle);
-			polydata->RemoveDeletedCells();
-			polydata->BuildLinks();
-
+			
+			
+			
 		}
 	}
 
 	for (int i =0 ; i < removeFaces.size(); i++)
 	{
+		vtkIdType cellID = GetCellID(polydata,mesh,removeFaces[i]);
+		polydata->RemoveCellReference(cellID);
+		polydata->DeleteCell(cellID);
 		mesh.delete_face(removeFaces[i],false);
 	}
-	mesh.garbage_collection();
-
 	
+	mesh.garbage_collection();
+	polydata->RemoveDeletedCells();
+	polydata->BuildLinks();
 	seedRemoved = true;
 }
 
@@ -447,7 +502,7 @@ void GIMTruncate::EliminateBranchPath()
 	{
 		vtkEdgeType e = eit->Next();
 		vtkIdType vid[2] = {e.Source,e.Target};
-		if (graph->GetDegree(vid[0]) == 2 && graph->GetDegree(vid[1]) == 2)
+		if (graph->GetDegree(vid[0]) >= 2 && graph->GetDegree(vid[1]) >= 2)
 		{
 			vtkSmartPointer<vtkMutableUndirectedGraph> tmpGraph = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
 			tmpGraph->DeepCopy(graph);
@@ -474,5 +529,16 @@ void GIMTruncate::EliminateBranchPath()
 		
 
 	}
+
+}
+
+void GIMTruncate::EliminateUnusedPath()
+{
+	//elimainate small connectivity
+	vtkSmartPointer<vtkBoostExtractLargestComponent> LconnectedComponents = vtkSmartPointer<vtkBoostExtractLargestComponent>::New();
+	LconnectedComponents->SetInputData(graph);
+	LconnectedComponents->Update();
+	vtkGraph* outputGraph = LconnectedComponents->GetOutput(); 
+	graph->ShallowCopy(outputGraph);
 
 }
