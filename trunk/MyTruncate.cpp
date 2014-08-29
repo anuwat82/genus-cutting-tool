@@ -1,19 +1,19 @@
-#include "GIMTruncate.h"
+#include "MyTruncate.h"
 #include "utils.h"
 
-GIMTruncate::GIMTruncate(void)
+MyTruncate::MyTruncate(void)
 {
 }
 
 
-GIMTruncate::~GIMTruncate(void)
+MyTruncate::~MyTruncate(void)
 {
 }
-vtkSmartPointer<vtkMutableUndirectedGraph> GIMTruncate::GetGraph()
+vtkSmartPointer<vtkMutableUndirectedGraph> MyTruncate::GetGraph()
 {
 	return graph;
 }
-vtkSmartPointer<vtkMutableUndirectedGraph> GIMTruncate::Init( vtkSmartPointer<vtkPolyData> _polydata, geodesic::GeodesicAlgorithmExact *_geo)
+vtkSmartPointer<vtkMutableUndirectedGraph> MyTruncate::Init( vtkSmartPointer<vtkPolyData> _polydata, geodesic::GeodesicAlgorithmExact *_geo)
 {
 	seedRemoved = false;
 	allFaceRemoved =false;
@@ -73,7 +73,7 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMTruncate::Init( vtkSmartPointer<vt
 	return _graph;
 }
 
-void GIMTruncate::Process()
+void MyTruncate::Process()
 {
 	
 	RemoveBoundarySeed(false);	
@@ -85,19 +85,9 @@ void GIMTruncate::Process()
 	TruncateGraph(false);
 	firstTruncateDone = true;
 
-	{
-		int numEdge = 0;	
-		do
-		{
-			numEdge = graph->GetNumberOfEdges();
-			EliminateBranchPath(false);
-			TruncateGraph(false);
-		}
-		while(numEdge > graph->GetNumberOfEdges());		
-		branchRemoved = true;
-	}
-	
-	
+	EliminateBranchPath(false);
+	branchRemoved = true;
+		
 	EliminateUnusedPath(false);
 	largestGraphDone = true;
 
@@ -108,7 +98,7 @@ void GIMTruncate::Process()
 	
 }
 
-void GIMTruncate::Step()
+void MyTruncate::Step()
 {
 	if (!seedRemoved)
 	{
@@ -147,13 +137,9 @@ void GIMTruncate::Step()
 			while(numEdge > graph->GetNumberOfEdges());
 			TruncateGraph();
 			*/
-			do
-			{
-				numEdge = graph->GetNumberOfEdges();
-				EliminateBranchPath(true);
-				TruncateGraph(true);
-			}
-			while(numEdge > graph->GetNumberOfEdges());		
+
+			EliminateBranchPath(true);
+			
 		}
 		while (numEdgeBefore > graph->GetNumberOfEdges());
 		
@@ -171,7 +157,7 @@ void GIMTruncate::Step()
 }
 
 
-void GIMTruncate::RemoveSeed()
+void MyTruncate::RemoveSeed()
 {
 	OmMesh::FaceHandle seedFace;
 	double distanceSeed = geodesic::GEODESIC_INF;
@@ -251,7 +237,7 @@ void GIMTruncate::RemoveSeed()
 	seedRemoved = true;
 }
 
-void GIMTruncate::RemoveBoundarySeed(bool step)
+void MyTruncate::RemoveBoundarySeed(bool step)
 {
 	//remove all boundary edges and their adjacent faces
 	//(emulate original gim truncate)
@@ -336,7 +322,7 @@ void GIMTruncate::RemoveBoundarySeed(bool step)
 	seedRemoved = true;
 }
 
-void GIMTruncate::RemoveEdgesThatAdjacentOnlyOneFace(bool step)
+void MyTruncate::RemoveEdgesThatAdjacentOnlyOneFace(bool step)
 {
 	while (candidate_edges.size() > 0)
 	{
@@ -409,7 +395,7 @@ void GIMTruncate::RemoveEdgesThatAdjacentOnlyOneFace(bool step)
 	}
 }
 
-void GIMTruncate::TruncateGraph(bool step)
+void MyTruncate::TruncateGraph(bool step)
 {
 	int numRemoveEdges = 0;
 	do
@@ -443,7 +429,7 @@ void GIMTruncate::TruncateGraph(bool step)
 	while(numRemoveEdges > 0);
 }
 
-void GIMTruncate::EliminateSelfCycle(bool step)
+void MyTruncate::EliminateSelfCycle(bool step)
 {
 	
 	for (vtkIdType vid = 0; vid < graph->GetNumberOfVertices(); vid++)
@@ -528,44 +514,53 @@ void GIMTruncate::EliminateSelfCycle(bool step)
 	}
 }
 
-void GIMTruncate::EliminateBranchPath(bool step)
+void MyTruncate::EliminateBranchPath(bool step)
 {
-	vtkSmartPointer<vtkEdgeListIterator> eit =vtkSmartPointer<vtkEdgeListIterator>::New();
-	graph->GetEdges(eit);
-	int numvert = graph->GetNumberOfVertices();
-	while (eit->HasNext())
+	bool *checkedPoint = new bool [graph->GetNumberOfVertices()];
+	memset(checkedPoint,0,sizeof(bool)*graph->GetNumberOfVertices());
+	int numEdges = 0;
+	do
 	{
-		vtkEdgeType e = eit->Next();
-		vtkIdType vid[2] = {e.Source,e.Target};
-		if (graph->GetDegree(vid[0]) >= 2 && graph->GetDegree(vid[1]) >= 2)
+		numEdges = graph->GetNumberOfEdges();
+		vtkSmartPointer<vtkEdgeListIterator> eit =vtkSmartPointer<vtkEdgeListIterator>::New();
+		graph->GetEdges(eit);
+		
+		while (eit->HasNext())
 		{
-			vtkSmartPointer<vtkMutableUndirectedGraph> tmpGraph = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
-			tmpGraph->DeepCopy(graph);
-			vtkIdType eid = tmpGraph->GetEdgeId(vid[0],vid[1]);
-			tmpGraph->RemoveEdge(eid);
-			
-			vtkSmartPointer<vtkBoostBreadthFirstSearch> bfs = vtkSmartPointer<vtkBoostBreadthFirstSearch>::New();
-			bfs->SetOriginVertex(vid[0]);
-			bfs->SetInputData(tmpGraph);
-			bfs->Update();
-			int numvertbfs = bfs->GetOutput()->GetNumberOfVertices();
-			vtkIntArray* level = vtkIntArray::SafeDownCast(bfs->GetOutput()->GetVertexData()->GetArray("BFS"));
-			int result = level->GetValue(vid[1]);
-
-			if (result == level->GetDataTypeValueMax())
+			vtkEdgeType e = eit->Next();
+			vtkIdType vid[2] = {e.Source,e.Target};
+			if (!checkedPoint[vid[0]] || !checkedPoint[vid[1]])
 			{
-				//branch detect
-				graph->RemoveEdge(e.Id);
-				//cout<< "found branch path!" <<endl;
-				return ;
-
+				checkedPoint[vid[0]] = true;
+				checkedPoint[vid[1]] = true; 
+				vtkSmartPointer<vtkMutableUndirectedGraph> tmpGraph = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
+				tmpGraph->DeepCopy(graph);
+				vtkIdType eid = tmpGraph->GetEdgeId(vid[0],vid[1]);
+				tmpGraph->RemoveEdge(eid);
+			
+				vtkSmartPointer<vtkBoostBreadthFirstSearch> bfs = vtkSmartPointer<vtkBoostBreadthFirstSearch>::New();
+				bfs->SetOriginVertex(vid[0]);
+				bfs->SetInputData(tmpGraph);
+				bfs->Update();
+				int numvertbfs = bfs->GetOutput()->GetNumberOfVertices();
+				vtkIntArray* level = vtkIntArray::SafeDownCast(bfs->GetOutput()->GetVertexData()->GetArray("BFS"));
+				int result = level->GetValue(vid[1]);
+				if (result == level->GetDataTypeValueMax())
+				{
+					//branch detect
+					graph->RemoveEdge(e.Id);
+					TruncateGraph(step);
+					break;
+				}
+				
 			}
 		}
 	}
-
+	while(numEdges > graph->GetNumberOfEdges());
+	delete [] checkedPoint;
 }
 
-void GIMTruncate::EliminateUnusedPath(bool step)
+void MyTruncate::EliminateUnusedPath(bool step)
 {
 	//elimainate small connectivity
 	vtkSmartPointer<vtkBoostExtractLargestComponent> LconnectedComponents = vtkSmartPointer<vtkBoostExtractLargestComponent>::New();

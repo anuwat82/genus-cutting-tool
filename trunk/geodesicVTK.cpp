@@ -9,9 +9,9 @@
 #include <ostream>
 #include <string>     // std::string, std::stoi
 #include "geodesic\geodesic_algorithm_exact.h"
-#include "GIMTruncate.h"
+#include "MyTruncate.h"
 
-GIMTruncate gimTruncate;
+MyTruncate gimTruncate;
 vtkWeakPointer<vtkPolyData> polydata;
 vtkWeakPointer<vtkPoints> source_point;
 	
@@ -187,7 +187,7 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 	GenerateGeodesicDistance(*exact_algorithm,sourceVertexID,collision_edges);
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphBeforeTruncate = GenerateCollisionEdgeGraph(polydata,collision_edges);
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphAfterTruncate  = TruncateGraph(collisionEdgesGraphBeforeTruncate);
-	vtkSmartPointer<vtkPolyData> surroundPolydata = CreateSurroundGraphPolydata(collisionEdgesGraphAfterTruncate,polydata,1);
+	vtkSmartPointer<vtkPolyData> surroundPolydata = CreateSurroundGraphPolydata(collisionEdgesGraphAfterTruncate,polydata,2);
 	//vtkSmartPointer<vtkMutableUndirectedGraph> graphState3 = GIMtruncate(surroundPolydata,exact_algorithm);
 	vtkSmartPointer<vtkMutableUndirectedGraph> graphState3 = gimTruncate.Init(surroundPolydata,exact_algorithm);
 
