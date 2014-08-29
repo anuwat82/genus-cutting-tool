@@ -73,10 +73,71 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::Init( vtkSmartPointer
 	_graph->GetEdgeData()->AddArray(collisionTag);
 	this->graph = _graph;
 	
-	TagSurroundGraphEdges(_collision_graph,1);
-
+	TagSurroundGraphVertexEdges(_collision_graph,1);
+	//TagSurroundGraphFaceEdges(_collision_graph);
 
 	
+	return _graph;
+}
+
+vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::InitOriginal( vtkSmartPointer<vtkPolyData> _polydata, 															
+																		 geodesic::GeodesicAlgorithmExact *_geo , int geoSourceVertexID)
+{
+	seedRemoved = false;
+	allFaceRemoved =false;
+	firstTruncateDone = false;
+	branchRemoved = false;
+	largestGraphDone = false;
+	mesh.clear();
+	vtkPolydata2OpenMesh(_polydata,&mesh );	
+	this->geodesicExact = _geo;	
+	this->polydata = _polydata;	
+	this->geodesicSourceVertexID = geoSourceVertexID;
+	vtkSmartPointer<vtkMutableUndirectedGraph> _graph = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
+	for(vtkIdType i = 0; i < polydata->GetNumberOfPoints(); i++)
+    {
+		_graph->AddVertex();
+    }
+  
+	vtkSmartPointer<vtkPoints> points = 
+    vtkSmartPointer<vtkPoints>::New();
+	points->ShallowCopy(polydata->GetPoints());
+	_graph->SetPoints(points);
+
+	// Setup the colors array
+	vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+	colors->SetNumberOfComponents(3);
+	colors->SetName("EdgeColors");
+	// Setup two colors 
+	unsigned char red[3] = {255, 0, 0};
+	unsigned char yellow[3] = {255, 255, 0};
+	
+	// Setup the collision tag array
+	vtkSmartPointer<vtkUnsignedCharArray> collisionTag = vtkSmartPointer<vtkUnsignedCharArray>::New();
+	collisionTag->SetNumberOfComponents(1);
+	collisionTag->SetName("CollisionTag");
+
+	for (OmMesh::EdgeIter e_it=mesh.edges_begin(); e_it!=mesh.edges_end(); ++e_it) 
+	{
+		OmMesh::EdgeHandle eh = *e_it;
+		
+		
+		OmMesh::HalfedgeHandle heh = mesh.halfedge_handle(eh,0);
+		if (!heh.is_valid())
+			heh = mesh.halfedge_handle(eh,1);
+		OmMesh::HalfedgeHandle heh_prev = mesh.prev_halfedge_handle(heh);
+		int a = mesh.to_vertex_handle(heh).idx();
+		int b = mesh.to_vertex_handle(heh_prev).idx();
+		_graph->AddEdge(a,b);		
+		
+
+		colors->InsertNextTupleValue(yellow);
+		collisionTag->InsertNextValue(0);
+
+	}
+	_graph->GetEdgeData()->AddArray(colors);
+	_graph->GetEdgeData()->AddArray(collisionTag);
+	this->graph = _graph;	
 	return _graph;
 }
 
@@ -313,6 +374,7 @@ void GIMmodTruncate::RemoveBoundarySeed(bool step)
 void GIMmodTruncate::GenerateCandidateEdgesAndDeleteEdgeFace(hedge_data &checkingEdge,vtkSmartPointer<vtkUnsignedCharArray> collisionTag)
 {
 	OmMesh::HalfedgeHandle checkingHeh = mesh.find_halfedge( mesh.vertex_handle(checkingEdge.startID) , mesh.vertex_handle(checkingEdge.endID));
+
 	if (!checkingHeh.is_valid())
 	{
 		//this edge (of graph) have adjacent 0 edge
@@ -324,8 +386,8 @@ void GIMmodTruncate::GenerateCandidateEdgesAndDeleteEdgeFace(hedge_data &checkin
 		//remove face and edge			
 		OmMesh::FaceHandle removeFaceHandle = mesh.face_handle(checkingHeh);
 		OmMesh::HalfedgeHandle candidate_heh[2];
-		OmMesh::Point faceCenter;
-		mesh.calc_face_centroid(removeFaceHandle,faceCenter);
+		//OmMesh::Point faceCenter;
+		//mesh.calc_face_centroid(removeFaceHandle,faceCenter);
 		candidate_heh[0] = mesh.next_halfedge_handle(checkingHeh);
 		candidate_heh[1] = mesh.next_halfedge_handle(candidate_heh[0]);
 		for (int i = 0 ; i < 2 ; i++)
@@ -369,22 +431,19 @@ void GIMmodTruncate::RemoveEdgesThatAdjacentOnlyOneFace(bool step)
 	vtkSmartPointer<vtkUnsignedCharArray> collisionTag = vtkUnsignedCharArray::SafeDownCast( graph->GetEdgeData()->GetArray("CollisionTag"));
 	while (candidate_TagEdges.size() > 0 || candidate_nonTagEdges.size() > 0)
 	{
-		while (candidate_nonTagEdges.size() > 0)
-		{
-		
+		if (candidate_nonTagEdges.size() > 0)
+		{		
 			hedge_data checkingEdge = candidate_nonTagEdges.begin()->second;
 			candidate_nonTagEdges.erase(candidate_nonTagEdges.begin());
 			GenerateCandidateEdgesAndDeleteEdgeFace(checkingEdge,collisionTag);
+		
 		}
-		
-		while (candidate_TagEdges.size() > 0)
+		else if (candidate_TagEdges.size() > 0)
 		{
-		
 			hedge_data checkingEdge = candidate_TagEdges.begin()->second;
 			candidate_TagEdges.erase(candidate_TagEdges.begin());
 			GenerateCandidateEdgesAndDeleteEdgeFace(checkingEdge,collisionTag);
-		}
-			
+		}			
 	} //end while
 	if (step)
 	{
@@ -596,7 +655,64 @@ void GIMmodTruncate::GetNeighborCell(vtkPolyData* source_polydata, vtkIdType vid
 	}
 }
 
-void GIMmodTruncate::TagSurroundGraphEdges(vtkSmartPointer<vtkMutableUndirectedGraph> collision_graph,int level)
+void GIMmodTruncate::TagSurroundGraphFaceEdges(vtkSmartPointer<vtkMutableUndirectedGraph> collision_graph)
+{
+	unsigned char red[3] = {255, 0, 0};
+	vtkSmartPointer<vtkUnsignedCharArray> edgecolors = vtkUnsignedCharArray::SafeDownCast( graph->GetEdgeData()->GetArray("EdgeColors"));
+	vtkSmartPointer<vtkUnsignedCharArray> collisionTag = vtkUnsignedCharArray::SafeDownCast( graph->GetEdgeData()->GetArray("CollisionTag"));
+		
+	vtkSmartPointer<vtkEdgeListIterator> ceit =vtkSmartPointer<vtkEdgeListIterator>::New();
+	collision_graph->GetEdges(ceit);
+
+
+	bool *cellCheck = new bool[polydata->GetPolys()->GetNumberOfCells()];
+	memset(cellCheck,0,sizeof(bool)*polydata->GetPolys()->GetNumberOfCells());
+
+	while (ceit->HasNext())
+	{
+		vtkEdgeType e = ceit->Next();
+		vtkIdType vid[2] = {e.Source,e.Target};
+		std::vector<vtkIdType> adjacent_cellIDs;
+		GetNeighborCell(polydata,vid[0],1,adjacent_cellIDs);
+		int faceDetected = 0;
+		for (int i = 0; i < adjacent_cellIDs.size(); i++)
+		{
+			if (!cellCheck[adjacent_cellIDs[i]])
+			{
+				vtkIdType npts;
+				vtkIdType *pts;					
+				polydata->GetCellPoints(adjacent_cellIDs[i],npts,pts);
+				if (npts != 3)
+					throw;
+				int score = 0;
+				for (int k = 0 ; k < 3 ;k++)
+				{
+					if (pts[k] == vid[0])
+						score++;
+					if (pts[k] == vid[1])
+						score++;
+				}
+
+				if (score == 2)
+				{
+					for (int k = 0 ; k < 3 ;k++)
+					{
+						vtkIdType edgeid =  graph->GetEdgeId(pts[k%3],pts[(k+1)%3]);
+						if (edgeid < 0) 
+							throw;
+						collisionTag->SetValue(edgeid,1);
+						edgecolors->SetTupleValue(edgeid,red);
+					}
+					cellCheck[adjacent_cellIDs[i]] = true;
+				}
+
+			}
+		}		
+	}
+}
+
+
+void GIMmodTruncate::TagSurroundGraphVertexEdges(vtkSmartPointer<vtkMutableUndirectedGraph> collision_graph,int level)
 {
 	if (level < 1)
 		throw;
@@ -645,5 +761,10 @@ void GIMmodTruncate::TagSurroundGraphEdges(vtkSmartPointer<vtkMutableUndirectedG
 			}
 		}		
 	}
+
+}
+
+void GIMmodTruncate::ShorthenRings(bool step)
+{
 
 }
