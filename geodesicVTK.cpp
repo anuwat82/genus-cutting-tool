@@ -10,8 +10,9 @@
 #include <string>     // std::string, std::stoi
 #include "geodesic\geodesic_algorithm_exact.h"
 #include "MyTruncate.h"
-
+#include "GIMmodTruncate.h"
 MyTruncate gimTruncate;
+GIMmodTruncate modTruncate;
 vtkWeakPointer<vtkPolyData> polydata;
 vtkWeakPointer<vtkPoints> source_point;
 	
@@ -187,18 +188,21 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 	GenerateGeodesicDistance(*exact_algorithm,sourceVertexID,collision_edges);
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphBeforeTruncate = GenerateCollisionEdgeGraph(polydata,collision_edges);
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphAfterTruncate  = TruncateGraph(collisionEdgesGraphBeforeTruncate);
-	vtkSmartPointer<vtkPolyData> surroundPolydata = CreateSurroundGraphPolydata(collisionEdgesGraphAfterTruncate,polydata,2);
-	//vtkSmartPointer<vtkMutableUndirectedGraph> graphState3 = GIMtruncate(surroundPolydata,exact_algorithm);
-	vtkSmartPointer<vtkMutableUndirectedGraph> graphState3 = gimTruncate.Init(surroundPolydata,exact_algorithm);
-
-
+	//vtkSmartPointer<vtkPolyData> surroundPolydata = CreateSurroundGraphPolydata(collisionEdgesGraphAfterTruncate,polydata,2);	
+	//vtkSmartPointer<vtkMutableUndirectedGraph> graphState3 = gimTruncate.Init(surroundPolydata,exact_algorithm);
+	vtkSmartPointer<vtkPolyData> truncatePolydata = vtkSmartPointer<vtkPolyData>::New();
+	truncatePolydata->DeepCopy(polydata);
+	truncatePolydata->BuildLinks();
+	vtkSmartPointer<vtkMutableUndirectedGraph> graphState3 = modTruncate.Init(truncatePolydata,collisionEdgesGraphAfterTruncate,exact_algorithm,sourceVertexID);
+	
 	vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-	mapper->SetInputData (surroundPolydata);
+	mapper->SetInputData (truncatePolydata);
  
 	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
 	actor->SetMapper(mapper);
 	actor->GetProperty()->SetEdgeVisibility(1);
 	actor->GetProperty()->SetLineWidth(0.5);
+	actor->GetProperty()->SetColor(237.0/255.0 , 249.0/255.0,200.0/255.0);
 	if (actor->GetReferenceCount() == 1)
 		actor->SetReferenceCount(2);
 	if (actorPoly2)
@@ -421,8 +425,8 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			break;
 		case 't':
 			{
-			gimTruncate.Step();
-			vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(gimTruncate.GetGraph());
+			modTruncate.Step();
+			vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(modTruncate.GetGraph());
 			if (actorEdge3)
 				actorEdge3->ShallowCopy(edge_actor3);
 			else
@@ -433,8 +437,8 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			break;
 		case 'g':
 			{
-			gimTruncate.Process();
-			vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(gimTruncate.GetGraph());
+			modTruncate.Process();
+			vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(modTruncate.GetGraph());
 			if (actorEdge3)
 				actorEdge3->ShallowCopy(edge_actor3);
 			else
