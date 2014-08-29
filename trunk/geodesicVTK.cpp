@@ -13,6 +13,7 @@
 #include "GIMmodTruncate.h"
 MyTruncate gimTruncate;
 GIMmodTruncate modTruncate;
+GIMmodTruncate originalTruncate;
 vtkWeakPointer<vtkPolyData> polydata;
 vtkWeakPointer<vtkPoints> source_point;
 	
@@ -24,7 +25,7 @@ vtkWeakPointer<vtkActor> actorEdge5;
 
 vtkWeakPointer<vtkActor> actorPoly1;
 vtkWeakPointer<vtkActor> actorPoly2;
-
+vtkWeakPointer<vtkActor> actorPoly3;
 geodesic::Mesh geosesic_mesh;
 
 struct collisionEdgeInfo
@@ -190,40 +191,63 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphAfterTruncate  = TruncateGraph(collisionEdgesGraphBeforeTruncate);
 	//vtkSmartPointer<vtkPolyData> surroundPolydata = CreateSurroundGraphPolydata(collisionEdgesGraphAfterTruncate,polydata,2);	
 	//vtkSmartPointer<vtkMutableUndirectedGraph> graphState3 = gimTruncate.Init(surroundPolydata,exact_algorithm);
-	vtkSmartPointer<vtkPolyData> truncatePolydata = vtkSmartPointer<vtkPolyData>::New();
-	truncatePolydata->DeepCopy(polydata);
-	truncatePolydata->BuildLinks();
-	vtkSmartPointer<vtkMutableUndirectedGraph> graphState3 = modTruncate.Init(truncatePolydata,collisionEdgesGraphAfterTruncate,exact_algorithm,sourceVertexID);
+	vtkSmartPointer<vtkPolyData> truncateModPolydata = vtkSmartPointer<vtkPolyData>::New();
+	truncateModPolydata->DeepCopy(polydata);
+	truncateModPolydata->BuildLinks();
+	vtkSmartPointer<vtkPolyData> truncateOriginalPolydata = vtkSmartPointer<vtkPolyData>::New();
+	truncateOriginalPolydata->DeepCopy(polydata);
+	truncateOriginalPolydata->BuildLinks();
+	vtkSmartPointer<vtkMutableUndirectedGraph> graphState3 = modTruncate.Init(truncateModPolydata,collisionEdgesGraphAfterTruncate,exact_algorithm,sourceVertexID);
+	vtkSmartPointer<vtkMutableUndirectedGraph> graphState4 = originalTruncate.InitOriginal(truncateOriginalPolydata,exact_algorithm,sourceVertexID);
 	
-	vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-	mapper->SetInputData (truncatePolydata);
+	{
+		vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+		mapper->SetInputData (truncateModPolydata);
  
-	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
-	actor->SetMapper(mapper);
-	actor->GetProperty()->SetEdgeVisibility(1);
-	actor->GetProperty()->SetLineWidth(0.5);
-	actor->GetProperty()->SetColor(237.0/255.0 , 249.0/255.0,200.0/255.0);
-	if (actor->GetReferenceCount() == 1)
-		actor->SetReferenceCount(2);
-	if (actorPoly2)
-		actorPoly2->ShallowCopy(actor);
-	else
-		actorPoly2 = actor;
-	
+		vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+		actor->SetMapper(mapper);
+		actor->GetProperty()->SetEdgeVisibility(1);
+		actor->GetProperty()->SetLineWidth(0.5);
+		actor->GetProperty()->SetColor(237.0/255.0 , 249.0/255.0,200.0/255.0);
+		if (actor->GetReferenceCount() == 1)
+			actor->SetReferenceCount(2);
+		if (actorPoly3)
+			actorPoly3->ShallowCopy(actor);
+		else
+			actorPoly3 = actor;
+	}
+
+	{
+		vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+		mapper->SetInputData (truncateOriginalPolydata);
+ 
+		vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+		actor->SetMapper(mapper);
+		actor->GetProperty()->SetEdgeVisibility(1);
+		actor->GetProperty()->SetLineWidth(0.5);
+		actor->GetProperty()->SetColor(174.0/255.0 , 225.0/255.0,238.0/255.0);
+		if (actor->GetReferenceCount() == 1)
+			actor->SetReferenceCount(2);
+		if (actorPoly2)
+			actorPoly2->ShallowCopy(actor);
+		else
+			actorPoly2 = actor;
+	}
 
 	vtkSmartPointer<vtkActor> edge_actor1 = CreateBeforeTruncatePipeline(collisionEdgesGraphBeforeTruncate, collision_edges); 
 	vtkSmartPointer<vtkActor> edge_actor2 = CreateAfterTruncatePipeline(collisionEdgesGraphAfterTruncate, collision_edges);
 	vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(graphState3);
+	vtkSmartPointer<vtkActor> edge_actor4 = CreateStrightUpPipeline(graphState4);
 	
 	if (edge_actor1->GetReferenceCount() == 1)
 		edge_actor1->SetReferenceCount(2);
 	if (edge_actor2->GetReferenceCount() == 1)
 		edge_actor2->SetReferenceCount(2);
 	if (edge_actor3->GetReferenceCount() == 1)
-		edge_actor3->SetReferenceCount(2);
-	/*
+		edge_actor3->SetReferenceCount(2);	
 	if (edge_actor4->GetReferenceCount() == 1)
 		edge_actor4->SetReferenceCount(2);
+	/*
 	if (edge_actor5->GetReferenceCount() == 1)
 		edge_actor5->SetReferenceCount(2);
 	*/
@@ -240,12 +264,12 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 		actorEdge3->ShallowCopy(edge_actor3);
 	else
 		actorEdge3 = edge_actor3;
-	/*
+	
 	if (actorEdge4)
 		actorEdge4->ShallowCopy(edge_actor4);
 	else
 		actorEdge4 = edge_actor4;
-
+	/*
 	if (actorEdge5)
 		actorEdge5->ShallowCopy(edge_actor5);
 	else
@@ -412,6 +436,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		case '7':
 			renderer->RemoveActor(actorPoly1);
 			renderer->RemoveActor(actorPoly2);
+			renderer->RemoveActor(actorPoly3);
 			renderer->AddActor(actorPoly1);
 			renderer->Modified();
 			iren->GetRenderWindow()->Render();
@@ -419,18 +444,33 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		case '8':
 			renderer->RemoveActor(actorPoly1);
 			renderer->RemoveActor(actorPoly2);
+			renderer->RemoveActor(actorPoly3);
 			renderer->AddActor(actorPoly2);
+			renderer->Modified();
+			iren->GetRenderWindow()->Render();
+			break;
+		case '9':
+			renderer->RemoveActor(actorPoly1);
+			renderer->RemoveActor(actorPoly2);
+			renderer->RemoveActor(actorPoly3);
+			renderer->AddActor(actorPoly3);
 			renderer->Modified();
 			iren->GetRenderWindow()->Render();
 			break;
 		case 't':
 			{
 			modTruncate.Step();
+			originalTruncate.Step();
 			vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(modTruncate.GetGraph());
 			if (actorEdge3)
 				actorEdge3->ShallowCopy(edge_actor3);
 			else
 				actorEdge3 = edge_actor3;
+			vtkSmartPointer<vtkActor> edge_actor4 = CreateStrightUpPipeline(originalTruncate.GetGraph());
+			if (actorEdge4)
+				actorEdge4->ShallowCopy(edge_actor4);
+			else
+				actorEdge4 = edge_actor4;
 			renderer->Modified();
 			iren->GetRenderWindow()->Render();
 			}
@@ -438,11 +478,17 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		case 'g':
 			{
 			modTruncate.Process();
+			originalTruncate.Process();
 			vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(modTruncate.GetGraph());
 			if (actorEdge3)
 				actorEdge3->ShallowCopy(edge_actor3);
 			else
 				actorEdge3 = edge_actor3;
+			vtkSmartPointer<vtkActor> edge_actor4 = CreateStrightUpPipeline(originalTruncate.GetGraph());
+			if (actorEdge4)
+				actorEdge4->ShallowCopy(edge_actor4);
+			else
+				actorEdge4 = edge_actor4;
 			renderer->Modified();
 			iren->GetRenderWindow()->Render();
 			}

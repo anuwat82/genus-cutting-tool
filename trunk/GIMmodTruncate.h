@@ -23,6 +23,8 @@ public:
 	vtkSmartPointer<vtkMutableUndirectedGraph> Init( vtkSmartPointer<vtkPolyData> polydata, 
 													 vtkSmartPointer<vtkMutableUndirectedGraph> collision_graph,
 													 geodesic::GeodesicAlgorithmExact *geo , int geoSourceVertexID);
+	vtkSmartPointer<vtkMutableUndirectedGraph> InitOriginal( vtkSmartPointer<vtkPolyData> polydata, 															 
+															 geodesic::GeodesicAlgorithmExact *geo , int geoSourceVertexID);
 	void Step();
 	void Process();
 	vtkSmartPointer<vtkMutableUndirectedGraph> GetGraph();
@@ -37,8 +39,8 @@ protected:
 	bool firstTruncateDone;
 	bool branchRemoved;
 	bool largestGraphDone;
-	std::map<double,hedge_data> candidate_nonTagEdges;
-	std::map<double,hedge_data> candidate_TagEdges;
+	std::multimap<double,hedge_data> candidate_nonTagEdges;
+	std::multimap<double,hedge_data> candidate_TagEdges;
 
 	void RemoveSeed(bool ste);
 	//void RemoveBoundarySeed(bool step);
@@ -49,7 +51,10 @@ protected:
 	void TruncateGraph(bool step);
 	void EliminateUnusedPath(bool step);
 
-	void TagSurroundGraphEdges(vtkSmartPointer<vtkMutableUndirectedGraph> collision_graph,int level);
+	void ShorthenRings(bool step);
+
+	void TagSurroundGraphFaceEdges(vtkSmartPointer<vtkMutableUndirectedGraph> collision_graph);// tag surrond edges of face that adjacent on an edge in graph
+	void TagSurroundGraphVertexEdges(vtkSmartPointer<vtkMutableUndirectedGraph> collision_graph,int level);  // tag surrond edges of face around a vertex in graph
 	void GetNeighborCell(vtkPolyData* source_polydata, vtkIdType vid , int level, std::vector<vtkIdType> &storeIDs);
 };
 
