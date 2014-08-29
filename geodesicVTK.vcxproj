@@ -166,8 +166,8 @@
     <ClInclude Include="geodesic\geodesic_memory.h" />
     <ClInclude Include="geodesic\geodesic_mesh.h" />
     <ClInclude Include="geodesic\geodesic_mesh_elements.h" />
-    <ClInclude Include="GIMTruncate.h" />
     <ClInclude Include="MouseInteractorStylePP.h" />
+    <ClInclude Include="MyTruncate.h" />
     <ClInclude Include="OpenMesh_Header.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -177,8 +177,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="geodesic\geodesic_algorithm_exact.cpp" />
-    <ClCompile Include="GIMTruncate.cpp" />
     <ClCompile Include="MouseInteractorStylePP.cpp" />
+    <ClCompile Include="MyTruncate.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="geodesicVTK.cpp" />
     <ClCompile Include="utils.cpp" />

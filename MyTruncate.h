@@ -5,7 +5,7 @@
 
 
 
-class GIMTruncate
+class MyTruncate
 {
 public:
 	struct hedge_data
@@ -18,8 +18,8 @@ public:
 			endID = end;
 		}
 	};
-	GIMTruncate(void);
-	virtual ~GIMTruncate(void);
+	MyTruncate(void);
+	virtual ~MyTruncate(void);
 	vtkSmartPointer<vtkMutableUndirectedGraph> Init( vtkSmartPointer<vtkPolyData> polydata, geodesic::GeodesicAlgorithmExact *geo);
 	void Step();
 	void Process();
