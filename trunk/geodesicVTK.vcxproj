@@ -73,7 +73,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VTK_DIR)\include\vtk-6.1;.\OpenMesh\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(VTK_DIR)\include\vtk-6.1;.\OpenMesh\include;.\customVTK;$(IncludePath)</IncludePath>
     <LibraryPath>.\OpenMesh\lib;$(VTK_DIR)\lib\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -83,7 +83,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VTK_DIR)\include\vtk-6.1;.\OpenMesh\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(VTK_DIR)\include\vtk-6.1;.\OpenMesh\include;.\customVTK;$(IncludePath)</IncludePath>
     <LibraryPath>.\OpenMesh\lib;$(VTK_DIR)\lib\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -155,6 +155,9 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="customVTK\vtkDijkstraGraphGeodesicPath.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="geodesic\geodesic_algorithm_base.h" />
     <ClInclude Include="geodesic\geodesic_algorithm_dijkstra.h" />
     <ClInclude Include="geodesic\geodesic_algorithm_dijkstra_alternative.h" />
@@ -177,6 +180,9 @@
     <ClInclude Include="VTK_Header.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="customVTK\vtkDijkstraGraphGeodesicPath.cxx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="geodesic\geodesic_algorithm_exact.cpp" />
     <ClCompile Include="GIMmodTruncate.cpp" />
     <ClCompile Include="MouseInteractorStylePP.cpp" />

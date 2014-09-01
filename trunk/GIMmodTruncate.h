@@ -18,6 +18,21 @@ public:
 			endID = end;
 		}
 	};
+
+	struct edges_path
+	{	
+		vtkIdType endPointID[2];
+		vtkIdType pairEdgeEndPointID[2]; //
+		edges_path(){}
+		edges_path( vtkIdType epid[2], vtkIdType peepid[2])
+		{
+			endPointID[0] = epid[0];
+			endPointID[1] = epid[1];
+			pairEdgeEndPointID[0] = peepid[0];
+			pairEdgeEndPointID[1] = peepid[1];
+		}
+		
+	};
 	GIMmodTruncate(void);
 	virtual ~GIMmodTruncate(void);
 	vtkSmartPointer<vtkMutableUndirectedGraph> Init( vtkSmartPointer<vtkPolyData> polydata, 
@@ -30,6 +45,7 @@ public:
 	vtkSmartPointer<vtkMutableUndirectedGraph> GetGraph();
 protected:
 	vtkWeakPointer<vtkPolyData> polydata;
+	vtkSmartPointer<vtkPolyData> original_polydata;
 	geodesic::GeodesicAlgorithmExact *geodesicExact;
 	OmMesh mesh;
 	vtkSmartPointer<vtkMutableUndirectedGraph> graph;

@@ -111,3 +111,52 @@ vtkIdType GetCellID(vtkPolyData *polydata, OmMesh &mesh , OmMesh::FaceHandle fh)
 	else
 		return -1;
 }
+
+
+vtkSmartPointer<vtkIdList> GetConnectedVertices(vtkSmartPointer<vtkPolyData> mesh, vtkIdType ptId)
+{
+
+	vtkSmartPointer<vtkIdList> connectedVertices = vtkSmartPointer<vtkIdList>::New(); //output
+  //get all cells that vertex 'seed' is a part of
+  vtkSmartPointer<vtkIdList> cellIdList =
+      vtkSmartPointer<vtkIdList>::New();
+  mesh->GetPointCells(ptId, cellIdList);
+
+
+  //loop through all the cells that use the seed point
+  for(vtkIdType i = 0; i < cellIdList->GetNumberOfIds(); i++)
+    {
+
+    vtkCell* cell = mesh->GetCell(cellIdList->GetId(i));
+    //cout << "The cell has " << cell->GetNumberOfEdges() << " edges." << endl;
+
+    //if the cell doesn't have any edges, it is a line
+    if(cell->GetNumberOfEdges() <= 0)
+      {
+      continue;
+      }
+
+    for(vtkIdType e = 0; e < cell->GetNumberOfEdges(); e++)
+      {
+      vtkCell* edge = cell->GetEdge(e);
+
+      vtkIdList* pointIdList = edge->GetPointIds();
+    
+      if(pointIdList->GetId(0) == ptId || pointIdList->GetId(1) == ptId)
+        {
+        if(pointIdList->GetId(0) == ptId)
+          {
+          connectedVertices->InsertNextId(pointIdList->GetId(1));
+          }
+        else
+          {
+          connectedVertices->InsertNextId(pointIdList->GetId(0));
+          }
+        }
+      }
+
+
+    }
+  return connectedVertices;
+
+} 

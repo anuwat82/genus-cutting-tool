@@ -24,8 +24,14 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::Init( vtkSmartPointer
 	largestGraphDone = false;
 	mesh.clear();
 	vtkPolydata2OpenMesh(_polydata,&mesh );	
+
+	
 	this->geodesicExact = _geo;	
+	
 	this->polydata = _polydata;	
+	this->original_polydata = vtkSmartPointer<vtkPolyData>::New();
+	this->original_polydata->DeepCopy(_polydata);
+	this->original_polydata->BuildLinks();
 	this->geodesicSourceVertexID = geoSourceVertexID;
 	vtkSmartPointer<vtkMutableUndirectedGraph> _graph = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
 	for(vtkIdType i = 0; i < polydata->GetNumberOfPoints(); i++)
@@ -73,8 +79,8 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::Init( vtkSmartPointer
 	_graph->GetEdgeData()->AddArray(collisionTag);
 	this->graph = _graph;
 	
-	TagSurroundGraphVertexEdges(_collision_graph,1);
-	//TagSurroundGraphFaceEdges(_collision_graph);
+	//TagSurroundGraphVertexEdges(_collision_graph,1);
+	TagSurroundGraphFaceEdges(_collision_graph);
 
 	
 	return _graph;
@@ -92,6 +98,9 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::InitOriginal( vtkSmar
 	vtkPolydata2OpenMesh(_polydata,&mesh );	
 	this->geodesicExact = _geo;	
 	this->polydata = _polydata;	
+	this->original_polydata = vtkSmartPointer<vtkPolyData>::New();
+	this->original_polydata->DeepCopy(_polydata);
+	this->original_polydata->BuildLinks();
 	this->geodesicSourceVertexID = geoSourceVertexID;
 	vtkSmartPointer<vtkMutableUndirectedGraph> _graph = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
 	for(vtkIdType i = 0; i < polydata->GetNumberOfPoints(); i++)
@@ -153,11 +162,7 @@ void GIMmodTruncate::Process()
 	TruncateGraph(false);
 	firstTruncateDone = true;
 
-	EliminateBranchPath(false);
-	branchRemoved = true;
-		
-	EliminateUnusedPath(false);
-	largestGraphDone = true;
+	ShorthenRings(false);
 
 	graph->Modified();
 	mesh.garbage_collection();
@@ -188,37 +193,9 @@ void GIMmodTruncate::Step()
 		TruncateGraph(true);
 		firstTruncateDone = true;
 	}
-	else if (!branchRemoved)
+	else
 	{
-		
-		int numEdgeBefore = 0; graph->GetNumberOfEdges();
-		do
-		{
-			numEdgeBefore = 0; graph->GetNumberOfEdges();
-			int numEdge = 0;
-			/*
-			do
-			{
-				numEdge = graph->GetNumberOfEdges();
-				EliminateSelfCycle();
-			}
-			while(numEdge > graph->GetNumberOfEdges());
-			TruncateGraph();
-			*/
-
-			EliminateBranchPath(true);
-			
-		}
-		while (numEdgeBefore > graph->GetNumberOfEdges());
-		
-		
-		branchRemoved = true;
-	}
-	else if (!largestGraphDone)
-	{
-		EliminateUnusedPath(true);
-		largestGraphDone = true;
-
+		ShorthenRings(true);
 	}
 
 
@@ -766,5 +743,132 @@ void GIMmodTruncate::TagSurroundGraphVertexEdges(vtkSmartPointer<vtkMutableUndir
 
 void GIMmodTruncate::ShorthenRings(bool step)
 {
+	vtkSmartPointer<vtkEdgeListIterator> eit =vtkSmartPointer<vtkEdgeListIterator>::New();
+	graph->GetEdges(eit);
+	bool *pointCheck = new bool[graph->GetNumberOfVertices()];
+	memset(pointCheck,0,sizeof(bool)*graph->GetNumberOfVertices());
+	std::vector<edges_path> edgepaths;
+	while (eit->HasNext())
+	{
+		vtkEdgeType e = eit->Next();
+		vtkIdType vid[2] = {e.Source,e.Target};
+		if (pointCheck[vid[0]] && pointCheck[vid[1]])
+			continue;
 
+
+
+		if (graph->GetDegree(vid[0]) == 2 && graph->GetDegree(vid[1]) == 2 ) 
+		{
+			//find start and end vertices of this edges 
+			vtkIdType endofpathvid[2] ;
+			vtkIdType prev_endofpathvid[2];
+			for (int i = 0 ; i < 2 ;i++)
+			{
+				vtkIdType nextvid = vid[i];
+				vtkIdType prevvid = vid[(i+1)%2];
+				
+				while (graph->GetDegree(nextvid) == 2)
+				{
+					pointCheck[nextvid] = true;
+					pointCheck[prevvid] = true;
+					vtkSmartPointer<vtkAdjacentVertexIterator> subadjacent =vtkSmartPointer<vtkAdjacentVertexIterator>::New();
+					graph->GetAdjacentVertices(nextvid,subadjacent);
+					vtkIdType nextnextvid = subadjacent->Next();
+					if (nextnextvid == prevvid)
+						nextnextvid = subadjacent->Next();
+
+					prevvid = nextvid;
+					nextvid = nextnextvid;
+				}			
+				endofpathvid[i] = nextvid;
+				prev_endofpathvid[i] = prevvid;
+				
+			}
+			edgepaths.push_back(edges_path(endofpathvid,prev_endofpathvid));
+		}
+	}
+
+	vtkSmartPointer<vtkMutableUndirectedGraph> orignal_graph = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
+	orignal_graph->DeepCopy(graph);
+
+	for (int i = 0; i < edgepaths.size(); i++)
+	{
+		edges_path &path = edgepaths[i];
+		vtkIdType remEdgeID =  graph->GetEdgeId(path.endPointID[0],path.pairEdgeEndPointID[0]);
+		if (remEdgeID < 0)
+			throw;
+		else
+			graph->RemoveEdge(remEdgeID);
+
+		TruncateGraph(step);
+		//return;
+		vtkSmartPointer<vtkDijkstraGraphGeodesicPath> dijkstra = vtkSmartPointer<vtkDijkstraGraphGeodesicPath>::New();
+		dijkstra->SetInputData(original_polydata);
+		dijkstra->RepelPathFromVerticesOn();
+		
+		vtkSmartPointer<vtkPoints> repelPoints = vtkSmartPointer<vtkPoints>::New();
+		vtkSmartPointer<vtkEdgeListIterator> eit =vtkSmartPointer<vtkEdgeListIterator>::New();
+		graph->GetEdges(eit);
+		memset(pointCheck,0,sizeof(bool)*graph->GetNumberOfVertices());
+		while (eit->HasNext())
+		{
+			vtkEdgeType e = eit->Next();
+			vtkIdType vid[2] = {e.Source,e.Target};
+			for (int j = 0 ; j < 2;j++)
+			if (!pointCheck[vid[j]] )
+			{
+				pointCheck[vid[j]] = true;
+				repelPoints->InsertNextPoint( original_polydata->GetPoint(vid[j]));
+			}
+		}
+		dijkstra->SetRepelVertices(repelPoints);
+		dijkstra->SetStartVertex(path.pairEdgeEndPointID[0]);
+		dijkstra->SetEndVertex(path.pairEdgeEndPointID[1]);
+		
+		dijkstra->Update();
+		
+
+		
+
+		vtkIdList*idlist = dijkstra->GetIdList();
+		int numid = idlist->GetNumberOfIds();		
+		for (int j = 0 ; j < numid - 1; j++)
+		{			
+			graph->AddEdge( idlist->GetId(j),idlist->GetId(j+1));
+		}
+		graph->AddEdge( path.endPointID[0],path.pairEdgeEndPointID[0]);
+		graph->AddEdge( path.endPointID[1],path.pairEdgeEndPointID[1]);
+
+		
+		
+	}
+
+	//find nearest vertex in graph to pair edge endpoint
+	/*
+	for (int j = 0 ; j < 2; j++)
+	{
+		vtkSmartPointer<vtkIdList> idlist = GetConnectedVertices(original_polydata,path.pairEdgeEndPointID[j]);
+			
+		vtkIdType bestID;
+		double bestDistance = DBL_MAX;
+		for (int k = 0; k < idlist->GetNumberOfIds(); k++)
+		{
+			vtkIdType ptid = idlist->GetId(k);
+			if (graph->GetDegree(ptid) > 0)
+			{
+				double distance = vtkMath::Distance2BetweenPoints(	original_polydata->GetPoint(path.pairEdgeEndPointID[j]), 
+																	original_polydata->GetPoint(ptid));
+				if (bestDistance > distance)
+				{
+					bestID = ptid;
+					bestDistance = distance;
+
+				}
+			}
+		}
+		//graph->AddEdge( bestID,path.pairEdgeEndPointID[j]);
+
+	}
+	*/
+	
 }
