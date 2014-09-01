@@ -16,6 +16,9 @@
     <Filter Include="geodesic">
       <UniqueIdentifier>{c820f6ca-fda5-4902-af23-fc4600e8c1ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="custom vtk">
+      <UniqueIdentifier>{ca52d519-9a26-4924-857c-95d16b3563d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -81,6 +84,9 @@
     <ClInclude Include="GIMmodTruncate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="customVTK\vtkDijkstraGraphGeodesicPath.h">
+      <Filter>custom vtk</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -106,6 +112,9 @@
     </ClCompile>
     <ClCompile Include="GIMmodTruncate.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="customVTK\vtkDijkstraGraphGeodesicPath.cxx">
+      <Filter>custom vtk</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -6,3 +6,4 @@ int GetModelFileName(std::string &filename);
 void vtkPolydata2OpenMesh(vtkPolyData *polydata, OmMesh *mesh);
 vtkIdType GetCellID(vtkPolyData *polydata, vtkIdType v1,vtkIdType v2,vtkIdType v3);
 vtkIdType GetCellID(vtkPolyData *polydata, OmMesh &mesh , OmMesh::FaceHandle fh);
+vtkSmartPointer<vtkIdList> GetConnectedVertices(vtkSmartPointer<vtkPolyData> mesh, vtkIdType vid);
