@@ -1,8 +1,12 @@
 #include "GIMmodTruncate.h"
 #include "utils.h"
-
+#include "IDCutHedge.h"
 GIMmodTruncate::GIMmodTruncate(void)
 {
+	seedRemoved = false;
+	allFaceRemoved =false;
+	firstTruncateDone = false;
+	shortenRingsDone = false;
 }
 
 
@@ -13,6 +17,11 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::GetGraph()
 {
 	return graph;
 }
+
+bool GIMmodTruncate::isReadyToCut()
+{
+	return (firstTruncateDone ||shortenRingsDone);
+}
 vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::Init( vtkSmartPointer<vtkPolyData> _polydata, 
 																 vtkSmartPointer<vtkMutableUndirectedGraph> _collision_graph,
 																 geodesic::GeodesicAlgorithmExact *_geo, int geoSourceVertexID)
@@ -20,8 +29,8 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::Init( vtkSmartPointer
 	seedRemoved = false;
 	allFaceRemoved =false;
 	firstTruncateDone = false;
-	branchRemoved = false;
-	largestGraphDone = false;
+	shortenRingsDone = false;
+	
 	mesh.clear();
 	vtkPolydata2OpenMesh(_polydata,&mesh );	
 
@@ -92,8 +101,8 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::InitOriginal( vtkSmar
 	seedRemoved = false;
 	allFaceRemoved =false;
 	firstTruncateDone = false;
-	branchRemoved = false;
-	largestGraphDone = false;
+	shortenRingsDone = false;
+	
 	mesh.clear();
 	vtkPolydata2OpenMesh(_polydata,&mesh );	
 	this->geodesicExact = _geo;	
@@ -163,7 +172,7 @@ void GIMmodTruncate::Process()
 	firstTruncateDone = true;
 
 	ShorthenRings(false);
-
+	shortenRingsDone = true;
 	graph->Modified();
 	mesh.garbage_collection();
 	polydata->RemoveDeletedCells();
@@ -193,9 +202,10 @@ void GIMmodTruncate::Step()
 		TruncateGraph(true);
 		firstTruncateDone = true;
 	}
-	else
+	else if (!shortenRingsDone)
 	{
 		ShorthenRings(true);
+		shortenRingsDone = true;
 	}
 
 
@@ -238,10 +248,27 @@ void GIMmodTruncate::RemoveSeed(bool step)
 			hedge_data hedata(endID,startID); //reserve input because of opposite hedge
 
 			vtkIdType edgeid = graph->GetEdgeId(endID,startID);
+			unsigned char priority = collisionTag->GetValue(edgeid);
+			switch (priority)
+			{
+			case 0:
+				candidate_TagP0Edges.insert(std::pair<double,hedge_data>(best_distance,hedata ));
+				 break;
+			case 1:
+				candidate_TagP1Edges.insert(std::pair<double,hedge_data>(best_distance,hedata ));
+				break;
+			case 2:
+				candidate_TagP2Edges.insert(std::pair<double,hedge_data>(best_distance,hedata ));
+				break;
+			default:
+				throw;
+			}
+			/*
 			if (collisionTag->GetValue(edgeid) == 0)
 				candidate_nonTagEdges.insert(std::pair<double,hedge_data>(best_distance,hedata ));
 			else
 				candidate_TagEdges.insert(std::pair<double,hedge_data>(best_distance,hedata ));
+				*/
 			vtkIdType cellID = GetCellID(polydata,mesh,fh);
 			polydata->RemoveCellReference(cellID);
 			polydata->DeleteCell(cellID);
@@ -388,10 +415,27 @@ void GIMmodTruncate::GenerateCandidateEdgesAndDeleteEdgeFace(hedge_data &checkin
 				*/
 				hedge_data hedata(endID,startID); //reserve input because of opposite hedge
 				vtkIdType edgeid = graph->GetEdgeId(endID,startID);
+				unsigned char priority = collisionTag->GetValue(edgeid);
+				switch (priority)
+				{
+				case 0:
+					candidate_TagP0Edges.insert(std::pair<double,hedge_data>(best_distance,hedata ));
+					 break;
+				case 1:
+					candidate_TagP1Edges.insert(std::pair<double,hedge_data>(best_distance,hedata ));
+					break;
+				case 2:
+					candidate_TagP2Edges.insert(std::pair<double,hedge_data>(best_distance,hedata ));
+					break;
+				default:
+					throw;
+				}
+				/*
 				if (collisionTag->GetValue(edgeid) == 0)
 					candidate_nonTagEdges.insert(std::pair<double,hedge_data>(best_distance,hedata ));
 				else
 					candidate_TagEdges.insert(std::pair<double,hedge_data>(best_distance,hedata ));					
+					*/
 			}
 	
 		}
@@ -406,6 +450,7 @@ void GIMmodTruncate::GenerateCandidateEdgesAndDeleteEdgeFace(hedge_data &checkin
 void GIMmodTruncate::RemoveEdgesThatAdjacentOnlyOneFace(bool step)
 {
 	vtkSmartPointer<vtkUnsignedCharArray> collisionTag = vtkUnsignedCharArray::SafeDownCast( graph->GetEdgeData()->GetArray("CollisionTag"));
+	/*
 	while (candidate_TagEdges.size() > 0 || candidate_nonTagEdges.size() > 0)
 	{
 		if (candidate_nonTagEdges.size() > 0)
@@ -422,6 +467,32 @@ void GIMmodTruncate::RemoveEdgesThatAdjacentOnlyOneFace(bool step)
 			GenerateCandidateEdgesAndDeleteEdgeFace(checkingEdge,collisionTag);
 		}			
 	} //end while
+	*/
+
+	
+	while (candidate_TagP0Edges.size() > 0 || candidate_TagP1Edges.size() > 0 || candidate_TagP2Edges.size() > 0)
+	{
+		if (candidate_TagP0Edges.size() > 0)
+		{		
+			hedge_data checkingEdge = candidate_TagP0Edges.begin()->second;
+			candidate_TagP0Edges.erase(candidate_TagP0Edges.begin());
+			GenerateCandidateEdgesAndDeleteEdgeFace(checkingEdge,collisionTag);
+		
+		}
+		else if (candidate_TagP1Edges.size() > 0)
+		{
+			hedge_data checkingEdge = candidate_TagP1Edges.begin()->second;
+			candidate_TagP1Edges.erase(candidate_TagP1Edges.begin());
+			GenerateCandidateEdgesAndDeleteEdgeFace(checkingEdge,collisionTag);
+		}
+		else if (candidate_TagP2Edges.size() > 0)
+		{
+			hedge_data checkingEdge = candidate_TagP2Edges.begin()->second;
+			candidate_TagP2Edges.erase(candidate_TagP2Edges.begin());
+			GenerateCandidateEdgesAndDeleteEdgeFace(checkingEdge,collisionTag);
+		}
+	} //end while
+	
 	if (step)
 	{
 		graph->Modified();
@@ -635,6 +706,7 @@ void GIMmodTruncate::GetNeighborCell(vtkPolyData* source_polydata, vtkIdType vid
 void GIMmodTruncate::TagSurroundGraphFaceEdges(vtkSmartPointer<vtkMutableUndirectedGraph> collision_graph)
 {
 	unsigned char red[3] = {255, 0, 0};
+	unsigned char orange[3] = {255, 127, 0};
 	vtkSmartPointer<vtkUnsignedCharArray> edgecolors = vtkUnsignedCharArray::SafeDownCast( graph->GetEdgeData()->GetArray("EdgeColors"));
 	vtkSmartPointer<vtkUnsignedCharArray> collisionTag = vtkUnsignedCharArray::SafeDownCast( graph->GetEdgeData()->GetArray("CollisionTag"));
 		
@@ -649,6 +721,9 @@ void GIMmodTruncate::TagSurroundGraphFaceEdges(vtkSmartPointer<vtkMutableUndirec
 	{
 		vtkEdgeType e = ceit->Next();
 		vtkIdType vid[2] = {e.Source,e.Target};
+		vtkIdType cedgeid =  graph->GetEdgeId(vid[0],vid[1]);
+		collisionTag->SetValue(cedgeid,2);
+		edgecolors->SetTupleValue(cedgeid,red);
 		std::vector<vtkIdType> adjacent_cellIDs;
 		GetNeighborCell(polydata,vid[0],1,adjacent_cellIDs);
 		int faceDetected = 0;
@@ -677,8 +752,11 @@ void GIMmodTruncate::TagSurroundGraphFaceEdges(vtkSmartPointer<vtkMutableUndirec
 						vtkIdType edgeid =  graph->GetEdgeId(pts[k%3],pts[(k+1)%3]);
 						if (edgeid < 0) 
 							throw;
-						collisionTag->SetValue(edgeid,1);
-						edgecolors->SetTupleValue(edgeid,red);
+						if (collisionTag->GetValue(edgeid) == 0)
+						{
+							collisionTag->SetValue(edgeid,1);
+							edgecolors->SetTupleValue(edgeid,orange);
+						}
 					}
 					cellCheck[adjacent_cellIDs[i]] = true;
 				}
@@ -694,6 +772,7 @@ void GIMmodTruncate::TagSurroundGraphVertexEdges(vtkSmartPointer<vtkMutableUndir
 	if (level < 1)
 		throw;
 	unsigned char red[3] = {255, 0, 0};
+	unsigned char orange[3] = {255, 127, 0};
 	vtkSmartPointer<vtkUnsignedCharArray> edgecolors = vtkUnsignedCharArray::SafeDownCast( graph->GetEdgeData()->GetArray("EdgeColors"));
 	vtkSmartPointer<vtkUnsignedCharArray> collisionTag = vtkUnsignedCharArray::SafeDownCast( graph->GetEdgeData()->GetArray("CollisionTag"));
 	
@@ -709,7 +788,9 @@ void GIMmodTruncate::TagSurroundGraphVertexEdges(vtkSmartPointer<vtkMutableUndir
 	{
 		vtkEdgeType e = ceit->Next();
 		vtkIdType vid[2] = {e.Source,e.Target};
-		
+		vtkIdType cedgeid =  graph->GetEdgeId(vid[0],vid[1]);
+		collisionTag->SetValue(cedgeid,2);
+		edgecolors->SetTupleValue(cedgeid,red);
 		for (int i = 0 ; i < 2 ; i++)
 		{
 			std::vector<vtkIdType> add_cellIDs;
@@ -729,8 +810,12 @@ void GIMmodTruncate::TagSurroundGraphVertexEdges(vtkSmartPointer<vtkMutableUndir
 						vtkIdType edgeid =  graph->GetEdgeId(pts[k%3],pts[(k+1)%3]);
 						if (edgeid < 0) 
 							throw;
-						collisionTag->SetValue(edgeid,1);
-						edgecolors->SetTupleValue(edgeid,red);
+						if (collisionTag->GetValue(edgeid) == 0)
+						{
+							collisionTag->SetValue(edgeid,1);
+							edgecolors->SetTupleValue(edgeid,orange);
+						}
+						
 					}
 
 					cellCheck[add_cellIDs[j]] = true;
@@ -837,11 +922,33 @@ void GIMmodTruncate::ShorthenRings(bool step)
 			graph->AddEdge( idlist->GetId(j),idlist->GetId(j+1));
 		}
 		graph->AddEdge( path.endPointID[0],path.pairEdgeEndPointID[0]);
-		graph->AddEdge( path.endPointID[1],path.pairEdgeEndPointID[1]);
-
-		
-		
+		graph->AddEdge( path.endPointID[1],path.pairEdgeEndPointID[1]);		
 	}
+
+	for (int v = 0; v < graph->GetNumberOfVertices(); v++)
+	{
+		if (graph->GetDegree(v) == 2)
+		{				
+			vtkSmartPointer<vtkAdjacentVertexIterator> adjacent =vtkSmartPointer<vtkAdjacentVertexIterator>::New();
+			graph->GetAdjacentVertices(v,adjacent);
+
+			vtkIdType ptid0 = adjacent->Next();
+			vtkIdType ptid1 = adjacent->Next();
+			vtkIdType cellid = GetCellID(original_polydata, v,ptid0,ptid1);
+			if (cellid >=0)
+			{
+				vtkIdType edge0 = graph->GetEdgeId(v,ptid0);
+				graph->RemoveEdge(edge0);
+					
+				vtkIdType edge1 = graph->GetEdgeId(v,ptid1);
+				graph->RemoveEdge(edge1);
+
+				graph->AddEdge(ptid0,ptid1);
+					
+			}
+		}
+	}
+	
 
 	//find nearest vertex in graph to pair edge endpoint
 	/*
@@ -871,4 +978,134 @@ void GIMmodTruncate::ShorthenRings(bool step)
 	}
 	*/
 	
+}
+
+
+vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()
+{	
+	if (!shortenRingsDone)
+		return NULL;
+	mesh.clear();
+	vtkPolydata2OpenMesh(original_polydata,&mesh );	
+
+	std::vector<OmMesh::HalfedgeHandle> cutpath;
+	vtkSmartPointer<vtkPolyData> output = vtkSmartPointer<vtkPolyData>::New();
+	output->DeepCopy(original_polydata);
+	output->BuildLinks();
+	IDCutHedge *CutHedgeH = new IDCutHedge();
+	IDCutHedge *CutHedgeT = new IDCutHedge();
+	CutHedgeH->next = CutHedgeT;
+	CutHedgeT->back = CutHedgeH;
+	
+	//create cut path list
+	vtkSmartPointer<vtkEdgeListIterator> eit =vtkSmartPointer<vtkEdgeListIterator>::New();
+	graph->GetEdges(eit);
+	vtkEdgeType e =  eit->Next();
+	OmMesh::HalfedgeHandle first_heh =  mesh.find_halfedge(mesh.vertex_handle(e.Source),mesh.vertex_handle(e.Target));
+	OmMesh::HalfedgeHandle heh = first_heh;	
+	do
+	{
+		cutpath.push_back(heh);
+		
+		//search next halfedge in graph.
+		OmMesh::HalfedgeHandle start_heh = mesh.next_halfedge_handle(heh);
+		OmMesh::HalfedgeHandle next_heh = start_heh;
+		bool found = false;
+		do
+		{			
+			int fromId = mesh.from_vertex_handle(next_heh).idx();
+			int toId = mesh.to_vertex_handle(next_heh).idx();
+			if (graph->GetEdgeId(fromId,toId) > 0)
+			{
+				heh = next_heh;
+				found = true;
+				break;
+			}
+			next_heh = mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(next_heh));
+		}
+		while(next_heh != start_heh);
+
+		if (!found)
+			throw;
+	}
+	while (heh != first_heh);
+
+	int numEdge = graph->GetNumberOfEdges();
+	int numHalfEdge = cutpath.size();
+	for (int i = 0; i < numHalfEdge; i++)
+	{
+		OmMesh::HalfedgeHandle thisHE = cutpath[i];
+		OmMesh::HalfedgeHandle nextHE = cutpath[(i+1)%numHalfEdge];
+		OmMesh::FaceHandle     nextFH = mesh.face_handle(nextHE);
+		vtkSmartPointer<vtkIdList> cellIDlist = vtkSmartPointer<vtkIdList>::New();
+		output->GetCellEdgeNeighbors(	nextFH.idx(), 
+										mesh.from_vertex_handle(nextHE).idx(),
+										mesh.to_vertex_handle(nextHE).idx(),
+										cellIDlist);
+
+		if ( cellIDlist->GetNumberOfIds() == 0)
+			continue;
+		
+		OmMesh::VertexHandle oriVH = mesh.to_vertex_handle(thisHE);
+		OmMesh::VertexHandle newVH = mesh.add_vertex( mesh.point(oriVH));
+		vtkIdType oldVertexID = oriVH.idx();
+		vtkIdType newVertexID = output->GetPoints()->InsertNextPoint( output->GetPoint(oldVertexID));
+
+		
+		OmMesh::HalfedgeHandle start_heh = mesh.next_halfedge_handle(thisHE);
+		OmMesh::HalfedgeHandle next_heh = start_heh;
+		bool found = false;
+		do
+		{			
+			int faceId = mesh.face_handle(next_heh).idx();				
+			output->ReplaceCellPoint( faceId,oldVertexID, newVertexID);		
+			
+			if (next_heh == nextHE)
+			{
+				found = true;
+				break;
+			}
+			next_heh = mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(next_heh));
+		}
+		while(next_heh != start_heh);
+
+		if (!found)
+			throw;
+		output->BuildLinks();
+
+
+		
+	}
+	
+	/*
+	for (int i = 0 ; i < num_vertex_cut_route; i++)
+	{
+		
+		IDCutHedge::AppendVF(vertex_route[i],face_route[i],0,pCutHedgeT);
+		//Search for twin
+		
+		IDCutHedge *justCreated = (IDCutHedge *)pCutHedgeT->back;		
+		//Search for duplicate ID		
+		search = justCreated;
+		while(back(search) != pCutHedgeH)
+		{
+			search = back(search);
+
+			if (search->ID == justCreated->ID)
+			{
+				justCreated->DuplicateDegree = ((IDCutHedge *)search)->DuplicateDegree + 1;
+				m_num_boundarySurfacePolarVertex++;;//num_boundarySurfacePolarVertex[degree_count]++;
+				numDuplicateVertices++;
+				break;
+			}
+		}
+
+		if ( back(pCutHedgeT)->FaceID == back(back(pCutHedgeT))->FaceID)
+		{
+			m_numValen2BoundaryPoint++;
+		}
+	}
+
+	*/
+	return output;
 }

@@ -1,7 +1,7 @@
 #include "utils.h"
 #include <Windows.h>
 #include <string>
-int GetModelFileName(std::string &filename)
+int GetModelFileName(std::string &filename ,bool save)
 {
 	OPENFILENAME ofn;       // common dialog box structure
 	char szFile[260];       // buffer for file name
@@ -17,22 +17,34 @@ int GetModelFileName(std::string &filename)
 	// use the contents of szFile to initialize itself.
 	ofn.lpstrFile[0] = '\0';
 	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = "All\0*.*\0PLY\0*.ply\0OFF\0*.off\0";
+	ofn.lpstrFilter = "All\0*.*\0PLY\0*.ply\0";
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
+	if (!save)
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+	else
+		ofn.Flags = OFN_SHOWHELP | OFN_OVERWRITEPROMPT; 
 	// Display the Open dialog box. 
-
-	if (GetOpenFileName(&ofn)==TRUE) 
+	if (!save)
 	{
-		filename = std::string(ofn.lpstrFile);
-		return 1;
+		if (GetOpenFileName(&ofn)==TRUE) 
+		{
+			filename = std::string(ofn.lpstrFile);
+			return 1;
+		}		
 	}
 	else
-		return 0;
+	{
+		if (GetSaveFileName(&ofn) == TRUE)
+		{
+			filename = std::string(ofn.lpstrFile);
+			return 1;
+		}
+	}
+	
+	return 0;
 		
 }
 
@@ -92,6 +104,7 @@ vtkIdType GetCellID(vtkPolyData *polydata, vtkIdType v1,vtkIdType v2,vtkIdType v
 	}
 	return -1;
 }
+
 
 
 vtkIdType GetCellID(vtkPolyData *polydata, OmMesh &mesh , OmMesh::FaceHandle fh)
@@ -160,3 +173,125 @@ vtkSmartPointer<vtkIdList> GetConnectedVertices(vtkSmartPointer<vtkPolyData> mes
   return connectedVertices;
 
 } 
+
+
+void CutMesh(OmMesh &mesh, OmMesh::HalfedgeHandle &he0 ,OmMesh::HalfedgeHandle &he1,OmMesh::VertexHandle newVH)
+{
+	if (mesh.to_vertex_handle(he0) != mesh.from_vertex_handle(he1))
+		throw;
+	
+	OmMesh::VertexHandle oldVH = mesh.to_vertex_handle(he0);
+	OmMesh::HalfedgeHandle oph0 = mesh.opposite_halfedge_handle(he0);
+	OmMesh::HalfedgeHandle oph1 = mesh.opposite_halfedge_handle(he1);
+	bool boundary0 = mesh.is_boundary(oph0);
+	bool boundary1 = mesh.is_boundary(oph1);
+	OmMesh::HalfedgeHandle prevh0 = mesh.prev_halfedge_handle(he0);
+	OmMesh::HalfedgeHandle prevh1 = mesh.prev_halfedge_handle(he1);
+	OmMesh::HalfedgeHandle nh0 = mesh.next_halfedge_handle(he0);
+	OmMesh::HalfedgeHandle nh1 = mesh.next_halfedge_handle(he1);
+
+	bool val2 = false;
+	if (nh0 == he1)
+		val2 = true;
+
+	//add the new edge
+	OmMesh::HalfedgeHandle new_e0 = mesh.new_edge(mesh.from_vertex_handle(he0), newVH);
+	OmMesh::HalfedgeHandle new_e1 = mesh.new_edge(newVH ,mesh.to_vertex_handle(he1));
+	mesh.set_face_handle(new_e0, mesh.face_handle(prevh0));
+	mesh.set_face_handle(new_e1, mesh.face_handle(prevh1));
+	mesh.set_boundary(mesh.opposite_halfedge_handle(new_e0));
+	mesh.set_boundary(mesh.opposite_halfedge_handle(new_e1));
+	mesh.set_next_halfedge_handle(prevh0,new_e0);
+	if (!val2)
+		mesh.set_next_halfedge_handle(prevh1,new_e1);
+	
+	if (!val2)
+		mesh.set_next_halfedge_handle(new_e0,nh0);
+	else
+		mesh.set_next_halfedge_handle(new_e0,new_e1);
+	mesh.set_next_halfedge_handle(new_e1,nh1);
+
+	OmMesh::HalfedgeHandle start_heh = nh0;
+	OmMesh::HalfedgeHandle next_heh = start_heh;
+	while (next_heh != he1)
+	{
+		mesh.set_vertex_handle( mesh.opposite_halfedge_handle(next_heh), newVH);
+		next_heh = mesh.next_halfedge_handle(mesh.opposite_halfedge_handle(next_heh));
+	}
+	if (!boundary0)
+		mesh.set_boundary(he0);
+	if (!boundary1)
+		mesh.set_boundary(he1);
+	mesh.set_halfedge_handle( newVH, new_e0 );
+	mesh.adjust_outgoing_halfedge( newVH );
+
+	mesh.set_halfedge_handle( oldVH, oph1 );
+	mesh.adjust_outgoing_halfedge( oldVH );
+
+	if (!boundary0)
+		mesh.set_next_halfedge_handle(he0,he1); //boundary
+	
+
+
+	/*
+	HalfedgeHandle h0 = halfedge_handle(_eh, 0);
+	HalfedgeHandle h1 = halfedge_handle(_eh, 1);
+  
+	VertexHandle vfrom = from_vertex_handle(h0);
+
+	HalfedgeHandle ph0 = prev_halfedge_handle(h0);
+	HalfedgeHandle ph1 = prev_halfedge_handle(h1);
+  
+	HalfedgeHandle nh0 = next_halfedge_handle(h0);
+	HalfedgeHandle nh1 = next_halfedge_handle(h1);
+  
+	bool boundary0 = is_boundary(h0);
+	bool boundary1 = is_boundary(h1);
+  
+	//add the new edge
+	HalfedgeHandle new_e = new_edge(from_vertex_handle(h0), _vh);
+  
+	//fix the vertex of the opposite halfedge
+	set_vertex_handle(h1, _vh);
+  
+	//fix the halfedge connectivity
+	set_next_halfedge_handle(new_e, h0);
+	set_next_halfedge_handle(h1, opposite_halfedge_handle(new_e));
+  
+	set_next_halfedge_handle(ph0, new_e);
+	set_next_halfedge_handle(opposite_halfedge_handle(new_e), nh1);
+  
+	//  set_prev_halfedge_handle(new_e, ph0);
+	//  set_prev_halfedge_handle(opposite_halfedge_handle(new_e), h1);
+  
+	//  set_prev_halfedge_handle(nh1, opposite_halfedge_handle(new_e));
+	//  set_prev_halfedge_handle(h0, new_e);
+  
+	if (!boundary0)
+	{
+	set_face_handle(new_e, face_handle(h0));
+	}
+	else
+	{
+	set_boundary(new_e);
+	}
+  
+	if (!boundary1)
+	{
+	set_face_handle(opposite_halfedge_handle(new_e), face_handle(h1));
+	}
+	else
+	{
+	set_boundary(opposite_halfedge_handle(new_e));
+	}
+
+	set_halfedge_handle( _vh, h0 );
+	adjust_outgoing_halfedge( _vh );
+  
+	if (halfedge_handle(vfrom) == h0)
+	{
+	set_halfedge_handle(vfrom, new_e);
+	adjust_outgoing_halfedge( vfrom );
+	}
+	*/
+}

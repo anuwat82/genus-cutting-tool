@@ -57,6 +57,6 @@
 #include <vtkBoostBreadthFirstSearch.h>
 #include <vtkBoostConnectedComponents.h>
 #include <vtkBoostExtractLargestComponent.h>
-
-#include <vtkDijkstraGraphGeodesicPathEx.h>
+#include <vtkClipPolyData.h>
 #include <vtkDijkstraGraphGeodesicPath.h>
+#include <vtkPLYWriter.h>

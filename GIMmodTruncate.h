@@ -43,6 +43,9 @@ public:
 	void Step();
 	void Process();
 	vtkSmartPointer<vtkMutableUndirectedGraph> GetGraph();
+	vtkSmartPointer<vtkPolyData> GetDiskTopologyPolydata();
+
+	bool isReadyToCut();
 protected:
 	vtkWeakPointer<vtkPolyData> polydata;
 	vtkSmartPointer<vtkPolyData> original_polydata;
@@ -53,10 +56,15 @@ protected:
 	bool seedRemoved;
 	bool allFaceRemoved;
 	bool firstTruncateDone;
-	bool branchRemoved;
+	bool shortenRingsDone;
 	bool largestGraphDone;
 	std::multimap<double,hedge_data> candidate_nonTagEdges;
 	std::multimap<double,hedge_data> candidate_TagEdges;
+
+	
+	std::multimap<double,hedge_data> candidate_TagP0Edges;
+	std::multimap<double,hedge_data> candidate_TagP2Edges;
+	std::multimap<double,hedge_data> candidate_TagP1Edges;
 
 	void RemoveSeed(bool ste);
 	//void RemoveBoundarySeed(bool step);
