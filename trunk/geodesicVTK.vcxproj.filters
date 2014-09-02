@@ -87,6 +87,12 @@
     <ClInclude Include="customVTK\vtkDijkstraGraphGeodesicPath.h">
       <Filter>custom vtk</Filter>
     </ClInclude>
+    <ClInclude Include="IDCutHedge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IDList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -115,6 +121,12 @@
     </ClCompile>
     <ClCompile Include="customVTK\vtkDijkstraGraphGeodesicPath.cxx">
       <Filter>custom vtk</Filter>
+    </ClCompile>
+    <ClCompile Include="IDList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IDCutHedge.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

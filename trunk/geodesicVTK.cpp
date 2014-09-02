@@ -493,6 +493,23 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			iren->GetRenderWindow()->Render();
 			}
 			break;
+		case 'c':
+			//cutting 
+			if (modTruncate.isReadyToCut())
+			{
+				std::string filename;
+				if (GetModelFileName(filename,true))
+				{
+					vtkSmartPointer<vtkPolyData> output = modTruncate.GetDiskTopologyPolydata();
+					vtkSmartPointer<vtkPLYWriter> plyWriter = vtkSmartPointer<vtkPLYWriter>::New();
+					plyWriter->SetInputData(output);
+					plyWriter->SetFileName(filename.c_str());
+					plyWriter->Update();
+				}
+			}
+			else
+				cout << "not ready to export disk topoly mesh." << endl;
+			break;
 	}
 	//std::cout << "Pressed: " << iren->GetKeySym() << endl;
 }
