@@ -161,7 +161,8 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::InitOriginal( vtkSmar
 
 void GIMmodTruncate::Process()
 {
-	
+	if (!seedRemoved)
+	{
 	RemoveSeed(false);	
 	seedRemoved = true;
 	
@@ -177,6 +178,8 @@ void GIMmodTruncate::Process()
 	mesh.garbage_collection();
 	polydata->RemoveDeletedCells();
 	polydata->BuildLinks();
+	}
+	//GetDiskTopologyPolydata();
 	
 }
 
@@ -989,13 +992,10 @@ vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()
 	vtkPolydata2OpenMesh(original_polydata,&mesh );	
 
 	std::vector<OmMesh::HalfedgeHandle> cutpath;
+	std::map<vtkIdType, int> newpointGen;
 	vtkSmartPointer<vtkPolyData> output = vtkSmartPointer<vtkPolyData>::New();
 	output->DeepCopy(original_polydata);
 	output->BuildLinks();
-	IDCutHedge *CutHedgeH = new IDCutHedge();
-	IDCutHedge *CutHedgeT = new IDCutHedge();
-	CutHedgeH->next = CutHedgeT;
-	CutHedgeT->back = CutHedgeH;
 	
 	//create cut path list
 	vtkSmartPointer<vtkEdgeListIterator> eit =vtkSmartPointer<vtkEdgeListIterator>::New();
@@ -1003,19 +1003,21 @@ vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()
 	vtkEdgeType e =  eit->Next();
 	OmMesh::HalfedgeHandle first_heh =  mesh.find_halfedge(mesh.vertex_handle(e.Source),mesh.vertex_handle(e.Target));
 	OmMesh::HalfedgeHandle heh = first_heh;	
+	int fromId = mesh.from_vertex_handle(heh).idx();
+	int toId = mesh.to_vertex_handle(heh).idx();
 	do
 	{
 		cutpath.push_back(heh);
-		
+		newpointGen.insert(std::pair<vtkIdType, int>(toId, graph->GetDegree(toId) - 1));
 		//search next halfedge in graph.
 		OmMesh::HalfedgeHandle start_heh = mesh.next_halfedge_handle(heh);
 		OmMesh::HalfedgeHandle next_heh = start_heh;
 		bool found = false;
 		do
 		{			
-			int fromId = mesh.from_vertex_handle(next_heh).idx();
-			int toId = mesh.to_vertex_handle(next_heh).idx();
-			if (graph->GetEdgeId(fromId,toId) > 0)
+			fromId = mesh.from_vertex_handle(next_heh).idx();
+			toId = mesh.to_vertex_handle(next_heh).idx();
+			if (graph->GetEdgeId(fromId,toId) >= 0)
 			{
 				heh = next_heh;
 				found = true;
@@ -1037,15 +1039,24 @@ vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()
 		OmMesh::HalfedgeHandle thisHE = cutpath[i];
 		OmMesh::HalfedgeHandle nextHE = cutpath[(i+1)%numHalfEdge];
 		OmMesh::FaceHandle     nextFH = mesh.face_handle(nextHE);
+		fromId = mesh.from_vertex_handle(thisHE).idx();
+		toId = mesh.to_vertex_handle(thisHE).idx();
+	
 		vtkSmartPointer<vtkIdList> cellIDlist = vtkSmartPointer<vtkIdList>::New();
 		output->GetCellEdgeNeighbors(	nextFH.idx(), 
 										mesh.from_vertex_handle(nextHE).idx(),
 										mesh.to_vertex_handle(nextHE).idx(),
 										cellIDlist);
 
+		int &degree = newpointGen.at(toId);
+		/*
 		if ( cellIDlist->GetNumberOfIds() == 0)
 			continue;
-		
+		*/
+		if (degree == 0)
+			continue;
+		else
+			degree--;
 		OmMesh::VertexHandle oriVH = mesh.to_vertex_handle(thisHE);
 		OmMesh::VertexHandle newVH = mesh.add_vertex( mesh.point(oriVH));
 		vtkIdType oldVertexID = oriVH.idx();
