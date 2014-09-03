@@ -536,11 +536,11 @@ inline face_pointer Mesh::find_face(unsigned int vid0,unsigned int vid1,unsigned
 {
 	Vertex &v0 = this->vertices()[vid0];
 	
-	for (int i = 0 ; i < v0.adjacent_faces().size(); i++)
+	for (unsigned int i = 0 ; i < v0.adjacent_faces().size(); i++)
 	{
 		face_pointer _face = v0.adjacent_faces()[i];
 		bool h0(false),h1(false),h2(false);
-		for (int vf = 0 ; vf < _face->adjacent_vertices().size(); vf++)
+		for (unsigned int vf = 0 ; vf < _face->adjacent_vertices().size(); vf++)
 		{
 			vertex_pointer vp = _face->adjacent_vertices()[vf];
 			if (_face->adjacent_vertices()[vf]->id() == vid0)
@@ -562,7 +562,7 @@ inline edge_pointer Mesh::find_edge(unsigned int vid0,unsigned int vid1)
 {
 	Vertex &v0 = this->vertices()[vid0];
 	
-	for (int i = 0 ; i < v0.adjacent_edges().size(); i++)
+	for (unsigned int i = 0 ; i < v0.adjacent_edges().size(); i++)
 	{
 		edge_pointer edge = v0.adjacent_edges()[i];
 		if (edge->isVertices(vid0,vid1))

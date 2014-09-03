@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *             
- *   $Revision: 1129 $                                                         *
- *   $Date: 2014-07-31 16:29:42 +0700 (Thu, 31 Jul 2014) $                   *
+ *   $Revision: 1146 $                                                         *
+ *   $Date: 2014-08-28 18:44:20 +0700 (Thu, 28 Aug 2014) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -75,12 +75,12 @@ uint PolyMeshT<Kernel>::find_feature_edges(Scalar _angle_tresh)
   {
     if (fabs(calc_dihedral_angle(*e_it)) > _angle_tresh)
     {//note: could be optimized by comparing cos(dih_angle) vs. cos(_angle_tresh)
-      status(*e_it).set_feature(true);
+      this->status(*e_it).set_feature(true);
       n_feature_edges++;
     }
     else
     {
-      status(*e_it).set_feature(false);
+      this->status(*e_it).set_feature(false);
     }
   }
   return n_feature_edges;

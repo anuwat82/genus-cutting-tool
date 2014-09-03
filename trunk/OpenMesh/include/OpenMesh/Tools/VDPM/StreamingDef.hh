@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *             
- *   $Revision: 990 $                                                         *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1151 $                                                         *
+ *   $Date: 2014-08-29 15:32:53 +0700 (Fri, 29 Aug 2014) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -63,7 +63,7 @@ namespace VDPM {
 
 #define VDPM_STREAMING_PORT 4096
 
-#define DEBUG_COUT
+//#define DEBUG_COUT
 //#define QDATASTREAM
 
 #ifdef DEBUG_COUT

@@ -1,6 +1,6 @@
 #include "GIMmodTruncate.h"
 #include "utils.h"
-#include "IDCutHedge.h"
+
 GIMmodTruncate::GIMmodTruncate(void)
 {
 	seedRemoved = false;
@@ -1033,7 +1033,7 @@ vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()
 	while (heh != first_heh);
 
 	int numEdge = graph->GetNumberOfEdges();
-	int numHalfEdge = cutpath.size();
+	int numHalfEdge = (int )cutpath.size();
 	for (int i = 0; i < numHalfEdge; i++)
 	{
 		OmMesh::HalfedgeHandle thisHE = cutpath[i];
