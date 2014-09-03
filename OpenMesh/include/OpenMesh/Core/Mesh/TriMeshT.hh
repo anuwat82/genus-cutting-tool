@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *             
- *   $Revision: 990 $                                                         *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1146 $                                                         *
+ *   $Date: 2014-08-28 18:44:20 +0700 (Thu, 28 Aug 2014) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -205,7 +205,7 @@ public:
    */
   inline HalfedgeHandle vertex_split(Point _v0_point,  VertexHandle _v1,
                                      VertexHandle _vl, VertexHandle _vr)
-  { return PolyMesh::vertex_split(add_vertex(_v0_point), _v1, _vl, _vr); }
+  { return PolyMesh::vertex_split(this->add_vertex(_v0_point), _v1, _vl, _vr); }
 
   /** \brief Vertex Split: inverse operation to collapse().
    *
