@@ -16,7 +16,8 @@ GIMmodTruncate modTruncate;
 GIMmodTruncate originalTruncate;
 vtkWeakPointer<vtkPolyData> polydata;
 vtkWeakPointer<vtkPoints> source_point;
-	
+
+vtkWeakPointer<vtkActor> actorMainPoly;
 vtkWeakPointer<vtkActor> actorEdge1;
 vtkWeakPointer<vtkActor> actorEdge2;
 vtkWeakPointer<vtkActor> actorEdge3;
@@ -57,6 +58,7 @@ vtkSmartPointer<vtkActor> CreateCleanPipeline(vtkSmartPointer<vtkMutableUndirect
 vtkSmartPointer<vtkActor> CreateFinalPipeline(vtkSmartPointer<vtkMutableUndirectedGraph> FinalGraph);
 
 void Process(vtkSmartPointer<vtkPolyData> polydata ,int sourceVertexID);
+void ScreenShot();
 std::string GetFileExtension(const std::string& FileName)
 {
     if(FileName.find_last_of(".") != std::string::npos)
@@ -329,14 +331,23 @@ int main(int argc, char* argv[])
  
 	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
 	actor->SetMapper(mapper);
+	actorMainPoly = actor;
 	actor->GetProperty()->SetEdgeVisibility(1);
 	actor->GetProperty()->SetLineWidth(0.5);
-
+	actor->GetProperty()->SetOpacity(0.5);
 	// Visualize
 	vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
 	vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
 	renderWindow->StereoCapableWindowOff();
 	renderWindow->StereoRenderOff(); 	
+	
+	//depth peeling
+	renderWindow->SetAlphaBitPlanes(1);
+	renderWindow->SetMultiSamples(0);
+	renderer->SetUseDepthPeeling(1);
+	renderer->SetMaximumNumberOfPeels(100);
+	renderer->SetOcclusionRatio(0.1);
+
 	renderWindow->AddRenderer(renderer);
 	vtkSmartPointer<MouseInteractorStylePP> TrackballStyle = vtkSmartPointer<MouseInteractorStylePP>::New();		
 	vtkSmartPointer<vtkPointPicker> picker =  vtkSmartPointer<vtkPointPicker>::New();
@@ -358,6 +369,7 @@ int main(int argc, char* argv[])
 	vtkSmartPointer<vtkCallbackCommand> keypressCallback = vtkSmartPointer<vtkCallbackCommand>::New();
 	keypressCallback->SetCallback ( keyPressCallbackFunc );
 	renderWindowInteractor->AddObserver ( vtkCommand::KeyPressEvent, keypressCallback );
+	
 
 	vtkSmartPointer<vtkCallbackCommand> pickCallback = vtkSmartPointer<vtkCallbackCommand>::New();
 	pickCallback->SetCallback ( pickCallbackFunc );
@@ -510,7 +522,27 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			else
 				cout << "not ready to export disk topoly mesh." << endl;
 			break;
-	}
+		}
+		
+		std::string key(ch);
+		if (key == "F10")
+			ScreenShot();
+		else if (key == "plus")
+		{
+			double opac = actorMainPoly->GetProperty()->GetOpacity();
+			opac = std::min(opac + 0.05, 1.0);
+			actorMainPoly->GetProperty()->SetOpacity(opac);
+			renderer->Modified();
+			iren->GetRenderWindow()->Render();
+		}
+		else if (key == "minus")
+		{
+			double opac = actorMainPoly->GetProperty()->GetOpacity();
+			opac = std::max(opac - 0.05, 0.05);
+			actorMainPoly->GetProperty()->SetOpacity(opac);
+			renderer->Modified();
+			iren->GetRenderWindow()->Render();
+		}
 	//std::cout << "Pressed: " << iren->GetKeySym() << endl;
 }
 void pickCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata, void *calldata)
@@ -1410,4 +1442,8 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMtruncate(vtkSmartPointer<vtkPolyDa
 
 
 	return graph;
+}
+
+void ScreenShot()
+{
 }
