@@ -2,7 +2,8 @@
 #include <string>
 #include "VTK_Header.h"
 #include "OpenMesh_Header.h"
-int GetModelFileName(std::string &filename,bool save = false);
+
+int GetFileName(std::string &filename,const char* filter,bool save = false);
 
 void vtkPolydata2OpenMesh(vtkPolyData *polydata, OmMesh *mesh);
 vtkIdType GetCellID(vtkPolyData *polydata, vtkIdType v1,vtkIdType v2,vtkIdType v3);

@@ -1,7 +1,7 @@
 #include "utils.h"
 #include <Windows.h>
 #include <string>
-int GetModelFileName(std::string &filename ,bool save)
+int GetFileName(std::string &filename ,const char* filter ,bool save)
 {
 	OPENFILENAME ofn;       // common dialog box structure
 	char szFile[260];       // buffer for file name
@@ -17,7 +17,7 @@ int GetModelFileName(std::string &filename ,bool save)
 	// use the contents of szFile to initialize itself.
 	ofn.lpstrFile[0] = '\0';
 	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = "All\0*.*\0PLY\0*.ply\0";
+	ofn.lpstrFilter = filter;
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;

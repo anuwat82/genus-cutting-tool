@@ -1847,7 +1847,7 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 				m_collisionTwoPathEdges.push_back(_edge);
 				_edge->source_collision() = 1;
 			}
-#if 1
+#if 0
 			//adjust triangle collision in face
 			for (unsigned int adjF = 0 ; adjF < _edge->adjacent_faces().size(); adjF++)
 			{
