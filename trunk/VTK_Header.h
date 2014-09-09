@@ -60,3 +60,5 @@
 #include <vtkClipPolyData.h>
 #include <vtkDijkstraGraphGeodesicPath.h>
 #include <vtkPLYWriter.h>
+#include <vtkWindowToImageFilter.h>
+#include <vtkPNGWriter.h>

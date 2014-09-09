@@ -58,7 +58,7 @@ vtkSmartPointer<vtkActor> CreateCleanPipeline(vtkSmartPointer<vtkMutableUndirect
 vtkSmartPointer<vtkActor> CreateFinalPipeline(vtkSmartPointer<vtkMutableUndirectedGraph> FinalGraph);
 
 void Process(vtkSmartPointer<vtkPolyData> polydata ,int sourceVertexID);
-void ScreenShot();
+void ScreenShot(vtkRenderWindow* renderWindow);
 std::string GetFileExtension(const std::string& FileName)
 {
     if(FileName.find_last_of(".") != std::string::npos)
@@ -301,7 +301,7 @@ int main(int argc, char* argv[])
 	else
 	{
 		//open dialog for 
-		if (!GetModelFileName(filename))
+		if (!GetFileName(filename,"All Files\0*.*\0PLY Files\0*.ply\0OFF files\0*.off\0"))
 		{
 			std::cout << "Exit due to no model file input." << endl;
 			return -1;
@@ -510,13 +510,14 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			if (modTruncate.isReadyToCut())
 			{
 				std::string filename;
-				if (GetModelFileName(filename,true))
+				if (GetFileName(filename,"All\0*.*\0PLY\0*.ply\0",true))
 				{
 					vtkSmartPointer<vtkPolyData> output = modTruncate.GetDiskTopologyPolydata();
 					vtkSmartPointer<vtkPLYWriter> plyWriter = vtkSmartPointer<vtkPLYWriter>::New();
 					plyWriter->SetInputData(output);
 					plyWriter->SetFileName(filename.c_str());
 					plyWriter->Update();
+					cout << "Disk topology mesh export :" << filename.c_str() << endl;
 				}
 			}
 			else
@@ -526,7 +527,9 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		
 		std::string key(ch);
 		if (key == "F10")
-			ScreenShot();
+		{
+			ScreenShot(iren->GetRenderWindow());
+		}
 		else if (key == "plus")
 		{
 			double opac = actorMainPoly->GetProperty()->GetOpacity();
@@ -1022,7 +1025,7 @@ vtkSmartPointer<vtkActor> CreateBeforeTruncatePipeline(vtkSmartPointer<vtkMutabl
 	vtkSmartPointer<vtkActor> edge_actor = vtkSmartPointer<vtkActor>::New();
 	edge_actor->SetMapper(edge_mapper);
 	edge_actor->GetProperty()->SetLineWidth(2.0);
-
+	edge_actor->GetProperty()->SetOpacity(0.75);
 	return edge_actor;
 }
 vtkSmartPointer<vtkActor> CreateAfterTruncatePipeline(vtkSmartPointer<vtkMutableUndirectedGraph> ATGraph,std::vector<collisionEdgeInfo>& collision_edges)
@@ -1060,6 +1063,7 @@ vtkSmartPointer<vtkActor> CreateAfterTruncatePipeline(vtkSmartPointer<vtkMutable
 	vtkSmartPointer<vtkActor> edge_actor = vtkSmartPointer<vtkActor>::New();
 	edge_actor->SetMapper(edge_mapper);
 	edge_actor->GetProperty()->SetLineWidth(2.0);
+	edge_actor->GetProperty()->SetOpacity(0.75);
 	return edge_actor;
 }
 
@@ -1099,6 +1103,7 @@ vtkSmartPointer<vtkActor> CreateStrightUpPipeline(vtkSmartPointer<vtkMutableUndi
 	vtkSmartPointer<vtkActor> edge_actor = vtkSmartPointer<vtkActor>::New();
 	edge_actor->SetMapper(edge_mapper);
 	edge_actor->GetProperty()->SetLineWidth(2.0);
+	edge_actor->GetProperty()->SetOpacity(0.75);
 	return edge_actor;
 }
 
@@ -1132,6 +1137,7 @@ vtkSmartPointer<vtkActor> CreateCleanPipeline(vtkSmartPointer<vtkMutableUndirect
 	vtkSmartPointer<vtkActor> edge_actor = vtkSmartPointer<vtkActor>::New();
 	edge_actor->SetMapper(edge_mapper);
 	edge_actor->GetProperty()->SetLineWidth(2.0);
+	edge_actor->GetProperty()->SetOpacity(0.75);
 	return edge_actor;
 }
 
@@ -1165,6 +1171,7 @@ vtkSmartPointer<vtkActor> CreateFinalPipeline(vtkSmartPointer<vtkMutableUndirect
 	vtkSmartPointer<vtkActor> edge_actor = vtkSmartPointer<vtkActor>::New();
 	edge_actor->SetMapper(edge_mapper);
 	edge_actor->GetProperty()->SetLineWidth(2.0);
+	edge_actor->GetProperty()->SetOpacity(0.75);
 	return edge_actor;
 }
 
@@ -1444,6 +1451,27 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMtruncate(vtkSmartPointer<vtkPolyDa
 	return graph;
 }
 
-void ScreenShot()
+void ScreenShot(vtkRenderWindow* renderWindow)
 {
+	// Screenshot  
+
+	std::string filename;
+	if (GetFileName(filename,"All\0*.*\0PNG file\0*.png\0",true))
+	{
+		vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = 
+		vtkSmartPointer<vtkWindowToImageFilter>::New();
+		  windowToImageFilter->SetInput(renderWindow);
+		  //windowToImageFilter->SetMagnification(3); //set the resolution of the output image (3 times the current resolution of vtk render window)
+		  windowToImageFilter->SetInputBufferTypeToRGBA(); //also record the alpha (transparency) channel
+		  windowToImageFilter->Update();
+ 
+		  vtkSmartPointer<vtkPNGWriter> writer = 
+			vtkSmartPointer<vtkPNGWriter>::New();
+		  writer->SetFileName(filename.c_str());
+		  writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+		  writer->Write();
+		  
+		  cout << "Screenshot :" << filename.c_str() << endl;
+	}
+  
 }
