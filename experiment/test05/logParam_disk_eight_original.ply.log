@@ -1,0 +1,10 @@
+MODEL: disk_eight_original.ply
+NUMBER ORIGINAL VERTEX: 868
+NUMBER ORIGINAL FACE: 1536
+STOP BECAUSE BOUNDARY FACE (4.043951/2.000000)
+Calculate Time for seam boundary : 0.020000 sec
+=== NUMBER BORDER EDGES : 197 ===
+=== Find best stretch of TEST40 (best corner ERR = 1.666324)===
+=== Find worst stretch  of TEST12  (worst corner ERR = 8.356823) ===
+=== Circular Parameterization  stretch = 2.243570 ===
+Calculate Time for corner : 0.173000 sec

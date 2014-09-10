@@ -1,0 +1,25 @@
+element vertex 550
+
+element face 1000
+
+MODEL: disk_torus2_original.ply
+
+NUMBER ORIGINAL VERTEX: 550
+
+NUMBER ORIGINAL FACE: 1000
+
+DEGREE 0 . . .
+
+STOP BECAUSE BOUNDARY FACE (2.144602/2.000000)
+
+Calculate Time for seam boundary : 0.013000 sec
+
+=== NUMBER BORDER EDGES : 97 ===
+
+=== Find best stretch  of TEST6  (best corner at 1.561810) ===
+
+=== Find worst stretch  of TEST9  (worst corner at 1.822603) ===
+
+=== Circular Parameterization  stretch = 1.800275 ===
+
+Calculate Time for corner : 0.035000 sec
