@@ -301,7 +301,7 @@ int main(int argc, char* argv[])
 	else
 	{
 		//open dialog for 
-		if (!GetFileName(filename,"All Files\0*.*\0PLY Files\0*.ply\0OFF files\0*.off\0"))
+		if (!GetFileName(filename,"PLY Files\0*.ply\0OFF files\0*.off\0All Files\0*.*\0"))
 		{
 			std::cout << "Exit due to no model file input." << endl;
 			return -1;

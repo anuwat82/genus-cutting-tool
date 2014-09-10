@@ -152,9 +152,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="geodesic\geodesic_algorithm_base.h" />
     <ClInclude Include="geodesic\geodesic_algorithm_dijkstra.h" />
     <ClInclude Include="geodesic\geodesic_algorithm_dijkstra_alternative.h" />
