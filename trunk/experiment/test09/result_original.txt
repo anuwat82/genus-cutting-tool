@@ -1,0 +1,25 @@
+element vertex 4483
+
+element face 8392
+
+MODEL: disk_genus3triangulate_original.ply
+
+NUMBER ORIGINAL VERTEX: 4483
+
+NUMBER ORIGINAL FACE: 8392
+
+DEGREE 0 . . .
+
+STOP BECAUSE BOUNDARY FACE (5.060713/2.000000)
+
+Calculate Time for seam boundary : 0.208000 sec
+
+=== NUMBER BORDER EDGES : 571 ===
+
+=== Find best stretch  of TEST37  (best corner at 471.160864) ===
+
+=== Find worst stretch  of TEST7  (worst corner at 153792.619114) ===
+
+=== Circular Parameterization  stretch = 4.067528 ===
+
+Calculate Time for corner : 1.401000 sec

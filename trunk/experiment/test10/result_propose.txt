@@ -1,0 +1,25 @@
+element vertex 6998
+
+element face 13312
+
+MODEL: disk_genus3_propose.ply
+
+NUMBER ORIGINAL VERTEX: 6998
+
+NUMBER ORIGINAL FACE: 13312
+
+DEGREE 0 . . .
+
+STOP BECAUSE BOUNDARY FACE (7.142026/2.000000)
+
+Calculate Time for seam boundary : 0.400000 sec
+
+=== NUMBER BORDER EDGES : 681 ===
+
+=== Find best stretch  of TEST10  (best corner at 1.624616) ===
+
+=== Find worst stretch  of TEST89  (worst corner at 5841431.163628) ===
+
+=== Circular Parameterization  stretch = 4.115257 ===
+
+Calculate Time for corner : 3.904000 sec

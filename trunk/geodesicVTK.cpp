@@ -510,14 +510,24 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			if (modTruncate.isReadyToCut())
 			{
 				std::string filename;
-				if (GetFileName(filename,"All\0*.*\0PLY\0*.ply\0",true))
+				if (GetFileName(filename,"PLY File\0*.ply\0All Files\0*.*\0",true))
 				{
-					vtkSmartPointer<vtkPolyData> output = modTruncate.GetDiskTopologyPolydata();
+					vtkSmartPointer<vtkPolyData> outputPropose = modTruncate.GetDiskTopologyPolydata();
+					vtkSmartPointer<vtkPolyData> outputOriginal = originalTruncate.GetDiskTopologyPolydata();
 					vtkSmartPointer<vtkPLYWriter> plyWriter = vtkSmartPointer<vtkPLYWriter>::New();
-					plyWriter->SetInputData(output);
-					plyWriter->SetFileName(filename.c_str());
+					
+					std::string propose_filename = filename + std::string("_propose.ply");
+					std::string original_filename = filename +  std::string("_original.ply");
+					
+					plyWriter->SetInputData(outputPropose);
+					plyWriter->SetFileName(propose_filename.c_str());
 					plyWriter->Update();
-					cout << "Disk topology mesh export :" << filename.c_str() << endl;
+					cout << "Disk topology mesh export :" << propose_filename.c_str() << endl;
+
+					plyWriter->SetInputData(outputOriginal);
+					plyWriter->SetFileName(original_filename.c_str());
+					plyWriter->Update();					
+					cout << "Disk topology mesh export :" << original_filename.c_str() << endl;
 				}
 			}
 			else

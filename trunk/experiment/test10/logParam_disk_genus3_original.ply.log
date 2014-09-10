@@ -1,0 +1,10 @@
+MODEL: disk_genus3_original.ply
+NUMBER ORIGINAL VERTEX: 7002
+NUMBER ORIGINAL FACE: 13312
+STOP BECAUSE BOUNDARY FACE (8.652029/2.000000)
+Calculate Time for seam boundary : 0.398000 sec
+=== NUMBER BORDER EDGES : 689 ===
+=== Find best stretch of TEST128 (best corner ERR = 939.218886)===
+=== Find worst stretch  of TEST148  (worst corner ERR = 2643170.234081) ===
+=== Circular Parameterization  stretch = 6.347741 ===
+Calculate Time for corner : 3.953000 sec
