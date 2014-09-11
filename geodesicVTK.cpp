@@ -333,7 +333,7 @@ int main(int argc, char* argv[])
 	actor->SetMapper(mapper);
 	actorMainPoly = actor;
 	actor->GetProperty()->SetEdgeVisibility(1);
-	actor->GetProperty()->SetLineWidth(0.5);
+	actor->GetProperty()->SetLineWidth(0.25);
 	actor->GetProperty()->SetOpacity(0.5);
 	// Visualize
 	vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
@@ -1112,7 +1112,7 @@ vtkSmartPointer<vtkActor> CreateStrightUpPipeline(vtkSmartPointer<vtkMutableUndi
  
 	vtkSmartPointer<vtkActor> edge_actor = vtkSmartPointer<vtkActor>::New();
 	edge_actor->SetMapper(edge_mapper);
-	edge_actor->GetProperty()->SetLineWidth(2.0);
+	edge_actor->GetProperty()->SetLineWidth(4.0);
 	edge_actor->GetProperty()->SetOpacity(0.75);
 	return edge_actor;
 }
@@ -1466,7 +1466,7 @@ void ScreenShot(vtkRenderWindow* renderWindow)
 	// Screenshot  
 
 	std::string filename;
-	if (GetFileName(filename,"All\0*.*\0PNG file\0*.png\0",true))
+	if (GetFileName(filename,"PNG file\0*.png\0All\0*.*\0",true))
 	{
 		vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = 
 		vtkSmartPointer<vtkWindowToImageFilter>::New();
