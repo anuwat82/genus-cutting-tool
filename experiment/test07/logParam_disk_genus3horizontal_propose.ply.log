@@ -1,25 +1,10 @@
-element vertex 6875
-
-element face 13144
-
 MODEL: disk_genus3horizontal_propose.ply
-
 NUMBER ORIGINAL VERTEX: 6875
-
 NUMBER ORIGINAL FACE: 13144
-
-DEGREE 0 . . .
-
 STOP BECAUSE BOUNDARY FACE (1.993245/2.000000)
-
 Calculate Time for seam boundary : 0.381000 sec
-
 === NUMBER BORDER EDGES : 603 ===
-
-=== Find best stretch  of TEST58  (best corner at 1.452294) ===
-
-=== Find worst stretch  of TEST125  (worst corner at 1.702741) ===
-
+=== Find best stretch of TEST58 (best corner ERR = 1.452294)===
+=== Find worst stretch  of TEST125  (worst corner ERR = 1.702741) ===
 === Circular Parameterization  stretch = 1.679489 ===
-
 Calculate Time for corner : 4.572000 sec
