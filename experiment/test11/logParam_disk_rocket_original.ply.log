@@ -1,7 +1,7 @@
 MODEL: disk_rocket_original.ply
 NUMBER ORIGINAL VERTEX: 1688
 NUMBER ORIGINAL FACE: 2900
-Calculate Time for seam boundary : 0.093000 sec
+Calculate Time for seam boundary : 0.005000 sec
 === NUMBER BORDER EDGES : 473 ===
 === Find best stretch of TEST27 (best corner ERR = 94.153652)===
 === Find worst stretch  of TEST97  (worst corner ERR = 77596321981135.203000) ===

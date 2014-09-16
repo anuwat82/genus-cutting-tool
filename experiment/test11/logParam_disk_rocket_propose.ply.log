@@ -1,9 +1,9 @@
 MODEL: disk_rocket_propose.ply
 NUMBER ORIGINAL VERTEX: 1686
 NUMBER ORIGINAL FACE: 2900
-Calculate Time for seam boundary : 0.032000 sec
+Calculate Time for seam boundary : 0.005000 sec
 === NUMBER BORDER EDGES : 469 ===
 === Find best stretch of TEST25 (best corner ERR = 55.941317)===
 === Find worst stretch  of TEST64  (worst corner ERR = 5539067227464.534200) ===
 === Circular Parameterization  stretch = 14.191341 ===
-Calculate Time for corner : 1.055000 sec
+Calculate Time for corner : 0.942000 sec
