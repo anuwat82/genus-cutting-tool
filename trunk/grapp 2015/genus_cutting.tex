@@ -41,14 +41,58 @@
 \section{\uppercase{Introduction}}
 \label{sec:introduction}
 
-\noindent Your paper will be part of the conference proceedings
-therefore we ask that authors follow the guidelines explained in
-this example in order to achieve the highest quality possible
-\cite{Smith98}.
+\noindent Geometry processing is an important research in 3D computer graphics field. Without efficient algorithms, it is very difficult to develop any kinds of advance application for end-users. Some of important applications in 3D computer graphics, such as texture mapping \cite{Bennis:1991:PSF:127719.122744}, normal mapping \cite{Cohen:1998:AS:280814.280832},remeshing \cite{Hormann00quadrilateralremeshing} and parameterization \cite{Tutte:1963,Floater:1997:PSA:248299.248308} require specific topology of input mesh. There are many cases that topological disk surface is specified for further processing.
 
-Be advised that papers in a technically unsuitable form will be
-returned for retyping. After returned the manuscript must be
-appropriately modified.
+ Mesh parameterization is defined as a mapping between
+a 3D manifold surface and a suitable target domain.
+In general, the mesh parameterization is formulated
+as a mapping from 3D triangulated surfaces
+to a certain 2D planar domain. However, mesh parameterization
+requires 3D surfaces to be topologically
+equivalent to a disk without any hole, which can
+be easily mapped into a 2D domain. Consequently,
+closed-boundary surfaces such as 3D models widely
+used cannot be parameterized directly. Moreover, surfaces
+which have any hole or being non-genus zero also
+cannot be parameterized directly too. To resolve the
+above problem, we need to convert a 3D surface into
+disk topology by cutting seams into the surface to generate
+a boundary for parameterization. Parameterization
+between these two domains causes distortion errors
+such as stretch. Too short/long seam boundary
+and random seam without any strategy may give poor
+result of distortion easily.
+
+Several applications of three-dimensional surfaces, such as parameterization [21, 50] and
+texture mapping [3, 47], require information about the underlying topological structure in
+addition to the geometry. In some cases, we wish to simplify the surface topology, to facilitate
+algorithms that can be performed only if the surface is a topological disk.
+In the texture mapping problem, we wish to nd a continuous and invertible mapping
+from the texture, usually a two-dimensional rectangular image, to the surface. Unfortunately,
+if the surface is not a topological disk, no such map exists. In such a case, the only feasible
+solution is to cut the surface so that it becomes a topological disk. (Haker et al. [28] present
+an algorithm for directly texture mapping models with the topology of a sphere, where the
+texture is also embedded on a sphere.) Of course, when cutting the surface, one would like to
+nd the best possible cut under various considerations. For example, one might want to cut
+the surface so that the resulting surface can be texture mapped with minimum distortion
+[21, 27, 50]. To our knowledge, all previous approaches for the texture-mapping problem
+either rely on cutting heuristics with no quality guarantees [27, 49, 52] or require the user
+to cut the surface beforehand [21, 47].
+
+
+One of the useful applications of parameterization
+is re-meshing. There is a famous re-meshing application
+called geometry image [1]. Through the parameterization
+of any model into the square planar domain,
+we can nd the relationship between positions of surface
+domain and planar domain. After that, we can
+sample grid points on the square planer domain, and
+get position on 3D surface. In order to generate such
+geometry image with low distortion, the square planar
+domain parameterization plays an important role.
+Unlikely as the circular boundary domain or natural
+boundary domain, the square boundary domain could
+be easily caught with the problem of boundary constraint
 
 \section{\uppercase{Manuscript Preparation}}
 
@@ -353,7 +397,7 @@ without numbering. To do so please use the following command:
 \vfill
 \bibliographystyle{apalike}
 {\small
-\bibliography{example}}
+\bibliography{genus_cutting}}
 
 
 \section*{\uppercase{Appendix}}
