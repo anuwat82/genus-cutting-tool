@@ -2,6 +2,7 @@
 
 \usepackage{epsfig}
 \usepackage{subfigure}
+\usepackage{graphicx}
 \usepackage{calc}
 \usepackage{amssymb}
 \usepackage{amstext}
@@ -26,7 +27,7 @@
 \email{dechvijankit.a.aa@m.titech.ac.jp}
 }
 
-\keywords{geodesic distance, graph cut, homotopy, parameterization}
+\keywords{geodesic distance, graph cut, homotopy, surface parameterization}
 
 
 %The abstract should summarize the contents of the paper and should contain at least 70 and at most 200 words. The text must be set to 9-point font size.
@@ -41,8 +42,22 @@
 \section{\uppercase{Introduction}}
 \label{sec:introduction}
 
-\noindent Geometry processing is an important research in 3D computer graphics field. Without efficient algorithms, it is very difficult to develop any kinds of advance application for end-users. Some of important applications in 3D computer graphics, such as texture mapping \cite{Bennis:1991:PSF:127719.122744}, normal mapping \cite{Cohen:1998:AS:280814.280832},remeshing \cite{Hormann00quadrilateralremeshing} and parameterization \cite{Tutte:1963,Floater:1997:PSA:248299.248308} require specific topology of input mesh. There are many cases that topological disk surface is specified for further processing.
+\noindent Geometry processing is an important research in 3D computer graphics field. Without efficient algorithms, it is very difficult to develop any kinds of advance application for end-users. Some of important applications in 3D computer graphics, such as texture mapping \cite{Bennis:1991:PSF:127719.122744}, normal mapping \cite{Cohen:1998:AS:280814.280832}, remeshing \cite{Hormann00quadrilateralremeshing} and parameterization \cite{Tutte:1963,Floater:1997:PSA:248299.248308} require specific topology of input mesh. There are many cases that topological disk surface is specified for further processing. With such requirement of topology in input mesh, it has impact on several researches in computer graphics and graph theory. There are many properties in each mesh such as closed/open, holes and genus.
 
+When dealing with mesh that require disk topology input, there is different measure on each kinds of meshes. Open surface has same topology as disk already which can pass directly but may need to take care in case of containing holes. The problems arise when dealing with closed surface since it has different topology from disk. The process to cutting surface into the disk is required. In case of sphere topology, it does not require much processes; only short graph edge is necessary. However, there is some processes to ensure quality that require more graph edges in homotopy cutting. The problem becomes more complex and more interesting when dealing with high genus surfaces. 
+   
+This present paper solves homotopy cutting on high genus surfaces. Our approach is an enhancement of a novel method \cite{Gu:2002:GI:566654.566589} in homotopy cutting; cutting surface into disk. A benefit of this method is to able to handle any kinds of 2-manifold surfaces, regardless from topology specific. We presents an algorithms that create cut graph on the area where geodesic path came from difference directions (see example in figure \ref{fig:geodesic rocket arm}). With an few extra calculation,  we can define equally or more appropriate cut graph from original method while remains performance and stability.
+\begin{figure}[!h]
+	%\vspace{-0.2cm}
+	\centering
+	{\includegraphics[width=0.9\columnwidth]{images/geodesic_rocket-arm.png}}
+	\caption{Geodesic distance radius from a starting point on genus 1 rocket arm model. At the hole, we can see some sharp pattern which can be recognize as geodesic path came from different directions.}
+	\label{fig:geodesic rocket arm}
+\end{figure}
+
+
+
+ 
  Mesh parameterization is defined as a mapping between
 a 3D manifold surface and a suitable target domain.
 In general, the mesh parameterization is formulated
