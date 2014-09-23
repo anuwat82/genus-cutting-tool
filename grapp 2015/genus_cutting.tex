@@ -30,11 +30,6 @@
 \keywords{geodesic distance, graph cut, homotopy, surface parameterization}
 
 
-%The abstract should summarize the contents of the paper and should contain at least 70 and at most 200 words. The text must be set to 9-point font size.
-%
-%In order to parameterize any three-dimensional surface like a closed boundary one, we need to convert its polygonal mesh into a disk topology surface. For quality of texturing or re-meshing that uses a parameterization technique, it is more effective if the distortion of two-dimensional manifold planar domain map is as small as possible. We introduce a fast way to create seams along with three-dimensional surface for square boundary of a two-dimensional planar domain map. This paper describes a faster and less error technique than the  existing seam cutting methods by simply observing the location of high distortion area in the planar domain. The distortion rate of our proposed method is low as the original one with less time consuming. Also we discuss to find the best corner points in the square planar domain that enable to delivery of the lowest stretch by avoiding boundary constraint if possible.
-
-%Several tools from topology are useful for mesh processing. These tools often operate on the 1-skeleton of a surface, i.e., the graph of edges embedded in the surface. A common task is to find a collection of edges called a cut graph - cutting along these paths turns the surface into a shape which can be flattened into the plane. This kind of flattening is necessary for texture mapping, remeshing, etc. For instance, the video linked to above shows a cut graph (in yellow) on a two-handled torus, which gets flattened to a circular disk.	One way to find a cut graph is to find a set of loops, no two of which are homologous, which cut the surface into a disk when removed. Intuitively, two loops on a surface are homologous if one can be deformed into the other while always keeping it entirely on the surface. For a closed orientable surface with genus g (i.e., a torus with g handles), there are 2g classes of homologically independent loops. A homology basis consists of one loop from each class. Not every homology basis is a cut graph: some homology bases either disconnect the surface or cut it into a punctured sphere. However, a greedy homotopy basis (described below) will cut the surface into a disk.
 \abstract{Topology is a property in surfaces that plays a major role in computer graphics. Processing or analysis between two surfaces generally require both of them to be same topology. There are many tools or applications that require disk topology surfaces as input such as parameterization or remeshing. Therefore, we need convert any surfaces to be same as disk. The common procedure is to define edges graph inside surface that be split into two edges and turns surface into topological disk. We call it as homotopy cutting. Problems become more difficult when dealing with high genus surfaces such as torus. Based on a novel method, we present an enhancement method to define cut graph in high-genus surface for homotopy cutting. By using geodesic properties of each edge, we can generate more suitable edges graph than original method while remains performance and stability as original method.}
 
 \onecolumn \maketitle \normalsize \vfill
@@ -57,76 +52,11 @@ This present paper solves homotopy cutting on high genus surfaces. Our approach 
 
 
 
- 
- Mesh parameterization is defined as a mapping between
-a 3D manifold surface and a suitable target domain.
-In general, the mesh parameterization is formulated
-as a mapping from 3D triangulated surfaces
-to a certain 2D planar domain. However, mesh parameterization
-requires 3D surfaces to be topologically
-equivalent to a disk without any hole, which can
-be easily mapped into a 2D domain. Consequently,
-closed-boundary surfaces such as 3D models widely
-used cannot be parameterized directly. Moreover, surfaces
-which have any hole or being non-genus zero also
-cannot be parameterized directly too. To resolve the
-above problem, we need to convert a 3D surface into
-disk topology by cutting seams into the surface to generate
-a boundary for parameterization. Parameterization
-between these two domains causes distortion errors
-such as stretch. Too short/long seam boundary
-and random seam without any strategy may give poor
-result of distortion easily.
+\section{\uppercase{Related Works}}
+\noindent From previous research, there was a novel study the problem of cutting a topological surface into the disk efficiently by \ \cite{Erickson:2002:OCS:513400.513430}. They have proposed a cutting method which has some elegant theoretical guarantees but is complex to implement. It finds the shortest loop path connecting a vertex to the vertex itself by using a front propagation technique, and then tests to see if the considering loop path reduces the surface genus or simply cut the surface into two pieces. The generation of minimal length cuts that convert a high genus surface into a topological disk is a NP-hard problem. The method is a brute force approach which consumes a lot of time. it has approximation of the shortest cut graph in $O(g^2 n \log n)$. In more study from \cite{Erickson:2005:GOH:1070432.1070581}, they studied about greedy homotopy basis and improvement speed in $O(n \log n)$
+by using a straightforward application of Dijkstra's shortest path algorithm \cite{Dijkstra59anote}. 
 
-Several applications of three-dimensional surfaces, such as parameterization [21, 50] and
-texture mapping [3, 47], require information about the underlying topological structure in
-addition to the geometry. In some cases, we wish to simplify the surface topology, to facilitate
-algorithms that can be performed only if the surface is a topological disk.
-In the texture mapping problem, we wish to nd a continuous and invertible mapping
-from the texture, usually a two-dimensional rectangular image, to the surface. Unfortunately,
-if the surface is not a topological disk, no such map exists. In such a case, the only feasible
-solution is to cut the surface so that it becomes a topological disk. (Haker et al. [28] present
-an algorithm for directly texture mapping models with the topology of a sphere, where the
-texture is also embedded on a sphere.) Of course, when cutting the surface, one would like to
-nd the best possible cut under various considerations. For example, one might want to cut
-the surface so that the resulting surface can be texture mapped with minimum distortion
-[21, 27, 50]. To our knowledge, all previous approaches for the texture-mapping problem
-either rely on cutting heuristics with no quality guarantees [27, 49, 52] or require the user
-to cut the surface beforehand [21, 47].
-
-
-One of the useful applications of parameterization
-is re-meshing. There is a famous re-meshing application
-called geometry image [1]. Through the parameterization
-of any model into the square planar domain,
-we can nd the relationship between positions of surface
-domain and planar domain. After that, we can
-sample grid points on the square planer domain, and
-get position on 3D surface. In order to generate such
-geometry image with low distortion, the square planar
-domain parameterization plays an important role.
-Unlikely as the circular boundary domain or natural
-boundary domain, the square boundary domain could
-be easily caught with the problem of boundary constraint
-
-\section{\uppercase{Manuscript Preparation}}
-
-\noindent We strongly encourage authors to use this document for the
-preparation of the camera-ready. Please follow the instructions
-closely in order to make the volume look as uniform as possible
-\cite{Moore99}.
-
-Please remember that all the papers must be in English and without
-orthographic errors.
-
-Do not add any text to the headers (do not set running heads) and
-footers, not even page numbers, because text will be added
-electronically.
-
-For a best viewing experience the used font must be Times New
-Roman, except on special occasions, such as program code
-\ref{subsubsec:program_code}.
-
+One of important in efficiency is to compute non-trivial cycles on orientable surfaces. Non-trivial cycles mean non-contractible and non-separating cycles which guarantees cutting topological surface into disk. Recently, \cite{Kutz:2006:CSN:1137856.1137919} presents an algorithm that computes a shortest non-trivial cycles on orientable combinatorial surface of bounded genus in  $O(n \log n)$. The algorithm is based on universal-cover constructions to find short cycles.
 
 \subsection{Manuscript Setup}
 
