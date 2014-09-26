@@ -12,6 +12,7 @@
 \usepackage{pslatex}
 \usepackage{apalike}
 \usepackage{SCITEPRESS}
+\usepackage{mathrsfs}
 \usepackage[small]{caption}
 
 \subfigtopskip=0pt
@@ -41,7 +42,7 @@
 
 When dealing with mesh that require disk topology input, there is different measure on each kinds of meshes. Open surface has same topology as disk already which can pass directly but may need to take care in case of containing holes. The problems arise when dealing with closed surface since it has different topology from disk. The process to cutting surface into the disk is required. In case of sphere topology, it does not require much processes; only short graph edge is necessary. However, there is some processes to ensure quality that require more graph edges in homotopy cutting. The problem becomes more complex and more interesting when dealing with high genus surfaces. 
    
-This present paper solves homotopy cutting on high genus surfaces. Our approach is an enhancement of a novel method \cite{Gu:2002:GI:566654.566589} in homotopy cutting; cutting surface into disk. A benefit of this method is to able to handle any kinds of 2-manifold surfaces, regardless from topology specific. We presents an algorithms that create cut graph on the area where geodesic path came from difference directions (see example in figure \ref{fig:geodesic rocket arm}). With an few extra calculation,  we can define equally or more appropriate cut graph from original method while remains performance and stability.
+This present paper solves homotopy cutting on high genus surfaces. Our approach is an enhancement of a novel method \cite{Gu:2002:GI:566654.566589} in homotopy cutting; cutting surface into disk. A benefit of this method is to able to handle any kinds of 2-manifold surfaces, regardless from topology specific. We presents an algorithms that create cut graph on the area where geodesic path came from difference directions in exact geodesic distance \cite{Mitchell:1987:DGP:33367.33372,Surazhsky:2005:FEA:1073204.1073228} (see example in figure \ref{fig:geodesic rocket arm}). With an few extra calculation,  we can define equally or more appropriate cut graph from original method while remains performance and stability.
 \begin{figure}[!h]
 	%\vspace{-0.2cm}
 	\centering
@@ -50,7 +51,8 @@ This present paper solves homotopy cutting on high genus surfaces. Our approach 
 	\label{fig:geodesic rocket arm}
 \end{figure}
 
-
+\subsection{Notations}
+Before we explains various algorithms about homotopy, let us define basic notations. We represent 2-manifold triangular surfaces or mesh $\mathscr{M}:=(V,F)$ where $V:=\{ v_{i}\in \mathbb{R}^3 : i = 1, ... , n\}$ is a set of $n$ vertices.
 
 \section{\uppercase{Related Works}}
 \noindent From previous researches in topological converting topic in the past few years, there was a novel study the problem of cutting a topological surface into the disk efficiently by \cite{Erickson:2002:OCS:513400.513430}. They have proposed a cutting method which has some elegant theoretical guarantees but is complex to implement. It finds the shortest loop path connecting a vertex to the vertex itself by using a front propagation technique, and then tests to see if the considering loop path reduces the surface genus or simply cut the surface into two pieces. The generation of minimal length cuts that convert a high genus surface into a topological disk is a NP-hard problem. The method is a brute force approach which consumes a lot of time. it has approximation of the shortest cut graph in $O(g^2 n \log n)$. In more study from \cite{Erickson:2005:GOH:1070432.1070581}, they studied about greedy homotopy basis and improvement speed in $O(n \log n)$
