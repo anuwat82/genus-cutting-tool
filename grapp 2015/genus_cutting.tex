@@ -1,7 +1,8 @@
 \documentclass[a4paper,twoside]{article}
-
+\usepackage[small]{caption}
 \usepackage{epsfig}
-\usepackage{subfigure}
+%\usepackage{subfigure}
+\usepackage[subrefformat=parens,labelformat=parens]{subfig}
 \usepackage{graphicx}
 \usepackage{calc}
 \usepackage{amssymb}
@@ -13,17 +14,18 @@
 \usepackage{apalike}
 \usepackage{SCITEPRESS}
 \usepackage{mathrsfs}
-\usepackage[small]{caption}
+\captionsetup[subfloat]{farskip=0pt,nearskip=0pt,captionskip=5pt}
 
-\subfigtopskip=0pt
-\subfigcapskip=0pt
-\subfigbottomskip=0pt
+
+%\subfigtopskip=0pt
+%\subfigcapskip=0pt
+%\subfigbottomskip=0pt
 
 \begin{document}
 
 \title{Homotopy Surface Cutting Using Edges' Sources in Geodesic Distance}
 
-\author{\authorname{Anuwat Dechvijankit,Hiroshi Nagahashi and Kota Aoki}
+\author{\authorname{Anuwat Dechvijankit,Author2 and Author3}
 \affiliation{Department of Computational Intelligence and Systems Science, Tokyo Institute of Technology, Japan}
 \email{dechvijankit.a.aa@m.titech.ac.jp}
 }
@@ -69,8 +71,8 @@ There is a iterative method called "geometry images" by \cite{Gu:2002:GI:566654.
 \begin{figure}[!h]
 	%\vspace{-0.2cm}
 	\centering
-	\subfigure[Geometry of surface]	{\label{fig:gim3d}\includegraphics[width=0.45\columnwidth]{images/gim_bunny3D.png}}
-	\subfigure[Geometry image]{\label{fig:gim2d}\includegraphics[width=0.45\columnwidth]{images/gim_bunny2D.png}}
+	\subfloat[Geometry of surface]{\label{fig:gim3d}\includegraphics[width=0.45\columnwidth]{images/gim_bunny3D.png}}
+	\subfloat[Geometry image]{\label{fig:gim2d}\includegraphics[width=0.45\columnwidth]{images/gim_bunny2D.png}}
 	
 	\caption{A geometry image.}
 	\label{fig:gim figure}
@@ -79,6 +81,64 @@ There is a iterative method called "geometry images" by \cite{Gu:2002:GI:566654.
 Since our approach is based on geometry images, we explain how it creates cut graph for homotopy cutting on irregular surface $\mathscr{M}$ with genus $g$ property in section \ref{sec:previous algorithm}.
 \section{\uppercase{Previous Algorithm}}
 \label{sec:previous algorithm}
+\noindent \cite{Gu:2002:GI:566654.566589} algorithm is divided into two parts, homotopy cutting and its augmentation. The augmentation aims to improve subsequent square planar domain parameterization. We explains the first part that involve defining cut graph and convert surface $\mathscr{M}$ into disk.
+
+
+
+\begin{figure*}[t]
+	\centering		
+	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep-a}]{\includegraphics[width=0.400\columnwidth]{images/fig-original_genus_reduce_method_step_by_step-a.png}}\hspace{10pt}
+	\hspace{0.000\columnwidth}
+	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep-b}]{\includegraphics[width=0.400\columnwidth]{images/fig-original_genus_reduce_method_step_by_step-b.png}}\hspace{10pt}		
+	\hspace{0.000\columnwidth}
+	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep-c}]{\includegraphics[width=0.400\columnwidth]{images/fig-original_genus_reduce_method_step_by_step-c.png}}\hspace{10pt}		
+	\hspace{0.000\columnwidth}
+	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep-d}]{\includegraphics[width=0.400\columnwidth]{images/fig-original_genus_reduce_method_step_by_step-d.png}}		
+	\caption{Processes after removing a seed triangle from mesh. Gray areas mean that there are still triangle, while white areas mean triangles have been removed. Dash lines mean edges that are adjacent to only one triangle at the moment. \subref{fig:OriginalGenusReduceMethodStepByStep-a} shows the moment after removing the seed triangle; that is, edges e1,e2 and e3 are only edges that adjacent only one triangle. Assume that edge e1 has the smallest geodesic distance from the seed triangle at the moment. \subref{fig:OriginalGenusReduceMethodStepByStep-b} shows the result of removing edge e1 and face F1 from the condition. At this moment, edge e4 is also adjacent to only one triangle same as edge e2. Let e2 have smaller geodesic distance than edges e3 and e4.  \subref{fig:OriginalGenusReduceMethodStepByStep-c} shows the result of removing edge e2 and face F2 without removing edge e4. Because of the edge e4 is not adjacent any triangle after removing face F2, it is excluded from adjacent only one triangle's condition. The edge e4 becomes a candidate of seam-cutting edge. \subref{fig:OriginalGenusReduceMethodStepByStep-d} shows the result of next step from \subref{fig:OriginalGenusReduceMethodStepByStep-c} that removing triangle keep spread from the seed triangle.}
+	\label{fig:OriginalGenusReduceMethodStepByStep}
+\end{figure*}
+
+At the beginning in the method , if the mesh has boundaries, let $\mathscr{B}$  be the set of original boundary edges that remain unchanged in the whole process and will be included in final cut graph ${\rho}$. It first starts by removing a single seed triangle from the mesh. At this moment, each edge of the seed triangle is adjacent to only one triangle respectively (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep-a}).  After removing the seed triangle from the mesh, there are two phases of processing.
+
+In the first phase, it repeatedly detect an edge adjacent exactly to one triangle that is not in $\mathscr{B}$, and remove both the edge and the triangle from the mesh structure. The rest two edges are left (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep-b}). If the rest edges of the removing triangle are not adjacent any triangle, then the edges will become one of candidate cut graph (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep-c}). Generally, removing one edge and one triangle triggers more two edges to be adjacent to  only one triangle further. Considering from mentioned condition, the early detected edges have to be the ones of the seed triangle so the removal of edges and triangles will keep spreading out from the seed triangle according to geodesic distance in order to get minimum radius result (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep-d}). Since a 2-manifold triangle mesh is being processed, any triangle can be accessed from other triangles with some paths. Because of that, any triangle will be removed eventually.Therefore, this phase ends when there is no triangle left and there remain only edges and their vertices (see figure \subref*{fig:fig-original_genus_reducing_process-c}) as candidate cut graph edges. At this point, the cut $\rho$ consists of a set of connecting $2g$ loops.
+In the second phase, we again iteratively detect a valence-1 vertex and its corresponding edge, and remove both the vertex and the edge (see figure \ref{fig:fig-original_remove_dangling_edges_step_by_step}\subref{fig:fig-original_remove_dangling_edges_step_by_step-a} to ~\subref{fig:fig-original_remove_dangling_edges_step_by_step-e}). The purpose of this phase is to remove unnecessary dangling edges in the first phase. The dangling edges will be repeatedly trimmed away until there is no valence-1 vertex in the cut $\rho$ left. There are only edges that form connected loops as cut-paths in the cut $\rho$ (see figure \ref{fig:fig-original_remove_dangling_edges_step_by_step-f}). At Last, all cut graph loops in $\rho$ are straightened by computing a local shortest path in each loop. Finally, the connected $2g$ loop cut graph in $\rho$ is homotopy basis: convert surface into a topological disk patch. See figure \ref{fig:fig-original_genus_reducing_process} for overall process of finding genus reduce cutting on a genus-3 mesh.
+
+
+\begin{figure}[bh!]
+	\centering		
+	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-a}]{\includegraphics[width=0.40\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-a.png}} \hspace{10pt}
+	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-b}]{\includegraphics[width=0.40\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-b.png}}\\		
+	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-c}]{\includegraphics[width=0.40\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-c.png}}	\hspace{10pt}	
+	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-d}]{\includegraphics[width=0.40\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-d.png}}	\\
+	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-e}]{\includegraphics[width=0.40\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-e.png}}	\hspace{10pt}
+	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-f}]{\includegraphics[width=0.40\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-f.png}}	 
+	\caption[]{Process on removing dangling edges. Numbers on vertices indicate present valence number. We focus on the removing of blue dangling edges. \subref{fig:fig-original_remove_dangling_edges_step_by_step-a} shows initial state where there are two valence-1 edges in blue dangling edges at the moment. \subref{fig:fig-original_remove_dangling_edges_step_by_step-b} shows the next step from \subref{fig:fig-original_remove_dangling_edges_step_by_step-a} that removed one of valence-1 edge along with its vertex. The order of removing is not important. \subref{fig:fig-original_remove_dangling_edges_step_by_step-c} and \subref{fig:fig-original_remove_dangling_edges_step_by_step-d} show iteration process of removing valence-1 edge and vertex on blue dangling edges. \subref{fig:fig-original_remove_dangling_edges_step_by_step-e} shows that all blue dangling edges have been removed. \subref{fig:fig-original_remove_dangling_edges_step_by_step-f} shows the process of removing other dangling edges until valence-1 edge has not been found.}
+	\label{fig:fig-original_remove_dangling_edges_step_by_step}
+\end{figure}
+For the case of closed surface of genus 0, the overall processes from this part will generate the cut $\rho$ that consists of only one vertex. To be able to map into planar domain, we add two adjacent edges of the vertex into the cut graph $\rho$. On the other hand, for the case of a mesh having one or more holes, it will result in connected graphs between any two holes.
+\begin{figure}[h!]
+	\centering		
+	\subfloat[\label{fig:fig-original_genus_reducing_process-a}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-a.png}}
+	\hspace{0.00\columnwidth}
+	\subfloat[\label{fig:fig-original_genus_reducing_process-b}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-b.png}}
+	\hspace{0.00\columnwidth}
+	\subfloat[\label{fig:fig-original_genus_reducing_process-c}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-c.png}}
+	\hspace{0.00\columnwidth}
+	\subfloat[\label{fig:fig-original_genus_reducing_process-d}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-d.png}}
+	\hspace{0.00\columnwidth}
+	\subfloat[\label{fig:fig-original_genus_reducing_process-e}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-e.png}}
+	\hspace{0.00\columnwidth}
+	\subfloat[\label{fig:fig-original_genus_reducing_process-f}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-f.png}}
+	\caption[]{Process of genus-reduce cutting by sequentially removing triangles, edges and vertices. \subref{fig:fig-original_genus_reducing_process-a} shows a closed genus-3 mesh with one seed triangle (yellow dot). \subref{fig:fig-original_genus_reducing_process-b} shows the intermediate state of mesh when removing triangles and edges that are adjacent to only one triangle. \subref{fig:fig-original_genus_reducing_process-c} shows edge skeleton mesh after removing all triangles. \subref{fig:fig-original_genus_reducing_process-d} and \subref{fig:fig-original_genus_reducing_process-e} show the intermediate state of mesh when removing edges and vertices that are adjacent to only one edge. \subref{fig:fig-original_genus_reducing_process-f} shows final result of straightened cutting edges after removing edges and vertices.}
+	\label{fig:fig-original_genus_reducing_process}
+\end{figure}
+
+\section{\uppercase{Geodesic Distance}}
+\label{sec:geodesic distance}
+\noindent Since \cite{Gu:2002:GI:566654.566589} algorithm creates front propagation on geodesic distance. Without specific algorithm about it, we consider it as exact geodesic distance as know as MMP algorithm \cite{Mitchell:1987:DGP:33367.33372,Surazhsky:2005:FEA:1073204.1073228}. it computes exact shortest paths on a triangular mesh. The paths typically cut cross faces in the mesh , difference from typical Dijkstra shortest paths \cite{Dijkstra59anote} that run cross edges in the mesh.
+
+MMP algorithm create geodesic path for "single source , all destination" scheme. The algorithm partitions each mesh edge into a set of intervals.
+
 
 \subsection{Manuscript Setup}
 
@@ -355,10 +415,7 @@ behalf of all the other authors, and uploaded through the authors' reserved area
 We hope you find the information in this template useful in the preparation of your submission.
 
 \section*{\uppercase{Acknowledgements}}
-
-\noindent If any, should be placed before the references section
-without numbering. To do so please use the following command:
-\textit{$\backslash$section*\{ACKNOWLEDGEMENTS\}}
+\noindent The images in figure \ref{fig:gim figure} and \ref{fig:fig-original_genus_reducing_process}  are from \cite{Gu:2002:GI:566654.566589} paper and presentation file.
 
 
 \vfill
