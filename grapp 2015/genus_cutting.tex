@@ -52,15 +52,33 @@ This present paper solves homotopy cutting on high genus surfaces. Our approach 
 \end{figure}
 
 \subsection{Notations}
-Before we explains various algorithms about homotopy, let us define basic notations. We represent 2-manifold triangular surfaces or mesh $\mathscr{M}:=(V,F)$ where $V:=\{ v_{i}\in \mathbb{R}^3 : i = 1, ... , n\}$ is a set of $n$ vertices.
+Before we explains various algorithms about homotopy including ours, let us define basic notations. We represent 2-manifold triangular surface or mesh $\mathscr{M}:=(V,F)$ where $V:=\{ v_{i}\in \mathbb{R}^3 : i = 1, ... , n_v\}$ is a set of $n_v$ vertices and $F:=\{ f_{i}(a,b,c) : a,b,c = 1, ... , n_v : a \neq b \neq c\}$ is a set of $n_f$ faces information as index of vertices. Let define $E:=\{ e_{i}(a,b) : a,b = 1, ... , n_v : a \neq b\}$ as a set of $n_e$ edges information that be found in surface $\mathscr{M}$. Mesh has genus $g$ topology. 
+
 
 \section{\uppercase{Related Works}}
-\noindent From previous researches in topological converting topic in the past few years, there was a novel study the problem of cutting a topological surface into the disk efficiently by \cite{Erickson:2002:OCS:513400.513430}. They have proposed a cutting method which has some elegant theoretical guarantees but is complex to implement. It finds the shortest loop path connecting a vertex to the vertex itself by using a front propagation technique, and then tests to see if the considering loop path reduces the surface genus or simply cut the surface into two pieces. The generation of minimal length cuts that convert a high genus surface into a topological disk is a NP-hard problem. The method is a brute force approach which consumes a lot of time. it has approximation of the shortest cut graph in $O(g^2 n \log n)$. In more study from \cite{Erickson:2005:GOH:1070432.1070581}, they studied about greedy homotopy basis and improvement speed in $O(n \log n)$
+\label{sec:related works}
+\noindent From previous researches in topological converting topic in the past few years, there was a novel study the problem of cutting a topological surface into the disk efficiently by \cite{Erickson:2002:OCS:513400.513430}. They have proposed a cutting method which has some elegant theoretical guarantees but is complex to implement. It finds the shortest loop path connecting a vertex to the vertex itself by using a front propagation technique, and then tests to see if the considering loop path reduces the surface genus or simply cut the surface into two pieces. It has topologically-sufficient cut as $2g$ loops. The generation of minimal length cuts that convert a high genus surface into a topological disk is a NP-hard problem. The method is a brute force approach which consumes a lot of time. it has approximation of the shortest cut graph in $O(g^2 n \log n)$ where $n$ donates complexity of the surface. In more study from \cite{Erickson:2005:GOH:1070432.1070581}, they studied about greedy homotopy basis and improvement speed in $O(n \log n)$
 by using a straightforward application of Dijkstra's shortest path algorithm \cite{Dijkstra59anote}. 
 
 One of important in efficiency is to compute non-trivial cycles on orientable surfaces. Non-trivial cycles mean non-contractible and non-separating cycles which guarantees cutting topological surface into disk. Recently, \cite{Kutz:2006:CSN:1137856.1137919} presents an algorithm that computes a shortest non-trivial cycles on orientable combinatorial surface of bounded genus in  $O(n \log n)$. The algorithm is based on universal-cover constructions to find short cycles.
 
-There are studies that trying to define cut graph by properties of surfaces. Study from \cite{Patane:2007:FCB:1224804.1224947} presents an algorithm that build up the cut graph on the iso-contours from Reeb graph which codes in a combinatorial structure the topology of a given surface $M$ and connect loops together. Study from \cite{Jin:2013:CSH:2396897.2396971}, presents algorithm to compute the shortest homotopic loop with negative Euler characteristic based on the surface hyperbolic uniformization metric.
+There are studies that trying to define cut graph by properties of surfaces. Study from \cite{Patane:2007:FCB:1224804.1224947} presents an algorithm that build up the cut graph on the iso-contours from Reeb graph which codes in a combinatorial structure the topology of a given surface $\mathscr{M}$ and connect loops together. Another study from \cite{Jin:2013:CSH:2396897.2396971}, presents algorithm to compute the shortest homotopic loop with negative Euler characteristic based on the surface hyperbolic uniformization metric. They also demonstrate two applications: constructing extremal quasi-conformal mappings between same topology surfaces, and detecting homotopy between two paths or cycles on a surface. 
+
+There is a iterative method called "geometry images" by \cite{Gu:2002:GI:566654.566589}. This paper presents a remeshing approach using square surface parameterization to create  using mapping between disk topology irregular surface $\mathscr{M}$ in $\mathbb{R}^3$ domain and square planar in $\mathbb{R}^2$ domain and sample positions to get a regular positions. To get low error on remeshing, they present how to create cut graph from any kinds of surface $\mathscr{M}$ regardless from pre-analysis such as topology and boundary edges.
+
+\begin{figure}[!h]
+	%\vspace{-0.2cm}
+	\centering
+	\subfigure[Geometry of surface]	{\label{fig:gim3d}\includegraphics[width=0.45\columnwidth]{images/gim_bunny3D.png}}
+	\subfigure[Geometry image]{\label{fig:gim2d}\includegraphics[width=0.45\columnwidth]{images/gim_bunny2D.png}}
+	
+	\caption{A geometry image.}
+	\label{fig:gim figure}
+\end{figure}
+
+Since our approach is based on geometry images, we explain how it creates cut graph for homotopy cutting on irregular surface $\mathscr{M}$ with genus $g$ property in section \ref{sec:previous algorithm}.
+\section{\uppercase{Previous Algorithm}}
+\label{sec:previous algorithm}
 
 \subsection{Manuscript Setup}
 
