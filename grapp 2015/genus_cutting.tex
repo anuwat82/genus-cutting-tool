@@ -135,9 +135,9 @@ For the case of closed surface of genus 0, the overall processes from this part 
 
 \section{\uppercase{Geodesic Distance}}
 \label{sec:geodesic distance}
-\noindent Since \cite{Gu:2002:GI:566654.566589} algorithm creates front propagation on geodesic distance. Without specific algorithm about it, we consider it as exact geodesic distance as know as MMP algorithm \cite{Mitchell:1987:DGP:33367.33372,Surazhsky:2005:FEA:1073204.1073228}. it computes exact shortest paths on a triangular mesh. The paths typically cut cross faces in the mesh , difference from typical Dijkstra shortest paths \cite{Dijkstra59anote} that run cross edges in the mesh.
+\noindent Since \cite{Gu:2002:GI:566654.566589} algorithm creates front propagation on geodesic distance. Without specific algorithm, we consider it as exact geodesic distance, proposed by \cite{Mitchell:1987:DGP:33367.33372,Surazhsky:2005:FEA:1073204.1073228} as know as MMP algorithm. It computes exact shortest paths on a triangular mesh. The paths typically cut cross faces in the mesh, difference from typical Dijkstra shortest paths \cite{Dijkstra59anote} that run cross edges in the mesh.
 
-MMP algorithm create geodesic path for "single source , all destination" scheme. The algorithm partitions each mesh edge into a set of intervals.
+MMP algorithm create geodesic path for "single source , all destination" scheme. The algorithm computes a set of intervals of each edge. An interval represents accessible pencil of lines from its pseudo-source.
 
 
 \subsection{Manuscript Setup}
