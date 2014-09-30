@@ -148,13 +148,14 @@ For the case of closed surface of genus 0, the overall processes from this part 
 MMP algorithm create geodesic path for "single source , all destination" scheme. The algorithm computes a set of intervals of each edge. An interval represents accessible pencil of lines from its pseudo-source. Each internal also acts as pseudo-source to propagate across faces of the rest of mesh. The algorithm propagates distance information out from source in a Dijkstra-like fashion which can traceback any positions on mesh back to the source.
 
 The performance of MMP algorithm : They prove a worst case
-running time of $O(n^2 \log n)$ when $n$ is number of mesh edges. However in practical calculation, it can achieve on 100K triangles mesh within a few seconds. Also there is approximate version of MMP algorithm proposed by \cite{Surazhsky:2005:FEA:1073204.1073228} that can speed up calculation by trying to merge
-interval with an adjacent intervals on the same edge before propagation.
+running time of $O(n^2 \log n)$ when $n$ is number of mesh edges. However in practical calculation, it can achieve on 100K triangles mesh within a few seconds. Also there is approximate version of MMP algorithm proposed by \cite{Surazhsky:2005:FEA:1073204.1073228} that can speed up calculation by trying to merge interval with an adjacent intervals on the same edge before propagation.
 
-\section{\uppercase{Our approach}}
-\label{sec:result}
+\section{\uppercase{Our Approach}}
+\label{sec:our approach}
+\noindent Given a triangular 2-manifold mesh $\mathscr{M}$ without any topological information as genus property, we adopt the geometry images method \cite{Gu:2002:GI:566654.566589} to define $2g$ cut loop graph for homotopy basis. Instead having cut graph along propagation by geodesic distance criteria, we try to having cut graph in the area where it has same geodesic distance but its pseudo-sources come from different edges.
 
-\subsection{Edges That Having Difference Pseudo-Source Intervals}
+To define such area, we analyze set of intervals in each edge $e_i$ after calculate geodesic distance \cite{Mitchell:1987:DGP:33367.33372,Surazhsky:2005:FEA:1073204.1073228} as know as MMP algorithm : from a source vertex $v_{s}$. First, we define edges that their intervals have pseudo-sources laid on both side of adjacent faces. However, this case typically can be detected few edges and cannot cover all area that we want to have cut graph. Second, we define remaining edges that their intervals cannot be a pseudo-source of adjacent edges. 
+\subsection{pseudo-sources laid on both side of adjacent faces}
 
 \subsection{Edges That Intervals Fails to Propagate}
 
