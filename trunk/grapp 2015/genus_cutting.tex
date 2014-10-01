@@ -154,12 +154,23 @@ running time of $O(n^2 \log n)$ when $n$ is number of mesh edges. However in pra
 \label{sec:our approach}
 \noindent Given a triangular 2-manifold mesh $\mathscr{M}$ without any topological information as genus property, we adopt the geometry images method \cite{Gu:2002:GI:566654.566589} to define $2g$ cut loop graph for homotopy basis. Instead having cut graph along propagation by geodesic distance criteria, we try to having cut graph in the area where it has same geodesic distance but its pseudo-sources come from different edges.
 
-To define such area, we analyze set of intervals in each edge $e_i$ after calculate geodesic distance \cite{Mitchell:1987:DGP:33367.33372,Surazhsky:2005:FEA:1073204.1073228} as know as MMP algorithm : from a source vertex $v_{s}$. First, we define edges that their intervals have pseudo-sources laid on both side of adjacent faces. However, this case typically can be detected few edges and cannot cover all area that we want to have cut graph. Second, we define remaining edges that their intervals cannot be a pseudo-source of adjacent edges. 
-\subsection{pseudo-sources laid on both side of adjacent faces}
+To define such area, we analyze set of intervals in each edge $e_i$ after calculate geodesic distance \cite{Mitchell:1987:DGP:33367.33372,Surazhsky:2005:FEA:1073204.1073228} as know as MMP algorithm : from a source vertex $v_{s}$. First, we define edges that their intervals have pseudo-sources laid on both side of adjacent faces. However, this case typically can be detected few edges and cannot cover all area that we want to have cut graph. Second, we define remaining edges that their intervals cannot be a pseudo-source of adjacent edges. we define these two specific characteristic edges into a set of edges $\tilde{E}$. At this point, $\tilde{E}$ contains a lot of dangling edges. Therefore, we eliminate dangling edges from $\tilde{E}$: similar basis as original method.
 
-\subsection{Edges That Intervals Fails to Propagate}
+We ensure cut graph having non-separating cycles by considering neighbor edges of $\tilde{E}$. We define a set of neighbor edges $\hat{E}$, 
+let candidate cut graph edges be a set of edges $ \rho \equiv (\tilde{E} \cup \hat{E})$ and another edges be a set of edges $\acute{E} \equiv (E - \rho)$ . However, $\rho$ may contains contractible cycles too. Therefore, we again need to define non-separating and non-contractible cycles from $\rho$. We follow similar basis from original method by removing an edge adjacent exactly to one triangle. However, we create priority of removing edges in queue as following $\acute{E}$,  $\hat{E}$ and $\tilde{E}$. From this point, we follow the remaining original processes: removing dangling edges and shorten loop.
 
+We explain in details more how to define a set of edge $\tilde{E}$ from two types.
+\subsection{Edges: pseudo-sources laid on both side of adjacent faces}
+After calculating exact geodesic distance, each $e_i$ edge that is not boundary edge, has a set of intervals $I_{e_i}$. 
+
+
+\subsection{Edges: intervals fails to propagate}
+
+\subsection{Ensure for non-separating and non-contractible cycles}
+
+We classify these remaining edges in the set including their neighbor edges into $\tilde{E}$ to be area where cut graph should be passed through. However, $\tilde{E}$ typically may contains separating or contractible cycles. Therefore, we need to define a valid homotopy cut graph from $\tilde{E}$.
 \subsection{Priority Removing-Edge Inside Queue }
+
 
 \section{\uppercase{Results}}
 \label{sec:result}
