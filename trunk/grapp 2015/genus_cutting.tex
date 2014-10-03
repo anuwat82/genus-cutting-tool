@@ -91,7 +91,7 @@ Since our approach is based on geometry images, in section \ref{sec:previous alg
 	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep-c}]{\includegraphics[width=0.400\columnwidth]{images/fig-original_genus_reduce_method_step_by_step-c.png}}\hspace{10pt}		
 	\hspace{0.000\columnwidth}
 	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep-d}]{\includegraphics[width=0.400\columnwidth]{images/fig-original_genus_reduce_method_step_by_step-d.png}}		
-	\caption{Processes after removing a seed triangle from mesh. Gray areas mean that there are still triangles, while white areas mean triangles have been removed. Dash lines mean edges that are adjacent to only one triangle at the moment. \subref{fig:OriginalGenusReduceMethodStepByStep-a} shows the moment after removing the seed triangle; that is, edges e1,e2 and e3 are only edges that are adjacent to only one triangle. Assume that edge e1 has the smallest geodesic distance from the seed triangle at the moment. \subref{fig:OriginalGenusReduceMethodStepByStep-b} shows the result of removing edge e1 and face F1 according to the condition. At this moment, edge e4 is also adjacent to only one triangle same as edge e2. Let e2 have smaller geodesic distance than edges e3 and e4.  \subref{fig:OriginalGenusReduceMethodStepByStep-c} shows the result of removing edge e2 and face F2 without removing edge e4. Because of the edge e4 is not adjacent any triangle after removing face F2, it is excluded from adjacent only one triangle's condition. The edge e4 becomes a candidate of seam-cutting edge. \subref{fig:OriginalGenusReduceMethodStepByStep-d} shows the result of next step from \subref{fig:OriginalGenusReduceMethodStepByStep-c} that removing triangle F3 and edge e3. (TO DO: change images)}
+	\caption{Processes after removing a seed triangle from mesh. Gray areas mean that there are still triangles, while white areas mean triangles have been removed. Dash lines mean edges that are adjacent to only one triangle at the moment. \subref{fig:OriginalGenusReduceMethodStepByStep-a} shows the moment after removing the seed triangle; that is, edges e1,e2 and e3 are only edges that are adjacent to only one triangle. Assume that edge e1 has the smallest geodesic distance from the seed triangle at the moment. \subref{fig:OriginalGenusReduceMethodStepByStep-b} shows the result of removing edge e1 and face F1 according to the condition. At this moment, edge e4 is also adjacent to only one triangle same as edge e2. Let e2 have smaller geodesic distance than edges e3 and e4.  \subref{fig:OriginalGenusReduceMethodStepByStep-c} shows the result of removing edge e2 and face F2 without removing edge e4. Because of the edge e4 is not adjacent any triangle after removing face F2, it is excluded from adjacent only one triangle's condition. The edge e4 becomes a candidate of seam-cutting edge. \subref{fig:OriginalGenusReduceMethodStepByStep-d} shows the result of next step from \subref{fig:OriginalGenusReduceMethodStepByStep-c} that removing triangle F3 and edge e3. (TO DO: change images, shorter explanation)}
 	\label{fig:OriginalGenusReduceMethodStepByStep}
 \end{figure*}
 
@@ -102,7 +102,10 @@ In the first phase, it repeatedly detects an edge adjacent exactly to one triang
 In the second phase, we again iteratively detect a valence-1 vertex and its corresponding edge, and remove both the vertex and the edge (see figure \ref{fig:fig-original_remove_dangling_edges_step_by_step}). The purpose of this phase is to remove unnecessary dangling edges in the first phase. The dangling edges will be repeatedly trimmed away until there is no valence-1 vertex in the cut $\rho$ left. There are only edges that form connected loops as a cut graph in the cut $\rho$. At Last, all loops in $\rho$ are straightened by computing a local shortest path in each loop. Finally, the connected $2g$ loop cut graph in $\rho$ is homotopy basis: a cut graph that convert surface into a topological disk patch. See figure \ref{fig:fig-original_genus_reducing_process} for overall process of finding graph cut on a genus-3 mesh.
 
 
-\begin{figure}[bh!]
+
+For the case of closed surface of genus 0, the overall processes from this part will generate the cut $\rho$ that consists of only one vertex. To be able to map into planar domain, we add two adjacent edges of the vertex into the cut graph $\rho$. On the other hand, for the case of a mesh having one or more holes, it will result in connected graphs between any two holes.
+
+\begin{figure}[h!]
 	\centering		
 	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-a}]{\includegraphics[width=0.40\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-a.png}} \hspace{10pt}
 	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-b}]{\includegraphics[width=0.40\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-b.png}}\\		
@@ -110,10 +113,11 @@ In the second phase, we again iteratively detect a valence-1 vertex and its corr
 	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-d}]{\includegraphics[width=0.40\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-d.png}}	\\
 	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-e}]{\includegraphics[width=0.40\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-e.png}}	\hspace{10pt}
 	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-f}]{\includegraphics[width=0.40\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-f.png}}	 
-	\caption[]{Process on removing dangling edges. Numbers on vertices indicate present valence number. We focus on the removing of blue dangling edges. \subref{fig:fig-original_remove_dangling_edges_step_by_step-a} shows initial state where there are two valence-1 edges in blue dangling edges at the moment. \subref{fig:fig-original_remove_dangling_edges_step_by_step-b} shows the next step from \subref{fig:fig-original_remove_dangling_edges_step_by_step-a} that removes one of valence-1 edge along with its vertex. The order of removing is not important. \subref{fig:fig-original_remove_dangling_edges_step_by_step-c} and \subref{fig:fig-original_remove_dangling_edges_step_by_step-d} show iteration process of removing valence-1 edge and vertex on blue dangling edges. \subref{fig:fig-original_remove_dangling_edges_step_by_step-e} shows that all blue dangling edges have been removed. \subref{fig:fig-original_remove_dangling_edges_step_by_step-f} shows the process of removing other dangling edges until valence-1 edge has not been found.}
+	\caption[]{Process on removing dangling edges. Numbers on vertices indicate present valence number. We focus on the removing of blue dangling edges. \subref{fig:fig-original_remove_dangling_edges_step_by_step-a} shows initial state where there are two valence-1 edges in blue dangling edges at the moment. \subref{fig:fig-original_remove_dangling_edges_step_by_step-b} shows the next step from \subref{fig:fig-original_remove_dangling_edges_step_by_step-a} that removes one of valence-1 edge along with its vertex. The order of removing is not important. \subref{fig:fig-original_remove_dangling_edges_step_by_step-c} and \subref{fig:fig-original_remove_dangling_edges_step_by_step-d} show iteration process of removing valence-1 edge and vertex on blue dangling edges. \subref{fig:fig-original_remove_dangling_edges_step_by_step-e} shows that all blue dangling edges have been removed. \subref{fig:fig-original_remove_dangling_edges_step_by_step-f} shows the process of removing other dangling edges until valence-1 edge has not been found.\\(TO DO: shorter explanation)}
 	\label{fig:fig-original_remove_dangling_edges_step_by_step}
 \end{figure}
-For the case of closed surface of genus 0, the overall processes from this part will generate the cut $\rho$ that consists of only one vertex. To be able to map into planar domain, we add two adjacent edges of the vertex into the cut graph $\rho$. On the other hand, for the case of a mesh having one or more holes, it will result in connected graphs between any two holes.
+
+
 \begin{figure}[h!]
 	\centering		
 	\subfloat[\label{fig:fig-original_genus_reducing_process-a}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-a.png}}
@@ -149,7 +153,7 @@ The performance of MMP algorithm : They prove a worst case
 running time of $O(n^2 \log n)$ when $n$ is number of mesh edges. However in practical calculation, it can achieve on 100K triangles mesh within a few seconds. Also there is approximate version of MMP algorithm proposed by \cite{Surazhsky:2005:FEA:1073204.1073228} that can speed up calculation by trying to merge interval with an adjacent intervals on the same edge before propagation.
 
 \subsection*{Notations}
-After calculating exact geodesic distance, each $e_i$ edge that is not boundary edge, has a set of $m$ intervals $I_{e_i}:=\{ i_{e_{i^j}}(f_p,e_p,D) \mid i = 1, ... ,n_v , j = 1,...,m\}$, where $f_p$ represents the face that be crossed by propagation of interval's pseudo-source and $e_p$ represents the edge that has interval's pseudo-source. $D$ represents another informations about geodesic distance of considering interval.
+After calculating exact geodesic distance from a vertex $v_s$, each $e_i$ edge that is not boundary edge, has a set of $m$ intervals $I_{e_i}:=\{ i_{e_{i^j}}(f_p,e_p,D) \mid i = 1, ... ,n_v , j = 1,...,m\}$, where $f_p$ represents the face that be crossed by propagation of interval's pseudo-source and $e_p$ represents the edge that has interval's pseudo-source. $D$ represents another informations about geodesic distance of considering interval.
 
 \section{\uppercase{Our Approach}}
 \label{sec:our approach}
@@ -164,22 +168,23 @@ We explain in details more how to define a set of edge $\tilde{E}$ from two char
 
 \begin{figure}[h!]
 	\centering		
-	\subfloat[\label{fig:geodesic_both_face}]{\includegraphics[width=0.45\columnwidth]{images/two_pseudosource.png}}
+	\subfloat[\label{fig:geodesic_both_face} from both sides type ]{\includegraphics[width=0.45\columnwidth]{images/two_pseudosource.png}}
+	\hspace{10pt}
+	\subfloat[\label{fig:geodesic_fail_propagte} fail to propagate type]{\includegraphics[width=0.45\columnwidth]{images/fail_propagate.png}}
 	\hspace{0.00\columnwidth}
-	\subfloat[\label{fig:geodesic_fail_propagte}]{\includegraphics[width=0.45\columnwidth]{images/fail_propagate.png}}
-	\hspace{0.00\columnwidth}
-	\caption[]{.......}
+	\caption[]{Two type of edge that be considered as area of crossing geodesic distance's path.}
 	\label{fig:fig-two-type-edges}
 \end{figure}
 
 
-\subsection{Edge that pseudo-sources are from both sides}
+\subsection{Edge that intervals' pseudo-sources are from both sides}
 \label{subsec:pseudo-sources laid on both side of adjacent faces}
 The main idea of our approach is to detect the area where geodesic distance's paths are crossing together, similar to wave occlusion. Also, it is the best to detect in edge format since we are creating a cut graph.
 
 First, we detect an edge $e_i$ that its intervals with condition: if there is an interval that $f_p$ is not same as other intervals then we consider $e_i \in \tilde{E}$. From figure \subref*{fig:geodesic_both_face}, we can see clearly that $e_a$ has two intervals $i_{e_{a^\alpha}}$ and $i_{e_{a^\beta}}$ ,which first one has pseudo-source from $f_l$ while second one has pseudo-source from $f_r$. Typically, this kind of edges can be found a fews in mesh (see figure \subref*{fig:edge from two faces}). 
 
 \subsection{Edge that intervals fail to propagate}
+\label{subsec:intervals fail to propagate}
 Beside edges that be detected in section \ref{subsec:pseudo-sources laid on both side of adjacent faces},  we need to define more edges in cut graph where they are nearby crossing of geodesic distance's paths. 
 
 We detect an edge $e_i$ that its intervals with condition: all intervals have pseudo-sources from same face $f_p$ ($e_p$ can be different). Let opposite face be $f_{\bar{p}}$ and other two edges of $f_{\bar{p}}$ be $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$. We consider both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ edges by following condition.
@@ -188,7 +193,11 @@ We detect an edge $e_i$ that its intervals with condition: all intervals have ps
 	\item if every edge's intervals have $e_p \neq e_i$.
 \end{itemize}
 
-if both edges match one of above condition then we consider $e_i \in \tilde{E}$.
+if both edges match one of above condition then we consider $e_i \in \tilde{E}$. 
+
+From figure \subref*{fig:geodesic_fail_propagte}, when we are considering edge $e_a$; we can clearly see that edges $e_b$ and $e_c$ of opposite face $f_r$ have all intervals where their pseudo-sources is not on $e_a$ so we include $e_a$ into $\tilde{E}$. Vise-versa, when we are considering edge $e_c$; we can clearly see that edge $e_b$ has interval where its pseudo-source is on $e_c$ so we exclude $e_c$ from $\tilde{E}$.
+
+Typically, this kind of edges can be found a lot in mesh and cover all area of mesh (see figure \subref*{fig:edge nearby crossing}). Therefore, we need to eliminate unnecessary edges in $\tilde{E}$. Present state of cut graph looks similar to dangling edges in original one so we run same iterative process on removing valance-1 vertex in graph. 
 
 \begin{figure}[h!]
 	\centering		
@@ -196,15 +205,25 @@ if both edges match one of above condition then we consider $e_i \in \tilde{E}$.
 	\hspace{10pt}
 	\subfloat[\label{fig:edge nearby crossing}]{\includegraphics[width=0.45\columnwidth]{images/edge_nearby_crossing.png}}
 
-	\caption[]{.......}
+	\caption[]{....... (TO DO: more bigger colored edge line)}
 	\label{fig:fig-torus_edges_detected}
 \end{figure}
 
-\subsection{Ensure for non-separating and non-contractible cycles}
+\subsection{Ensure for non-separating cycles}
+\label{subsec:ensure non-trivia}
+After detected edges $\tilde{E}$ where geodesic distance's paths are crossing in section \ref{subsec:pseudo-sources laid on both side of adjacent faces} and \ref{subsec:intervals fail to propagate}, we aim to create a homotopy cut graph; non-separating and non-contractible cycles from $\tilde{E}$.
 
+At this states, $\tilde{E}$ typically may contains separating or contractible cycles.  For separating cycles issue, we define a set of edges $\hat{E}$ be neighbor edges of $\tilde{E}$ which each member of $\hat{E}$ is not belong to $\tilde{E}$. For contractible cycles' issue, we deal in next process. After this point, we consider that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside it.  
 
-We classify these remaining edges in the set including their neighbor edges into $\tilde{E}$ to be area where cut graph should be passed through. However, $\tilde{E}$ typically may contains separating or contractible cycles. Therefore, we need to define a valid homotopy cut graph from $\tilde{E}$.
-\subsection{Priority Removing-Edge Inside Queue }
+\subsection{Priority removing-edge queues}
+After we ensured that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside them, we try to create a valid cut graph along them. From this condition, we must eliminate edges that cause contractible cycles from $(\tilde{E} \cup \hat{E})$ and maintain non-separating property. Also, there are non-considering edges as $\acute{E} \equiv (E - (\tilde{E} \cup \hat{E}))$ which we avoid including them into the cut graph.
+
+One of merit points in original method is to guarantee a valid cut graph after propagation finished. Because of that, we apply original one's propagation scheme. However, we want cut graph to be around $\tilde{E}$ as first priority and around $\hat{E}$ as second priority. Therefore, we alter the orders of removing edge in original one's propagation. We create 3 removing-edge queues rather than single queue in original one. Each queue contains edges based on type of edges: 
+$\acute{E}$, $\hat{E}$ and $\tilde{E}$.  And we mark each of them for low-to-high priority as following order; $\acute{E}$, $\hat{E}$ and $\tilde{E}$.
+
+First, we remove faces around $v_s$ as seed triangles; similar to original one. Next, we iteratively analyze edge (adjacent only one triangle) in a non-empty queue with the conditions that we try to remove the edge and its adjacent face on low priority queue first and the edge with the shortest geodesic distance in the queue will be removed first.
+
+After propagation ended and all queues are empty. The remaining edges contain $2g$ loops with non-separating and non-contractible properties. Again, we might shorten each loop for better quality in some further applications. At last, we generate a cut graph that able to convert the mesh with genus $g$ into topological disk patch.
 
 
 \section{\uppercase{Results}}
