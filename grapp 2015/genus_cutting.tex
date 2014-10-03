@@ -182,7 +182,13 @@ First, we detect an edge $e_i$ that its intervals with condition: if there is an
 \subsection{Edge that intervals fail to propagate}
 Beside edges that be detected in section \ref{subsec:pseudo-sources laid on both side of adjacent faces},  we need to define more edges in cut graph where they are nearby crossing of geodesic distance's paths. 
 
-We detect an edge $e_i$ that its intervals with condition: all intervals have pseudo-sources from same face $f_p$ ($e_p$ can be different), and let opposite face be $f_{\bar{p}}$.
+We detect an edge $e_i$ that its intervals with condition: all intervals have pseudo-sources from same face $f_p$ ($e_p$ can be different). Let opposite face be $f_{\bar{p}}$ and other two edges of $f_{\bar{p}}$ be $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$. We consider both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ edges by following condition.
+\begin{itemize}
+	\item if edge's intervals have pseudo-sources from both sides (section \ref{subsec:pseudo-sources laid on both side of adjacent faces}).
+	\item if every edge's intervals have $e_p \neq e_i$.
+\end{itemize}
+
+if both edges match one of above condition then we consider $e_i \in \tilde{E}$.
 
 \begin{figure}[h!]
 	\centering		
