@@ -203,9 +203,12 @@ Typically, this kind of edges can be found a lot in mesh and cover all area of m
 	\centering		
 	\subfloat[\label{fig:edge from two faces}]{\includegraphics[width=0.45\columnwidth]{images/edge_two_faces.png}}
 	\hspace{10pt}
-	\subfloat[\label{fig:edge nearby crossing}]{\includegraphics[width=0.45\columnwidth]{images/edge_nearby_crossing.png}}
+	\subfloat[\label{fig:edge nearby crossing}]{\includegraphics[width=0.45\columnwidth]{images/edge_nearby_crossing.png}}\\
+	\subfloat[\label{fig:after truncate}]{\includegraphics[width=0.45\columnwidth]{images/after_truncation.png}}
+	\hspace{10pt}
+	\subfloat[\label{fig:neighbor edges}]{\includegraphics[width=0.35\columnwidth]{images/neighbor_edges.png}}	
 
-	\caption[]{....... (TO DO: more bigger colored edge line)}
+	\caption[]{Processes to define $\tilde{E}$ and $\hat{E}$ on a torus model. \subref{fig:edge from two faces} shows green colored edges that their intervals' pseudo-sources are from both sides. \subref{fig:edge nearby crossing} shows blue colored edges that their intervals fail to propagate. \subref{fig:after truncate} shows the graph after removing dangling edges. \subref{fig:neighbor edges} shows $\tilde{E}$ in red color and $\hat{E}$ in orange color. (TO DO: more bigger colored edge line and dot)}
 	\label{fig:fig-torus_edges_detected}
 \end{figure}
 
@@ -213,9 +216,9 @@ Typically, this kind of edges can be found a lot in mesh and cover all area of m
 \label{subsec:ensure non-trivia}
 After detected edges $\tilde{E}$ where geodesic distance's paths are crossing in section \ref{subsec:pseudo-sources laid on both side of adjacent faces} and \ref{subsec:intervals fail to propagate}, we aim to create a homotopy cut graph; non-separating and non-contractible cycles from $\tilde{E}$.
 
-At this states, $\tilde{E}$ typically may contains separating or contractible cycles.  For separating cycles issue, we define a set of edges $\hat{E}$ be neighbor edges of $\tilde{E}$ which each member of $\hat{E}$ is not belong to $\tilde{E}$. For contractible cycles' issue, we deal in next process. After this point, we consider that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside it.  
+At this states, $\tilde{E}$ typically may contains separating or contractible cycles (see figure \ref{fig:after truncate}).  For separating cycles issue, we define a set of edges $\hat{E}$ be neighbor edges of $\tilde{E}$ which each member of $\hat{E}$ is not belong to $\tilde{E}$. For contractible cycles' issue, we deal in next process. After this point, we consider that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside it.  
 
-\subsection{Priority removing-edge queues}
+\subsection{Prioritize removing-edge queues}
 After we ensured that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside them, we try to create a valid cut graph along them. From this condition, we must eliminate edges that cause contractible cycles from $(\tilde{E} \cup \hat{E})$ and maintain non-separating property. Also, there are non-considering edges as $\acute{E} \equiv (E - (\tilde{E} \cup \hat{E}))$ which we avoid including them into the cut graph.
 
 One of merit points in original method is to guarantee a valid cut graph after propagation finished. Because of that, we apply original one's propagation scheme. However, we want cut graph to be around $\tilde{E}$ as first priority and around $\hat{E}$ as second priority. Therefore, we alter the orders of removing edge in original one's propagation. We create 3 removing-edge queues rather than single queue in original one. Each queue contains edges based on type of edges: 
