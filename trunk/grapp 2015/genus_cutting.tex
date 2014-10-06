@@ -14,6 +14,8 @@
 \usepackage{apalike}
 \usepackage{SCITEPRESS}
 \usepackage{mathrsfs}
+\usepackage{multirow}
+\usepackage[table]{xcolor}
 \captionsetup[subfloat]{farskip=0pt,nearskip=0pt,captionskip=5pt}
 
 
@@ -216,7 +218,7 @@ Typically, this kind of edges can be found a lot in mesh and cover all area of m
 \label{subsec:ensure non-trivia}
 After detected edges $\tilde{E}$ where geodesic distance's paths are crossing in section \ref{subsec:pseudo-sources laid on both side of adjacent faces} and \ref{subsec:intervals fail to propagate}, we aim to create a homotopy cut graph; non-separating and non-contractible cycles from $\tilde{E}$.
 
-At this states, $\tilde{E}$ typically may contains separating or contractible cycles (see figure \ref{fig:after truncate}).  For separating cycles issue, we define a set of edges $\hat{E}$ be neighbor edges of $\tilde{E}$ which each member of $\hat{E}$ is not belong to $\tilde{E}$. For contractible cycles' issue, we deal in next process. After this point, we consider that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside it.  
+At this states, $\tilde{E}$ typically may contains separating or contractible cycles (see figure \subref*{fig:after truncate}).  For separating cycles issue, we define a set of edges $\hat{E}$ be neighbor edges of $\tilde{E}$ which each member of $\hat{E}$ is not belong to $\tilde{E}$. For contractible cycles' issue, we deal in next process. After this point, we consider that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside it.  
 
 \subsection{Prioritize removing-edge queues}
 After we ensured that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside them, we try to create a valid cut graph along them. From this condition, we must eliminate edges that cause contractible cycles from $(\tilde{E} \cup \hat{E})$ and maintain non-separating property. Also, there are non-considering edges as $\acute{E} \equiv (E - (\tilde{E} \cup \hat{E}))$ which we avoid including them into the cut graph.
@@ -229,8 +231,44 @@ First, we remove faces around $v_s$ as seed triangles; similar to original one. 
 After propagation ended and all queues are empty. The remaining edges contain $2g$ loops with non-separating and non-contractible properties. Again, we might shorten each loop for better quality in some further applications. At last, we generate a cut graph that able to convert the mesh with genus $g$ into topological disk patch.
 
 
-\section{\uppercase{Results}}
-\label{sec:result}
+\section{\uppercase{Experimental Results}}
+\label{sec:Experiment Results}
+\noindent We tested the algorithms on a PC by using parameterization results from both original and our approach methods. We manually selected a vertex in input mesh to be $v_s$ then generate a cut graph from it. To create cut graphs from both methods with similar conditions, we want the both propagations to be spread out from same location. However, the original algorithm removes single seed triangle but our approach removes seed triangles around $v_s$. Therefore, we altered how to remove a seed triangle in original one to be same as our approach. With this alternation, it should not affect to overall performance in original one.
+
+After converting input mesh into disk topological patch, we applied stretch-minimizing parameterization from \cite{Yoshizawa_SMI04}.  We evaluated the parameterization results from both methods by using $L^2$ error (the root-mean-square stretch over all direction in planar domain) proposed by \cite{Sander:2001:TMP:383259.383307,Sander:2002:SP:581896.581909}.  
+
+After experiment with the several mesh which genus $g \geq 1$, we noticed that original method and our approach can generate very similar or same cut graphs on asymmetry lookalike meshes in most cases. However on some symmetry shapes, cut graphs can be different from each others. Therefore, we selected some results which have noticeable difference on cut graphs between original and our approach, and do parameterizations.
+
+As shown in Table \ref{table:result}, our approach can deliver lower  $L^2$ error than original one in most cases. There are some cases that original one has a large error value while our approach can deliver a small error.
+
+\begin{table}[h]
+	\caption{Experimental Results. Yellow and Green cells indicate low errors.}
+	\label{table:result} 
+	\centering
+	{\small 
+	\begin{tabular}{|c|c|c|c|c|c|}
+		\hline
+	\multirow{2}{*}{case} & \multirow{2}{*}{genus} & \multicolumn{2}{ c|}{ square } & \multicolumn{2}{ c|}{ circular} \\\cline{3-6}
+		         &       &   original &   our      &   original &   our\\
+		\hline
+		1    & 1  & 1.351   &  \cellcolor{yellow!25}1.335    &  1.493  &  \cellcolor{green!25}1.446 \\
+		2    & 1  & 1.492   &  \cellcolor{yellow!25}1.468    &  1.687  &  \cellcolor{green!25}1.663 \\
+		3    & 1  & \cellcolor{yellow!25}1.562   &  1.636    &  \cellcolor{green!25}1.800  &  2.102 \\
+		4    & 1  & 1.551   &  \cellcolor{yellow!25}1.417    &  2.011  &  \cellcolor{green!25}1.635 \\
+		5    & 1  & 1.561   &  \cellcolor{yellow!25}1.362    &  1.924  &  \cellcolor{green!25}1.538 \\
+		6    & 2  & 1.667   &  \cellcolor{yellow!25}1.466    &  2.246  &  \cellcolor{green!25}1.701 \\
+		7    & 2  & \cellcolor{yellow!25}1.390   &  1.442    &  1.603  &  \cellcolor{green!25} 1.554 \\
+		8    & 3  & 1.457   &  \cellcolor{yellow!25}1.452    &  1.688  &  \cellcolor{green!25}1.679 \\
+		9    & 3  & 2.041   &  \cellcolor{yellow!25}2.025    &  \cellcolor{green!25}9.279  &  9.827 \\
+		10   & 3  & 471.2   &  \cellcolor{yellow!25}1.509    &  4.068  &  \cellcolor{green!25}1.978 \\
+		11   & 3  & 939.2   &  \cellcolor{yellow!25}1.625    &  6.348  &  \cellcolor{green!25}4.115 \\
+		12   & 3  & 94.15   &  \cellcolor{yellow!25}55.94    &  23.34  &  \cellcolor{green!25}14.19 \\
+		\hline
+		
+	\end{tabular}
+}
+\end{table}
+
 \section{\uppercase{Conclusions}}
 \label{sec:conclusion}
 
