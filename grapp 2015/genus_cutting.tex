@@ -171,36 +171,36 @@ We explain in details how to define the set $\tilde{E}$ and how to ensure the ge
 
 \begin{figure}[h!]
 	\centering		
-	\subfloat[\label{fig:geodesic_both_face} from both sides type ]{\includegraphics[width=0.45\columnwidth]{images/two_pseudosource.png}}
-	\hspace{10pt}
-	\subfloat[\label{fig:geodesic_fail_propagte} fail to propagate type]{\includegraphics[width=0.45\columnwidth]{images/fail_propagate.png}}
+	\subfloat[\label{fig:geodesic_both_face}from both sides type]{\includegraphics[width=0.45\columnwidth]{images/two_pseudosource.png}}
+	\hspace{0pt}
+	\subfloat[\label{fig:geodesic_fail_propagte}non-propagation type]{\includegraphics[width=0.45\columnwidth]{images/fail_propagate.png}}
 	\hspace{0.00\columnwidth}
 	\caption[]{Two types of edges that are considered as area of crossing geodesic distance's path.}
 	\label{fig:fig-two-type-edges}
 \end{figure}
 
 
-\subsection{Edge that intervals' pseudo-sources are from both sides}
+\subsection{Pseudo-sources of intervals from both sides}
 \label{subsec:pseudo-sources laid on both side of adjacent faces}
-The main idea of our approach is to detect the area where geodesic distance's paths are crossing together, similar to wave occlusion. Also, it is the best to detect in edge format since we are creating a cut graph.
+The main idea of our approach is to detect areas where geodesic distance's paths are crossing together, like wave occlusion. Because we generate a cut graph so we define such areas as a set of edges.
 
-First, we detect an edge $e_i$ that its intervals with condition: if there is an interval that $f_p$ is not same as other intervals then we consider $e_i \in \tilde{E}$. From figure \subref*{fig:geodesic_both_face}, we can see clearly that $e_a$ has two intervals $i_{e_{a^\alpha}}$ and $i_{e_{a^\beta}}$ ,which first one has pseudo-source from $f_l$ while second one has pseudo-source from $f_r$. Typically, this kind of edges can be found a fews in mesh (see figure \subref*{fig:edge from two faces}). 
+First, we detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: if there is an interval that $f_p$ is not same as other intervals then we consider $e_i \in \tilde{E}$. From figure \subref*{fig:geodesic_both_face}, we can see clearly that $e_a$ has two intervals $i_{e_{a^\alpha}}$ and $i_{e_{a^\beta}}$, where first one has a pseudo-source from $f_l$ while second one has another pseudo-source from $f_r$. Typically, this kind of edges can be found a few in mesh (see figure \subref*{fig:edge from two faces}). 
 
-\subsection{Edge that intervals fail to propagate}
+\subsection{Non-propagation edge intervals}
 \label{subsec:intervals fail to propagate}
-Beside edges that be detected in section \ref{subsec:pseudo-sources laid on both side of adjacent faces},  we need to define more edges in cut graph where they are nearby crossing of geodesic distance's paths. 
+Along with the edge type described in section \ref{subsec:pseudo-sources laid on both side of adjacent faces},  we need to define another edge type in cut graph. That is, this type of edges are nearby crossing geodesic distance's paths.
 
-We detect an edge $e_i$ that its intervals with condition: all intervals have pseudo-sources from same face $f_p$ ($e_p$ can be different). Let opposite face be $f_{\bar{p}}$ and other two edges of $f_{\bar{p}}$ be $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$. We consider both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ edges by following condition.
+We detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: all intervals have pseudo-sources from same face $f_p$ ($e_p$ can be different). Let opposite face be $f_{\bar{p}}$ and other two adjacent edges of $f_{\bar{p}}$ side be $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$. We consider both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ edges by the following condition.
 \begin{itemize}
-	\item if edge's intervals have pseudo-sources from both sides (section \ref{subsec:pseudo-sources laid on both side of adjacent faces}).
-	\item if every edge's intervals have $e_p \neq e_i$.
+	\item Edge intervals have pseudo-sources from both sides (section \ref{subsec:pseudo-sources laid on both side of adjacent faces}).
+	\item Edge intervals have $e_p \neq e_i$.
 \end{itemize}
 
-if both edges match one of above condition then we consider $e_i \in \tilde{E}$. 
+if both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ match one of above conditions, then we consider $e_i \in \tilde{E}$. 
 
-From figure \subref*{fig:geodesic_fail_propagte}, when we are considering edge $e_a$; we can clearly see that edges $e_b$ and $e_c$ of opposite face $f_r$ have all intervals where their pseudo-sources is not on $e_a$ so we include $e_a$ into $\tilde{E}$. Vise-versa, when we are considering edge $e_c$; we can clearly see that edge $e_b$ has interval where its pseudo-source is on $e_c$ so we exclude $e_c$ from $\tilde{E}$.
+Considering an edge $e_a$ in figure \subref*{fig:geodesic_fail_propagte}, we can clearly see that edges $e_b$ and $e_c$ of opposite face $f_r$ have all intervals where their pseudo-sources are not on $e_a$ so we include $e_a$ into $\tilde{E}$. Vise-versa, when we are considering edge $e_c$; we can clearly see that edge $e_b$ has interval where its pseudo-source is on $e_c$ so we exclude $e_c$ from $\tilde{E}$.
 
-Typically, this kind of edges can be found a lot in mesh and cover all area of mesh (see figure \subref*{fig:edge nearby crossing}). Therefore, we need to eliminate unnecessary edges in $\tilde{E}$. Present state of cut graph looks similar to dangling edges in original one so we run same iterative process on removing valance-1 vertex in graph. 
+Typically, this kind of edges can be found a lot in mesh and cover all areas of mesh (see figure \subref*{fig:edge nearby crossing}). Therefore, we need to eliminate unnecessary edges in $\tilde{E}$. Present state of cut graph looks similar to dangling edges in original one so we run the same iterative process to remove the valance-1 vertices in the graph. 
 
 \begin{figure}[h!]
 	\centering		
@@ -217,33 +217,33 @@ Typically, this kind of edges can be found a lot in mesh and cover all area of m
 
 \subsection{Ensure for non-separating cycles}
 \label{subsec:ensure non-trivia}
-After detected edges $\tilde{E}$ where geodesic distance's paths are crossing in section \ref{subsec:pseudo-sources laid on both side of adjacent faces} and \ref{subsec:intervals fail to propagate}, we aim to create a homotopy cut graph; non-separating and non-contractible cycles from $\tilde{E}$.
+After detecting in the set edges $\tilde{E}$ where geodesic distance's paths are crossing in section \ref{subsec:pseudo-sources laid on both side of adjacent faces} and \ref{subsec:intervals fail to propagate}, we aim to create a homotopy cut graph; non-separating and non-contractible cycles from $\tilde{E}$.
 
-At this states, $\tilde{E}$ typically may contains separating or contractible cycles (see figure \subref*{fig:after truncate}).  For separating cycles issue, we define a set of edges $\hat{E}$ be neighbor edges of $\tilde{E}$ which each member of $\hat{E}$ is not belong to $\tilde{E}$. For contractible cycles' issue, we deal in next process. After this point, we consider that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside it.  
+At this stage, $\tilde{E}$ may typically contains separating or contractible cycles (see figure \subref*{fig:after truncate}).  For separating cycles issue, we define all edges in $\hat{E}$ to be neighbors of each edges in $\tilde{E}$. We consider that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside it.  
 
 \subsection{Prioritize removing-edge queues}
-After we ensured that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside them, we try to create a valid cut graph along them. From this condition, we must eliminate edges that cause contractible cycles from $(\tilde{E} \cup \hat{E})$ and maintain non-separating property. Also, there are non-considering edges as $\acute{E} \equiv (E - (\tilde{E} \cup \hat{E}))$ which we avoid including them into the cut graph.
+After we ensured that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside them, we try to create a valid cut graph along them. From this condition, we must eliminate edges that cause contractible cycles from $(\tilde{E} \cup \hat{E})$ and maintain non-separating property. Also, there are non-considered edges $\acute{E} \equiv (E - (\tilde{E} \cup \hat{E}))$ which we exclude from the cut graph.
 
-One of merit points in original method is to guarantee a valid cut graph after propagation finished. Because of that, we apply original one's propagation scheme. However, we want cut graph to be around $\tilde{E}$ as first priority and around $\hat{E}$ as second priority. Therefore, we alter the orders of removing edge in original one's propagation. We create 3 removing-edge queues rather than single queue in original one. Each queue contains edges based on type of edges: 
-$\acute{E}$, $\hat{E}$ and $\tilde{E}$.  And we mark each of them for low-to-high priority as following order; $\acute{E}$, $\hat{E}$ and $\tilde{E}$.
+One advantage of original method is to guarantee a valid cut graph when the propagation finished. Because of that, we used original one's propagation scheme. However, we want cut graph to be around $\tilde{E}$ as first priority and around $\hat{E}$ as second priority. Therefore, we altered the orders of removing edge in original propagation scheme. We created 3 removing-edge queues rather than single queue in original one. Each queue contains edges based on type of edges: 
+$\acute{E}$, $\hat{E}$ and $\tilde{E}$.  And we mark each of them for low-to-high priority in the order of $\acute{E}$, $\hat{E}$ and $\tilde{E}$.
 
-First, we remove faces around $v_s$ as seed triangles; similar to original one. Next, we iteratively analyze edge (adjacent only one triangle) in a non-empty queue with the conditions that we try to remove the edge and its adjacent face on low priority queue first and the edge with the shortest geodesic distance in the queue will be removed first.
+First, we remove faces around $v_s$ as seed triangles; similar to original one. Next, we iteratively analyze edges (adjacent only one triangle) in a non-empty queue under the conditions that we try to remove the edge and its adjacent face on low priority queue first and the edge with the shortest geodesic distance in the queue will be removed first.
 
-After propagation ended and all queues are empty. The remaining edges contain $2g$ loops with non-separating and non-contractible properties. Again, we might shorten each loop for better quality in some further applications. At last, we generate a cut graph that able to convert the mesh with genus $g$ into topological disk patch.
+After the propagation terminates and all queues become empty, the remaining edges contain $2g$ loops with non-separating and non-contractible properties. Again, we might shorten each loop for better quality in some further applications. At last, we generate a cut graph that enables to convert the mesh with genus $g$ into topological disk patch.
 
 
 \section{\uppercase{Experimental Results}}
 \label{sec:Experiment Results}
-\noindent We tested the algorithms on a PC by using parameterization results from both original and our approach methods. We manually selected a vertex in input mesh to be $v_s$ then generate a cut graph from it. To create cut graphs from both methods with similar conditions, we want the both propagations to be spread out from same location. However, the original algorithm removes single seed triangle but our approach removes seed triangles around $v_s$. Therefore, we altered how to remove a seed triangle in original one to be same as our approach. With this alternation, it should not affect to overall performance in original one.
+\noindent We tested the algorithms on a PC by using parameterization results from both original and our approach methods. We manually selected a vertex in input mesh to be $v_s$ then generate a cut graph. To create cut graphs from both methods with similar conditions, we want the both propagations to be spread out from same location. However, the original algorithm removes single seed triangle but our approach removes seed triangles around $v_s$. Therefore, we altered how to remove a seed triangle in original one to be same as our approach. With this alternation, it should not affect to overall performance in original one. Also, we applied shorten loops process after the propagation terminates.
 
 After converting input mesh into disk topological patch, we applied stretch-minimizing parameterization from \cite{Yoshizawa_SMI04}.  We evaluated the parameterization results from both methods by using $L^2$ error (the root-mean-square stretch over all direction in planar domain) proposed by \cite{Sander:2001:TMP:383259.383307,Sander:2002:SP:581896.581909}.  
 
-After experiment with the several mesh which genus $g \geq 1$, we noticed that original method and our approach can generate very similar or same cut graphs on asymmetry lookalike meshes in most cases. However on some symmetry shapes, cut graphs can be different from each others. Therefore, we selected some results which have noticeable difference on cut graphs between original and our approach, and do parameterizations.
+After experiments with the several mesh which genus $g \geq 1$, we noticed that original method and our approach can generate very similar or same cut graphs on asymmetry lookalike meshes in most cases. However on some symmetry shapes, cut graphs can be different from each others. Therefore, we selected some results which have noticeable difference on cut graphs between original and our approach, and do parameterizations.
 
 As shown in Table \ref{table:result}, our approach can deliver lower  $L^2$ error than original one in most cases. There are some cases that original one has a large error value while our approach can deliver a small error.
 
 \begin{table}[h]
-	\caption{Experimental Results. Yellow and Green cells indicate low errors.}
+	\caption{Experimental Results. Yellow and green cells indicate lower errors in comparison.}	
 	\label{table:result} 
 	\centering
 	{\small 
@@ -264,9 +264,9 @@ As shown in Table \ref{table:result}, our approach can deliver lower  $L^2$ erro
 		10   & 3  & 471.2   &  \cellcolor{yellow!25}1.509    &  4.068  &  \cellcolor{green!25}1.978 \\
 		11   & 3  & 939.2   &  \cellcolor{yellow!25}1.625    &  6.348  &  \cellcolor{green!25}4.115 \\
 		12   & 3  & 94.15   &  \cellcolor{yellow!25}55.94    &  23.34  &  \cellcolor{green!25}14.19 \\
-		\hline
-		
+		\hline		
 	\end{tabular}
+
 }
 \end{table}
 
@@ -285,9 +285,49 @@ As shown in Table \ref{table:result}, our approach can deliver lower  $L^2$ erro
 \bibliographystyle{apalike}
 {\small
 \bibliography{genus_cutting}}
-
-
-
 \vfill
+
+\begin{figure*}[th!]
+	\centering		
+	\subfloat[\label{fig:case01 original}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test01/original.png}}\hspace{5pt}
+	\subfloat[\label{fig:case01 proposed}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test01/propose.png}}
+	\hspace{10pt}
+	\subfloat[\label{fig:case02 original}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test02/original.png}}\hspace{5pt}
+	\subfloat[\label{fig:case02 proposed}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test02/propose.png}}\\
+	
+	\subfloat[\label{fig:case03 original}]{\includegraphics[width=0.40\columnwidth]{images/experiment/test03/original.png}}\hspace{5pt}
+	\subfloat[\label{fig:case03 proposed}]{\includegraphics[width=0.40\columnwidth]{images/experiment/test03/propose.png}}	
+	\hspace{10pt}		
+	\subfloat[\label{fig:case04 original}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test04/original.png}}\hspace{5pt}
+	\subfloat[\label{fig:case04 proposed}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test04/propose.png}}\\	
+	
+	
+	\subfloat[\label{fig:case05 original}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test05/original.png}}\hspace{5pt}
+	\subfloat[\label{fig:case05 proposed}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test05/propose.png}}
+	\hspace{10pt}			
+	\subfloat[\label{fig:case06 original}]{\includegraphics[width=0.40\columnwidth]{images/experiment/test06/original.png}}\hspace{5pt}
+	\subfloat[\label{fig:case06 proposed}]{\includegraphics[width=0.40\columnwidth]{images/experiment/test06/propose.png}}\\
+	
+	\subfloat[\label{fig:case07 original}]{\includegraphics[width=0.5\columnwidth, angle=45]{images/experiment/test07/original.png}}\hspace{5pt}
+	\subfloat[\label{fig:case07 proposed}]{\includegraphics[width=0.5\columnwidth, angle=45]{images/experiment/test07/propose.png}}
+	\hspace{10pt}			
+	\subfloat[\label{fig:case08 original}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test08/original.png}}\hspace{5pt}
+	\subfloat[\label{fig:case08 proposed}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test08/propose.png}}\\
+	
+	\subfloat[\label{fig:case09 original}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test09/original.png}}\hspace{5pt}
+	\subfloat[\label{fig:case09 proposed}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test09/propose.png}}
+	\hspace{10pt}			
+	\subfloat[\label{fig:case10 original}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test10/original.png}}\hspace{5pt}
+	\subfloat[\label{fig:case10 proposed}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test10/propose.png}}\\
+	
+	\subfloat[\label{fig:case11 original}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test11/original.png}}\hspace{5pt}
+	\subfloat[\label{fig:case11 proposed}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test11/propose.png}}
+	\hspace{10pt}			
+	\subfloat[\label{fig:case12 original}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test12/original.png}}\hspace{5pt}
+	\subfloat[\label{fig:case12 proposed}]{\includegraphics[width=0.45\columnwidth]{images/experiment/test12/propose.png}}\\	
+	\caption[]{.......}
+	\label{fig:experiment results}
+\end{figure*}
+
 \end{document}
 
