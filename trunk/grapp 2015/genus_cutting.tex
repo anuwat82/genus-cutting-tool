@@ -244,11 +244,13 @@ After experiments with the several mesh which genus $g \geq 1$, we noticed that 
 As shown in Table \ref{table:result}, our approach can deliver lower  $L^2$ error than original one in most cases. There are some cases that original one has a large error value while our approach can deliver a small error.
 
 \begin{table}[h]
+	\setlength\extrarowheight{03pt}
 	\caption{Experimental Results. Yellow and green cells indicate lower errors in comparison.}	
 	\label{table:result} 
 	\centering
 	{\small 
 	\begin{tabular}{|c|c|c|c|c|c|}
+		
 		\hline
 	\multirow{2}{*}{case} & \multirow{2}{*}{genus} & \multicolumn{2}{ c|}{ square } & \multicolumn{2}{ c|}{ circular} \\\cline{3-6}
 		         &       &   original &   our      &   original &   our\\
@@ -276,7 +278,7 @@ We show the visual results from our experiments in figure \ref{fig:experiment re
 
 \noindent We have presented an enhancement method to generate a cut graph in high-genus surface for homotopy cutting. Cut graph is generated based on an exact geodesic distance theory, by detecting areas where geodesic distance's paths are crossing together. We show how to detect these areas into a set of edges by analyzing edges' intervals. Then, we show how to ensure non-separating and non-contractible cycles by including neighbor edges into the set and applying original approach with minor adjustments in propagation queues. We can generate equally or more suitable edge-graph than original method while keeping similar performance and stability as original one.
 
-
+An open topic of this propagation scheme is, it still requires manual starting location of propagation (seed triangle or $v_s$ in our approach). The quality of cut graph is dependency on user specific position.  To generate an optimal cut graph on a high genus surface, it is better to have shortest cut loop where it pass through on each surface's handle. Therefore, it is interesting topic for how to define starting location of propagation $v_s$ that generate optimal cut graph.
 
 
 \section*{\uppercase{Acknowledgements}}
