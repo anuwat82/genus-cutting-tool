@@ -26,7 +26,7 @@
 
 \begin{document}
 
-\title{Homotopy Surface Cutting Using Edges' Sources in Geodesic Distance}
+\title{A Homotopy Surface Cutting Using Paths Crossing in Geodesic Distance}
 
 \author{\authorname{Anuwat Dechvijankit,Author2 and Author3}
 \affiliation{Department of Computational Intelligence and Systems Science, Tokyo Institute of Technology, Japan}
@@ -88,20 +88,18 @@ Since our approach is based on geometry images, we explain in section \ref{sec:p
 
 \begin{figure*}[t]
 	\centering		
-	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep-a}]{\includegraphics[width=0.400\columnwidth]{images/fig-original_genus_reduce_method_step_by_step-a.png}}\hspace{10pt}
-	\hspace{0.000\columnwidth}
-	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep-b}]{\includegraphics[width=0.400\columnwidth]{images/fig-original_genus_reduce_method_step_by_step-b.png}}\hspace{10pt}		
-	\hspace{0.000\columnwidth}
-	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep-c}]{\includegraphics[width=0.400\columnwidth]{images/fig-original_genus_reduce_method_step_by_step-c.png}}\hspace{10pt}		
-	\hspace{0.000\columnwidth}
-	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep-d}]{\includegraphics[width=0.400\columnwidth]{images/fig-original_genus_reduce_method_step_by_step-d.png}}		
-	\caption{Processes after removing a seed triangle from mesh. Gray areas mean that there are still triangles, while white areas mean triangles have been removed. Dash lines mean edges that are adjacent to only one triangle at the moment. \subref{fig:OriginalGenusReduceMethodStepByStep-a} shows the moment after removing the seed triangle; that is, edges e1,e2 and e3 are only edges that are adjacent to only one triangle. Assume that edge e1 has the smallest geodesic distance from the seed triangle at the moment. \subref{fig:OriginalGenusReduceMethodStepByStep-b} shows the result of removing edge e1 and face F1 according to the condition. At this moment, edge e4 is also adjacent to only one triangle same as edge e2. Let e2 have smaller geodesic distance than edges e3 and e4.  \subref{fig:OriginalGenusReduceMethodStepByStep-c} shows the result of removing edge e2 and face F2 without removing edge e4. Because of the edge e4 is not adjacent any triangle after removing face F2, it is excluded from adjacent only one triangle's condition. The edge e4 becomes a candidate of seam-cutting edge. \subref{fig:OriginalGenusReduceMethodStepByStep-d} shows the result of next step from \subref{fig:OriginalGenusReduceMethodStepByStep-c} that removing triangle F3 and edge e3. (TO DO: change images, shorter explanation)}
+	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep01}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_01.png}}\hspace{10pt}
+	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep02}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_02.png}}\hspace{10pt}
+	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep03}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_03.png}}\hspace{10pt}
+	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep04}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_04.png}}\hspace{10pt}		
+	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep05}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_05.png}}
+	\caption{Processes from removing a seed triangle from a mesh. Dash lines mean edges that are adjacent to only one triangle at the moment. \subref{fig:OriginalGenusReduceMethodStepByStep01} shows before removing stage. \subref{fig:OriginalGenusReduceMethodStepByStep02} shows after removing the seed triangle; that is, edges $e_1$,$e_2$ and $e_3$ are adjacent to only one triangle. Assume that geodesic distance from $f_{seed}$ to $e_1$ is smallest. \subref{fig:OriginalGenusReduceMethodStepByStep03} shows the result of removing edge $e_1$ and face $f_1$. The edge e4 become the one that adjacent to only one triangle. Let $e_2$ is next smallest geodesic distance. \subref{fig:OriginalGenusReduceMethodStepByStep04} shows the result of removing $e_2$ and $f_2$. The edge e4 becomes a candidate of cut graph edge (red dot line). \subref{fig:OriginalGenusReduceMethodStepByStep05} shows the result of next step that removing $e_3$ and $f_3$.}
 	\label{fig:OriginalGenusReduceMethodStepByStep}
 \end{figure*}
 
-At the beginning in the method , if the mesh has boundaries, let $\mathscr{B}$  be the set of original boundary edges that remain unchanged in the whole process and will be included in final cut graph ${\rho}$. It first starts by removing a single seed triangle from the mesh. At this moment, each edge of the seed triangle is adjacent to only one triangle respectively (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep-a}).  After removing the seed triangle from the mesh, there are two processing phases.
+At the beginning in the method , if the mesh has boundaries, let $\mathscr{B}$  be the set of original boundary edges that remain unchanged in the whole process and will be included in final cut graph ${\rho}$. It first starts by removing a single seed triangle from the mesh. At this moment, each edge of the seed triangle is adjacent to only one triangle respectively (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep02}).  After removing the seed triangle from the mesh, there are two processing phases.
 
-In the first phase, it repeatedly detects an edge adjacent exactly to one triangle that is not in $\mathscr{B}$, and removes both the edge and the triangle from the mesh structure. The rest two edges are left (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep-b}). If the rest edges of the removing triangle are not adjacent to any triangle, then the edges will become one of candidates of cut graph (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep-c}). Generally, removing one edge and one triangle triggers more two edges to be adjacent to only one triangle further. Because of the above condition, the removing propagation will keep spreading out from the seed triangle according to geodesic distance in order to get minimum radius result (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep-d}). Since a 2-manifold triangle mesh is being processed, any triangle will be removed eventually. Therefore, this phase ends when there is no triangle left and there remain only edges and their vertices as candidate cut graph edges (see figure \subref*{fig:fig-original_genus_reducing_process-c}). At this point, the cut $\rho$ consists of a set of connecting $2g$ loops.
+In the first phase, it repeatedly detects an edge adjacent exactly to one triangle that is not in $\mathscr{B}$, and removes both the edge and the triangle from the mesh structure. The rest two edges are left (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep03}). If the rest edges of the removing triangle are not adjacent to any triangle, then the edges will become one of candidates of cut graph (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep04}). Generally, removing one edge and one triangle triggers more two edges to be adjacent to only one triangle further. Because of the above condition, the removing propagation will keep spreading out from the seed triangle according to geodesic distance in order to get minimum radius result. Since a 2-manifold triangle mesh is being processed, any triangle will be removed eventually. Therefore, this phase ends when there is no triangle left and there remain only edges and their vertices as candidate cut graph edges (see figure \subref*{fig:fig-original_genus_reducing_process-c}). At this point, the cut $\rho$ consists of a set of connecting $2g$ loops.
 
 In the second phase, we again iteratively detect a valence-1 vertex and its corresponding edge, and remove both the vertex and the edge (see figure \ref{fig:fig-original_remove_dangling_edges_step_by_step}). The purpose of this phase is to remove unnecessary dangling edges remained in the first phase. The dangling edges will be repeatedly trimmed away until there is no valence-1 vertex left in the cut $\rho$. There are only edges that form connected loops as a cut graph in the cut $\rho$. At last, all loops in $\rho$ are straightened by computing a local shortest path in each loop. Finally, the connected $2g$ loop cut graph in $\rho$ is homotopy basis: a cut graph that converts the surface into a topological disk patch. See figure \ref{fig:fig-original_genus_reducing_process} for overall process of finding graph cut on a genus-3 mesh.
 
@@ -172,10 +170,10 @@ We explain in details how to define the set $\tilde{E}$ and how to ensure the ge
 
 \begin{figure}[h!]
 	\centering		
-	\subfloat[\label{fig:geodesic_both_face}from both sides type]{\includegraphics[width=0.45\columnwidth]{images/two_pseudosource.png}}
+	\subfloat[\label{fig:geodesic_both_face}from both sides type]{\includegraphics[width=0.49\columnwidth]{images/two_pseudosource.png}}
 	\hspace{0pt}
-	\subfloat[\label{fig:geodesic_fail_propagte}non-propagation type]{\includegraphics[width=0.45\columnwidth]{images/fail_propagate.png}}
-	\hspace{0.00\columnwidth}
+	\subfloat[\label{fig:geodesic_fail_propagte}non-propagation type]{\includegraphics[width=0.49\columnwidth]{images/fail_propagate.png}}
+
 	\caption[]{Two types of edges that are considered as area of crossing geodesic distance's path.}
 	\label{fig:fig-two-type-edges}
 \end{figure}
@@ -185,7 +183,7 @@ We explain in details how to define the set $\tilde{E}$ and how to ensure the ge
 \label{subsec:pseudo-sources laid on both side of adjacent faces}
 The main idea of our approach is to detect areas where geodesic distance's paths are crossing together, like wave occlusion. Because we generate a cut graph so we define such areas as a set of edges.
 
-First, we detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: if there is an interval that $f_p$ is not same as other intervals then we consider $e_i \in \tilde{E}$. From figure \subref*{fig:geodesic_both_face}, we can see clearly that $e_a$ has two intervals $i_{e_{a^\alpha}}$ and $i_{e_{a^\beta}}$, where first one has a pseudo-source from $f_l$ while second one has another pseudo-source from $f_r$. Typically, this kind of edges can be found a few in mesh (see figure \subref*{fig:edge from two faces}). 
+First, we detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: if there is an interval that $f_p$ is not same as other intervals then we consider $e_i \in \tilde{E}$. From figure \subref*{fig:geodesic_both_face}, we can see clearly that $e_a$ has two intervals $i_{e_{a,1}}$ and $i_{e_{a,2}}$, where first one has a pseudo-source from $f_l$ while second one has another pseudo-source from $f_r$. Typically, this kind of edges can be found a few in mesh (see figure \subref*{fig:edge from two faces}). 
 
 \subsection{Non-propagation edge intervals}
 \label{subsec:intervals fail to propagate}
@@ -199,7 +197,7 @@ We detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: all int
 
 if both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ match one of above conditions, then we consider $e_i \in \tilde{E}$. 
 
-Considering an edge $e_a$ in figure \subref*{fig:geodesic_fail_propagte}, we can clearly see that edges $e_b$ and $e_c$ of opposite face $f_r$ have all intervals where their pseudo-sources are not on $e_a$ so we include $e_a$ into $\tilde{E}$. Vise-versa, when we are considering edge $e_c$; we can clearly see that edge $e_b$ has interval where its pseudo-source is on $e_c$ so we exclude $e_c$ from $\tilde{E}$.
+Considering an edge $e_a$ in figure \subref*{fig:geodesic_fail_propagte}, we can clearly see that edges $e_b$ and $e_c$ of opposite face $f_r$ ($e_{\bar{i}_1}$ and $e_{\bar{i}_2}$) have all intervals where their pseudo-sources are not on $e_a$ so we include $e_a$ into $\tilde{E}$. Vise-versa, when we are considering edge $e_c$; we can clearly see that edge $e_b$ has interval where its pseudo-source is on $e_c$ so we exclude $e_c$ from $\tilde{E}$.
 
 Typically, this kind of edges can be found a lot in mesh and cover all areas of mesh (see figure \subref*{fig:edge nearby crossing}). Therefore, we need to eliminate unnecessary edges in $\tilde{E}$. Present state of cut graph looks similar to dangling edges in original one so we run the same iterative process to remove the valance-1 vertices in the graph. 
 
@@ -220,10 +218,10 @@ Typically, this kind of edges can be found a lot in mesh and cover all areas of 
 \label{subsec:ensure non-trivia}
 After detecting in the set edges $\tilde{E}$ where geodesic distance's paths are crossing in section \ref{subsec:pseudo-sources laid on both side of adjacent faces} and \ref{subsec:intervals fail to propagate}, we aim to create a homotopy cut graph; non-separating and non-contractible cycles from $\tilde{E}$.
 
-At this stage, $\tilde{E}$ may typically contains separating or contractible cycles (see figure \subref*{fig:after truncate}).  For separating cycles issue, we define all edges in $\hat{E}$ to be neighbors of each edges in $\tilde{E}$. We consider that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside it.  
+At this stage, $\tilde{E}$ may typically contains separating or contractible cycles (see figure \subref*{fig:after truncate}).  For separating cycles issue, we define all edges in $\hat{E}$ to be neighbors of each edges in $\tilde{E}$. We consider that a set of edges $\rho \equiv (\tilde{E} \cup \hat{E})$ contains $2g$ loops inside it.  
 
 \subsection{Prioritize removing-edge queues}
-After we ensured that $(\tilde{E} \cup \hat{E})$ contains $2g$ loops inside them, we try to create a valid cut graph along them. From this condition, we must eliminate edges that cause contractible cycles from $(\tilde{E} \cup \hat{E})$ and maintain non-separating property. Also, there are non-considered edges $\acute{E} \equiv (E - (\tilde{E} \cup \hat{E}))$ which we exclude from the cut graph.
+After we ensured that $\rho$ contains $2g$ loops inside them, we try to create a valid cut graph along them. From this condition, we must eliminate edges that cause contractible cycles from $\rho$ and maintain non-separating property. Also, there are non-considered edges $\acute{E} \equiv (E - \rho)$ which we exclude from the cut graph.
 
 One advantage of original method is to guarantee a valid cut graph when the propagation finished. Because of that, we used original one's propagation scheme. However, we want cut graph to be around $\tilde{E}$ as first priority and around $\hat{E}$ as second priority. Therefore, we altered the orders of removing edge in original propagation scheme. We created 3 removing-edge queues rather than single queue in original one. Each queue contains edges based on type of edges: 
 $\acute{E}$, $\hat{E}$ and $\tilde{E}$.  And we mark each of them for low-to-high priority in the order of $\acute{E}$, $\hat{E}$ and $\tilde{E}$.
