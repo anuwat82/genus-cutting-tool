@@ -33,7 +33,7 @@
 \email{dechvijankit.a.aa@m.titech.ac.jp}
 }
 
-\keywords{geodesic distance, graph cut, homotopy, surface parameterization}
+\keywords{geodesic distance, graph cut, homotopy, surface parameterization, topology}
 
 
 \abstract{Topology is a property in surfaces that plays a major role in computer graphics. Processing or analysis between two surfaces generally requires both of them to be same topology. There are many tools or applications such as parameterization or remeshing that require disk topology surfaces as input. Therefore, it is important to convert any surfaces to be same as a topological disk. The common procedure is to define a graph of edges inside the surface that should be split into two edges and to turn the surface into topological disk. We call it as homotopy cutting. Problems become more difficult when dealing with high genus surfaces such as a torus. Based on a novel method, we present an enhancement method to generate a cut graph in high-genus surface for homotopy cutting. By using geodesic properties of each edge, we can generate equally or more suitable edge-graph than original method while keeping similar performance and stability as original one.}
@@ -55,7 +55,7 @@ This paper presents a homotopy cutting on high genus surfaces. Our approach is a
 	\label{fig:geodesic rocket arm}
 \end{figure}
 
-\subsection{Notations}
+\subsection*{Notations}
 Before explaining various algorithms of homotopy, let us define basic notations. We represent a 2-manifold triangular surface or mesh by $\mathscr{M}:=(V,F)$, where $V:=\{ v_{i}\in \mathbb{R}^3 \mid i = 1, ... , n_v\}$ is a set of $n_v$ vertices and $F:=\{ f_{i}(a,b,c) \mid a,b,c = 1, ... , n_v : a \neq b \neq c\}$ is a set of $n_f$ faces. We also define $E:=\{ e_{i}(a,b) \mid a,b = 1, ... , n_v : a \neq b\}$ as a set of $n_e$ edges found in the surface $\mathscr{M}$. We assume that the mesh has genus $g$ topology. 
 
 
@@ -203,14 +203,13 @@ Typically, this kind of edges can be found a lot in mesh and cover all areas of 
 
 \begin{figure}[h!]
 	\centering		
-	\subfloat[\label{fig:edge from two faces}]{\includegraphics[width=0.45\columnwidth]{images/edge_two_faces.png}}
-	\hspace{10pt}
-	\subfloat[\label{fig:edge nearby crossing}]{\includegraphics[width=0.45\columnwidth]{images/edge_nearby_crossing.png}}\\
-	\subfloat[\label{fig:after truncate}]{\includegraphics[width=0.45\columnwidth]{images/after_truncation.png}}
-	\hspace{10pt}
-	\subfloat[\label{fig:neighbor edges}]{\includegraphics[width=0.35\columnwidth]{images/neighbor_edges.png}}	
+	\subfloat[\label{fig:edge from two faces}]{\includegraphics[width=0.48\columnwidth]{images/edge_two_faces.png}}
+	\hspace{2pt}
+	\subfloat[\label{fig:edge nearby crossing}]{\includegraphics[width=0.48\columnwidth]{images/edge_nearby_crossing.png}}\\
+	\subfloat[\label{fig:after truncate}]{\includegraphics[width=0.75\columnwidth]{images/after_truncation.png}}\\
+	\subfloat[\label{fig:neighbor edges}]{\includegraphics[width=0.75\columnwidth]{images/neighbor_edges.png}}	
 
-	\caption[]{Processes to define $\tilde{E}$ and $\hat{E}$ on a torus model. \subref{fig:edge from two faces} shows green colored edges that their intervals' pseudo-sources are from both sides. \subref{fig:edge nearby crossing} shows blue colored edges that their intervals fail to propagate. \subref{fig:after truncate} shows the graph after removing dangling edges. \subref{fig:neighbor edges} shows $\tilde{E}$ in red color and $\hat{E}$ in orange color. (TO DO: more bigger colored edge line and dot)}
+	\caption[]{Processes to define $\tilde{E}$ and $\hat{E}$ on a torus model. \subref{fig:edge from two faces} shows green colored edges that their intervals' pseudo-sources are from both sides. \subref{fig:edge nearby crossing} shows blue colored edges that their intervals fail to propagate. \subref{fig:after truncate} shows the graph after removing dangling edges. \subref{fig:neighbor edges} shows $\tilde{E}$ in red color and $\hat{E}$ in orange color.}
 	\label{fig:fig-torus_edges_detected}
 \end{figure}
 
@@ -264,7 +263,7 @@ As shown in Table \ref{table:result}, our approach can deliver lower  $L^2$ erro
 		09    & 3  & 2.041   &  \cellcolor{yellow!25}2.025    &  \cellcolor{green!25}9.279  &  9.827 \\
 		10   & 3  & 471.2   &  \cellcolor{yellow!25}1.509    &  4.068  &  \cellcolor{green!25}1.978 \\
 		11   & 3  & 939.2   &  \cellcolor{yellow!25}1.625    &  6.348  &  \cellcolor{green!25}4.115 \\
-		12   & 3  & 94.15   &  \cellcolor{yellow!25}55.94    &  23.34  &  \cellcolor{green!25}14.19 \\
+		12   & 3  & 221.3K   &  \cellcolor{yellow!25}79.9K    &  383.2K  &  \cellcolor{green!25}203.4K \\
 		\hline		
 	\end{tabular}}
 \end{table}
@@ -280,7 +279,8 @@ An open topic of this propagation scheme is, it still requires manual starting l
 
 
 \section*{\uppercase{Acknowledgements}}
-\noindent The images in figure \ref{fig:gim figure} and \ref{fig:fig-original_genus_reducing_process}  are from \cite{Gu:2002:GI:566654.566589} paper and presentation file. This study is supported by JSPS KAKENHI (Grant Number 24300035).
+\noindent The images in figure \ref{fig:gim figure} and \ref{fig:fig-original_genus_reducing_process}  are from \cite{Gu:2002:GI:566654.566589} paper and presentation file. Models are courtesy of the AIM@SHAPE repository. Special thanks are given to Danil Kirsanov for exact geodesic distance code, to Shin Yoshizawa for parameterization code and to the anonymous reviewers for comments and suggestions.
+This study is supported by JSPS KAKENHI (Grant Number 24300035).
 
 
 
