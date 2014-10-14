@@ -68,7 +68,7 @@ From the efficiency point of view, it is important to compute non-trivial cycles
 
 There are several studies that try to define a cut graph by surface properties. A study by \cite{Patane:2007:FCB:1224804.1224947} presents an algorithm that builds up the cut graph on the iso-contours from Reeb graph which codes the topology of a given surface $\mathscr{M}$ in a combinatorial structure and generates loops together. Another study by \cite{Jin:2013:CSH:2396897.2396971}, presents an algorithm to compute the shortest homotopic loop with negative Euler characteristic based on the surface hyperbolic uniformization metric. They also demonstrate two applications: constructing extremal quasi-conformal mappings between same topology surfaces, and detecting homotopy between two paths or cycles on a surface. 
 
-There is an iterative method called "geometry images" by \cite{Gu:2002:GI:566654.566589}. This method presents a remeshing approach using square surface parameterization to create mapping between irregular surface $\mathscr{M}$ in $\mathbb{R}^3$ domain, and square plane in $\mathbb{R}^2$ domain. To get low error on remeshing, they present how to create a cut graph from any kinds of surfaces $\mathscr{M}$ regardless from the pre-analysis of topology and boundary edges.
+There is an iterative method called "geometry images" by \cite{Gu:2002:GI:566654.566589}, which is similar to that \cite{Dey:1994:NTC:177424.178001}. This method presents a remeshing approach using square surface parameterization to create mapping between irregular surface $\mathscr{M}$ in $\mathbb{R}^3$ domain, and square plane in $\mathbb{R}^2$ domain. To get low error on remeshing, they present how to create a cut graph from any kinds of surfaces $\mathscr{M}$ regardless from the pre-analysis of topology and boundary edges.
 
 \begin{figure}[!h]
 	%\vspace{-0.2cm}
@@ -93,7 +93,7 @@ Since our approach is based on geometry images, we explain in section \ref{sec:p
 	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep03}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_03.png}}\hspace{10pt}
 	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep04}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_04.png}}\hspace{10pt}		
 	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep05}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_05.png}}
-	\caption{Processes from removing a seed triangle from a mesh. Dash lines mean edges that are adjacent to only one triangle at the moment. \subref{fig:OriginalGenusReduceMethodStepByStep01} shows before removing stage. \subref{fig:OriginalGenusReduceMethodStepByStep02} shows after removing the seed triangle; that is, edges $e_1$,$e_2$ and $e_3$ are adjacent to only one triangle. Assume that geodesic distance from $f_{seed}$ to $e_1$ is smallest. \subref{fig:OriginalGenusReduceMethodStepByStep03} shows the result of removing edge $e_1$ and face $f_1$. The edge e4 become the one that adjacent to only one triangle. Let $e_2$ is next smallest geodesic distance. \subref{fig:OriginalGenusReduceMethodStepByStep04} shows the result of removing $e_2$ and $f_2$. The edge e4 becomes a candidate of cut graph edge (red dot line). \subref{fig:OriginalGenusReduceMethodStepByStep05} shows the result of next step that removing $e_3$ and $f_3$.}
+	\caption{Processes from removing a seed triangle from a mesh. Dash lines mean edges that are adjacent to only one triangle at the moment. \subref{fig:OriginalGenusReduceMethodStepByStep01} shows before removing stage. \subref{fig:OriginalGenusReduceMethodStepByStep02} shows after removing the seed triangle; that is, edges $e_1$,$e_2$ and $e_3$ are adjacent to only one triangle. Assume that geodesic distance from $f_{seed}$ to $e_1$ is the smallest. \subref{fig:OriginalGenusReduceMethodStepByStep03} shows the result of removing edge $e_1$ and face $f_1$. The edge $e_4$ become the one that adjacent to only one triangle. Let $e_2$ is next smallest geodesic distance. \subref{fig:OriginalGenusReduceMethodStepByStep04} shows the result of removing $e_2$ and $f_2$. The edge $e_4$ becomes a candidate of cut graph edge (red dot line). \subref{fig:OriginalGenusReduceMethodStepByStep05} shows the result of next step that removing $e_3$ and $f_3$.}
 	\label{fig:OriginalGenusReduceMethodStepByStep}
 \end{figure*}
 
@@ -155,7 +155,7 @@ The performance of MMP algorithm : They prove a worst case
 running time of $O(n^2 \log n)$ when $n$ is the number of mesh edges. However in practical calculation, it can achieve on 100K triangles mesh within a few seconds. Also there is an approximate version of MMP algorithm proposed by \cite{Surazhsky:2005:FEA:1073204.1073228} that can speed up the calculation by trying to merge an interval with an adjacent intervals on the same edge before starting the propagation.
 
 \subsection*{Notations}
-After calculating exact geodesic distance from a vertex $v_s$, each edge $e_i$ that is not a boundary one, has a set of $m$ intervals $I_{e_i}:=\{ i_{e_{i,j}}(f_p,e_p,D) \mid i = 1, ... ,n_v , j = 1,...,m\}$, where $f_p$ represents the face where propagation of interval's pseudo-source across and $e_p$ represents the edge that has interval's pseudo-source. $D$ represents another information about geodesic distance of considering interval.
+After calculating exact geodesic distance from a vertex $v_s$, each edge $e_i$ that is not a boundary one, has a set of $m$ intervals $I_{e_i}:=\{ i_{e_{i,j}}(f_p,e_p,D) \mid i = 1, ... ,n_v , j = 1,...,m\}$, where $f_p$ represents the face where propagation of interval's pseudo-source across and $e_p$ represents the edge that has interval's pseudo-source. $D$ represents another informations about geodesic distance of considering interval.
 
 \section{\uppercase{Our Approach}}
 \label{sec:our approach}
@@ -209,7 +209,7 @@ Typically, this kind of edges can be found a lot in mesh and cover all areas of 
 	\subfloat[\label{fig:after truncate}]{\includegraphics[width=0.75\columnwidth]{images/after_truncation.png}}\\
 	\subfloat[\label{fig:neighbor edges}]{\includegraphics[width=0.75\columnwidth]{images/neighbor_edges.png}}	
 
-	\caption[]{Processes to define $\tilde{E}$ and $\hat{E}$ on a torus model. \subref{fig:edge from two faces} shows green colored edges that their intervals' pseudo-sources are from both sides. \subref{fig:edge nearby crossing} shows blue colored edges that their intervals fail to propagate. \subref{fig:after truncate} shows the graph after removing dangling edges. \subref{fig:neighbor edges} shows $\tilde{E}$ in red color and $\hat{E}$ in  yellow color.}
+	\caption[]{Processes to define $\tilde{E}$ and $\hat{E}$ on a torus model. \subref{fig:edge from two faces} shows green colored edges that their intervals' pseudo-sources are from both sides. \subref{fig:edge nearby crossing} shows blue colored edges that their intervals have not propagated. \subref{fig:after truncate} shows the graph after removing dangling edges. \subref{fig:neighbor edges} shows $\tilde{E}$ in red color and $\hat{E}$ in  yellow color.}
 	\label{fig:fig-torus_edges_detected}
 \end{figure}
 
@@ -268,7 +268,7 @@ As shown in Table \ref{table:result}, our approach can deliver lower  $L^2$ erro
 	\end{tabular}}
 \end{table}
 
-We show the visual results from our experiments in figure \ref{fig:experiment results}. Note that all meshes do not contain any holes. Case 02-03,04-05,06-07 and 08-09 are same models with different $v_s$ location.
+We show the visual results from our experiments in figure \ref{fig:experiment results}. Note that all meshes do not contain any holes and case 02-03, 04-05, 06-07 and 08-09 are same models with different $v_s$ location.
 
 \section{\uppercase{Conclusions}}
 \label{sec:conclusion}
