@@ -161,27 +161,43 @@ After calculating the exact geodesic distance from a vertex $v_s$, each edge $e_
 
 To define such area, we calculate the exact geodesic distance from a source vertex $v_{s}$ by MMP algorithm \cite{Mitchell:1987:DGP:33367.33372} and then  analyze the set of intervals in each edge $e_i$. First, we define edges whose intervals have pseudo-sources laid on both side of adjacent faces. However, this case typically can detect few edges and cannot cover all areas where the cut graph should exist. Second, we define remaining edges whose intervals cannot be a pseudo-source of adjacent edges. We define these two specific characteristic edges as a set of edges $\tilde{E}$. At this point, $\tilde{E}$ contains a lot of unnecessary dangling edges. Therefore, we eliminate them from $\tilde{E}$ by the same approach in original method.
 
+
+\begin{figure*}[ht!]
+	\centering		
+	%\subfloat[\label{fig:edge from two faces}]{\includegraphics[width=0.75\columnwidth]{images/edge_two_faces.png}}
+	%\hspace{20pt}
+	\subfloat[\label{fig:edge nearby crossing}]{\includegraphics[width=0.65\columnwidth]{images/edge_nearby_crossing.png}}
+	\hspace{10pt}
+	\subfloat[\label{fig:after truncate}]{\includegraphics[width=0.67\columnwidth]{images/after_truncation.png}}
+	\hspace{10pt}
+	\subfloat[\label{fig:neighbor edges}]{\includegraphics[width=0.67\columnwidth]{images/neighbor_edges.png}}	
+	
+	\caption[]{Processes to define $\tilde{E}$ and $\hat{E}$ on a torus model. \subref{fig:edge nearby crossing} shows green colored edges that their intervals' pseudo-sources are from both sides, and blue colored edges that their intervals have not propagated. \subref{fig:after truncate} shows the graph after removing dangling edges. \subref{fig:neighbor edges} shows $\tilde{E}$ in red color and $\hat{E}$ in  yellow color.}
+	\label{fig:fig-torus_edges_detected}
+\end{figure*}
+
+
 We ensure that the cut graph has non-separating cycles by considering neighbor edges of $\tilde{E}$. We define a set of neighbor edges as $\hat{E}$, 
 then the candidate cut graph edges can be given by $\rho \equiv (\tilde{E} \cup \hat{E})$, and the rest edges $\acute{E}$ are given as $\acute{E} \equiv (E - \rho)$. However, $\rho$ may contain contractible cycles too. Therefore, we again need to define non-separating and non-contractible cycles from $\rho$. We follow similar basis from original method by removing an edge adjacent exactly to one triangle. However, we create priority of removing edges in queue according to $\acute{E}$,  $\hat{E}$ and $\tilde{E}$. From this point, we follow the remaining original processes: removing dangling edges and shorten loop.
 
 We explain in details how to define the set $\tilde{E}$ and how to ensure the generation of non-separating and non-contractible cut graph.
-
-\begin{figure}[h!]
-	\centering		
-	\subfloat[\label{fig:geodesic_both_face}from both sides type]{\includegraphics[width=0.49\columnwidth]{images/two_pseudosource.png}}
-	\hspace{0pt}
-	\subfloat[\label{fig:geodesic_fail_propagte}non-propagation type]{\includegraphics[width=0.49\columnwidth]{images/fail_propagate.png}}
-
-	\caption[]{Two types of edges that are considered as area of crossing geodesic distance's path.}
-	\label{fig:fig-two-type-edges}
-\end{figure}
 
 
 \subsection{Pseudo-sources of intervals from both sides}
 \label{subsec:pseudo-sources laid on both side of adjacent faces}
 The main idea of our approach is to detect areas where geodesic distance's paths are crossing together, like wave occlusion. Since we generate a cut graph, we define such areas as a set of edges.
 
-First, we detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: if there is an interval that $f_p$ is not same as other intervals then we consider $e_i \in \tilde{E}$. From figure \subref*{fig:geodesic_both_face}, we can see clearly that $e_a$ has two intervals $i_{e_{a,1}}$ and $i_{e_{a,2}}$, where first one has a pseudo-source from $f_l$ while second one has another pseudo-source from $f_r$. Typically, this kind of edges can be found a few in mesh (see figure \subref*{fig:edge from two faces}). 
+First, we detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: if there is an interval that $f_p$ is not same as other intervals then we consider $e_i \in \tilde{E}$. From figure \subref*{fig:geodesic_both_face}, we can see clearly that $e_a$ has two intervals $i_{e_{a,1}}$ and $i_{e_{a,2}}$, where first one has a pseudo-source from $f_l$ while second one has another pseudo-source from $f_r$. Typically, this kind of edges can be found a few in mesh (green edges in figure \subref*{fig:edge nearby crossing}). 
+
+\begin{figure}[h!]
+	\centering		
+	\subfloat[\label{fig:geodesic_both_face}from both sides type]{\includegraphics[width=0.49\columnwidth]{images/two_pseudosource.png}}
+	\hspace{0pt}
+	\subfloat[\label{fig:geodesic_fail_propagte}non-propagation type]{\includegraphics[width=0.49\columnwidth]{images/fail_propagate.png}}
+	
+	\caption[]{Two types of edges that are considered as area of crossing geodesic distance's path.}
+	\label{fig:fig-two-type-edges}
+\end{figure}
 
 \subsection{Non-propagation edge intervals}
 \label{subsec:intervals fail to propagate}
@@ -197,19 +213,9 @@ if both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ match one of above conditions, then 
 
 Considering an edge $e_a$ in figure \subref*{fig:geodesic_fail_propagte}, we can clearly see that edges $e_b$ and $e_c$ of opposite face $f_r$ ($e_{\bar{i}_1}$ and $e_{\bar{i}_2}$) have all intervals where their pseudo-sources are not on $e_a$, so we include $e_a$ into $\tilde{E}$. Vise-versa, when we are considering edge $e_c$; we can clearly see that edge $e_b$ has interval where its pseudo-source is on $e_c$ so we exclude $e_c$ from $\tilde{E}$.
 
-Typically, this kind of edges can be found a lot in mesh and cover all areas of mesh (see figure \subref*{fig:edge nearby crossing}). Therefore, we need to eliminate unnecessary edges in $\tilde{E}$. Present state of cut graph looks similar to dangling edges in original one so we run the same iterative process to remove the valance-1 vertices in the graph. 
+Typically, this kind of edges can be found a lot in mesh and cover all areas of mesh (blue edges in figure \subref*{fig:edge nearby crossing}). Therefore, we need to eliminate unnecessary edges in $\tilde{E}$. Present state of cut graph looks similar to dangling edges in original one so we run the same iterative process to remove the valance-1 vertices in the graph. 
 
-\begin{figure}[h!]
-	\centering		
-	\subfloat[\label{fig:edge from two faces}]{\includegraphics[width=0.48\columnwidth]{images/edge_two_faces.png}}
-	\hspace{2pt}
-	\subfloat[\label{fig:edge nearby crossing}]{\includegraphics[width=0.48\columnwidth]{images/edge_nearby_crossing.png}}\\
-	\subfloat[\label{fig:after truncate}]{\includegraphics[width=0.75\columnwidth]{images/after_truncation.png}}\\
-	\subfloat[\label{fig:neighbor edges}]{\includegraphics[width=0.75\columnwidth]{images/neighbor_edges.png}}	
 
-	\caption[]{Processes to define $\tilde{E}$ and $\hat{E}$ on a torus model. \subref{fig:edge from two faces} shows green colored edges that their intervals' pseudo-sources are from both sides. \subref{fig:edge nearby crossing} shows blue colored edges that their intervals have not propagated. \subref{fig:after truncate} shows the graph after removing dangling edges. \subref{fig:neighbor edges} shows $\tilde{E}$ in red color and $\hat{E}$ in  yellow color.}
-	\label{fig:fig-torus_edges_detected}
-\end{figure}
 
 \subsection{Ensure for non-separating cycles}
 \label{subsec:ensure non-trivia}
@@ -230,11 +236,11 @@ After the propagation terminates and all queues become empty, the remaining edge
 
 \section{\uppercase{Experimental Results}}
 \label{sec:Experiment Results}
-\noindent We tested the algorithms on a PC by using parameterization results from both original and our approach methods. We manually selected a vertex in input mesh to be $v_s$ then generate a cut graph. To create cut graphs from both methods with similar conditions, we want the both propagations to be spread out from same location. However, the original algorithm removes single seed triangle but our approach removes seed triangles around $v_s$. Therefore, we altered how to remove a seed triangle in original one to be same as our approach. With this alternation, it should not affect to overall performance in original one. Also, we applied shorten loops process after the propagation terminates.
+\noindent We tested the algorithms on a PC by using parameterization results from both original and our approach methods. We manually selected a vertex in input mesh to be $v_s$ then generated a cut graph. To create cut graphs from both methods with similar conditions, we want the both propagations to be spread out from a same location. Although the original algorithm removes single seed triangle, our approach removes seed triangles around $v_s$. Therefore, we altered how to remove a seed triangle in original one to be same as our approach. With this alternation, it should not affect to overall performance in original one. Also, we applied shorten loops process after the propagation terminates.
 
 After converting input mesh into disk topological patch, we applied stretch-minimizing parameterization from \cite{Yoshizawa_SMI04}.  We evaluated the parameterization results from both methods by using $L^2$ error (the root-mean-square stretch over all direction in planar domain) proposed by \cite{Sander:2001:TMP:383259.383307,Sander:2002:SP:581896.581909}.  
 
-After experiments with the several mesh which genus $g \geq 1$, we noticed that original method and our approach can generate very similar or same cut graphs on asymmetry lookalike meshes in most cases. However on some symmetry shapes, cut graphs can be different from each others. Therefore, we selected some results which have noticeable difference on cut graphs between original and our approach, and do parameterizations.
+After evaluating several meshes whose genuses are greater than or equal 1 ($g \geq 1$), we noticed that original method and our approach can generate very similar or same cut graphs on asymmetry lookalike meshes in most cases. However, on some symmetry shapes, cut graphs can be different from each others. Therefore, we selected some results which have noticeable difference on cut graphs between original and our approach, and do parameterizations.
 
 As shown in Table \ref{table:result}, our approach can deliver lower  $L^2$ error than original one in most cases. There are some cases that original one has a large error value while our approach can deliver a small error.
 
@@ -266,18 +272,18 @@ As shown in Table \ref{table:result}, our approach can deliver lower  $L^2$ erro
 	\end{tabular}}
 \end{table}
 
-We show the visual results from our experiments in figure \ref{fig:experiment results}. Note that all meshes do not contain any holes and case 02-03, 04-05, 06-07 and 08-09 are same models with different $v_s$ location.
+We show some visual results obtained from our experiments in figure \ref{fig:experiment results}. Note that all meshes do not contain any holes and case 02-03, 04-05, 06-07 and 08-09 are same models with different $v_s$ location.
 
 \section{\uppercase{Conclusions}}
 \label{sec:conclusion}
 
-\noindent We have presented an enhancement method to generate a cut graph in high-genus surface for homotopy cutting. Cut graph is generated based on an exact geodesic distance theory, by detecting areas where geodesic distance's paths are crossing together. We show how to detect these areas into a set of edges by analyzing edges' intervals. Then, we show how to ensure non-separating and non-contractible cycles by including neighbor edges into the set and applying original approach with minor adjustments in propagation queues. We can generate equally or more suitable edge-graph than original method while keeping similar performance and stability as original one.
+\noindent We presented an enhancement method to generate a cut graph in high-genus surface for homotopy cutting. Cut graph is generated based on an exact geodesic distance theory, by detecting areas where geodesic distance's paths are crossing together. We showed how to detect these areas into a set of edges by analyzing edges' intervals. Then, we also showed how to ensure non-separating and non-contractible cycles by including neighbor edges into the set and applying original approach with minor adjustments in propagation queues. We can generate equally or more suitable edge-graph than original method while keeping similar performance and stability as original one.
 
-An open topic of this propagation scheme is, it still requires manual starting location of propagation (seed triangle or $v_s$ in our approach). The quality of cut graph is dependency on user specific position.  To generate an optimal cut graph on a high genus surface, it is better to have shortest cut loop where it pass through on each surface's handle. Therefore, it is interesting topic for how to define starting location of propagation $v_s$ that generate optimal cut graph.
+An open topic of this propagation scheme is, it still requires manual starting location of propagation (seed triangle or $v_s$ in our approach). The quality of cut graph depends on user specific positions. To generate an optimal cut graph on a high genus surface, it is better to have shortest cut loop where it passes through on each surface's handle. Therefore, it is interesting to consider how to define starting location $v_s$ for generating optimal cut graph.
 
 
 \section*{\uppercase{Acknowledgements}}
-\noindent The images in figure \ref{fig:gim figure} and \ref{fig:fig-original_genus_reducing_process}  are from \cite{Gu:2002:GI:566654.566589} paper and presentation file. Models are courtesy of the AIM@SHAPE repository. Special thanks are given to Danil Kirsanov for exact geodesic distance code, to Shin Yoshizawa for parameterization code and to the anonymous reviewers for comments and suggestions.
+\noindent The images in figures \ref{fig:gim figure} and \ref{fig:fig-original_genus_reducing_process}  are from \cite{Gu:2002:GI:566654.566589} paper and presentation file. Models are courtesy of the AIM@SHAPE repository. Special thanks are given to Danil Kirsanov for exact geodesic distance code, to Shin Yoshizawa for parameterization code and to the anonymous reviewers for comments and suggestions.
 This study is supported by JSPS KAKENHI (Grant Number 24300035).
 
 
@@ -341,7 +347,7 @@ This study is supported by JSPS KAKENHI (Grant Number 24300035).
 	\subfloat[\label{fig:case12}case 12]{ \centering
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test12/original.png}\hspace{8pt} \includegraphics[width=0.35\columnwidth]{images/experiment/test12/propose.png}
 	}\\
-	\caption[]{Results of homotopy cutting from original (geometry images) and our approach methods. The meshes having yellow line are original approach results. The meshes having red line are our approach results.}
+	\caption[]{Results of homotopy cutting from original (geometry images) and our approach methods. The meshes having yellow line are results obtained by  original approach. The meshes having red line are our results.}
 	\label{fig:experiment results}
 \end{figure*}
 
