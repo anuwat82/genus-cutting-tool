@@ -28,9 +28,9 @@
 
 \title{A Homotopy Surface Cutting Using Paths Crossing in Geodesic Distance}
 
-\author{\authorname{Anuwat Dechvijankit,Author2 and Author3}
-\affiliation{Department of Computational Intelligence and Systems Science, Tokyo Institute of Technology, Japan}
-\email{dechvijankit.a.aa@m.titech.ac.jp}
+\author{\authorname{Author1, Author2 and Author3}
+\affiliation{Department of **** ,  university ****  , **** }
+\email{author@university-domain}
 }
 
 \keywords{geodesic distance, graph cut, homotopy, surface parameterization, topology}
@@ -47,7 +47,7 @@
 
 When processing a mesh that requires disk topology input, all kinds of meshes have different measures. An open surface has originally the same topology as a disk which can pass directly, but may need to be taken care in case of containing holes. Some problems arise when dealing with a closed surface since it has different topology from the disk. The process of surface cutting into a disk is required. In case of sphere topology, it does not require much processes; only short graph edge is necessary. However, there need some processes to ensure the quality of graph edges in homotopy cutting. The problem becomes more complex and more interesting when dealing with high genus surfaces. 
    
-This paper presents a homotopy cutting on high genus surfaces. Our approach is an enhancement of a novel method \cite{Gu:2002:GI:566654.566589} in homotopy cutting; cutting surfaces into disks. A benefit of this method is to be able to handle any kinds of 2-manifold surfaces, regardless of specific topology. We present an algorithm that creates a cut graph on the area where geodesic path comes from different directions in exact geodesic distance \cite{Mitchell:1987:DGP:33367.33372,Surazhsky:2005:FEA:1073204.1073228} (see example in figure \ref{fig:geodesic rocket arm}). With an few extra calculation,  we can define equally or more appropriate cut graph from original method while keeping performance and stability.
+This paper presents a homotopy cutting on high genus surfaces. Our approach is an enhancement of a novel method \cite{Gu:2002:GI:566654.566589} in homotopy cutting; cutting surfaces into disks. A benefit of this method is to be able to handle any kinds of 2-manifold surfaces, regardless of specific topology. We present an algorithm that creates a cut graph on the area where geodesic path comes from different directions in exact geodesic distance \cite{Mitchell:1987:DGP:33367.33372,Surazhsky:2005:FEA:1073204.1073228} (see example in figure \ref{fig:geodesic rocket arm}). With some extra calculation,  we can define equally or more appropriate cut graph from original method while keeping performance and stability.
 \begin{figure}[!h]
 	\centering
 	{\includegraphics[width=0.9\columnwidth]{images/geodesic_rocket-arm.png}}
@@ -56,19 +56,19 @@ This paper presents a homotopy cutting on high genus surfaces. Our approach is a
 \end{figure}
 
 \subsection*{Notations}
-Before explaining various algorithms of homotopy, let us define basic notations. We represent a 2-manifold triangular surface or mesh by $\mathscr{M}:=(V,F)$, where $V:=\{ v_{i}\in \mathbb{R}^3 \mid i = 1, ... , n_v\}$ is a set of $n_v$ vertices and $F:=\{ f_{i}(a,b,c) \mid a,b,c = 1, ... , n_v : a \neq b \neq c\}$ is a set of $n_f$ faces. We also define $E:=\{ e_{i}(a,b) \mid a,b = 1, ... , n_v : a \neq b\}$ as a set of $n_e$ edges found in the surface $\mathscr{M}$. We assume that the mesh has genus $g$ topology. 
+Before explaining various algorithms of homotopy, let us define basic notations. We represent a 2-manifold triangular surface or mesh by $\mathscr{M}:=(V,F)$, where $V:=\{ v_{i}\in \mathbb{R}^3 \mid i = 1, ... , n_v\}$ is a set of $n_v$ vertices and $F:=\{ f_{i}(a,b,c) \mid i = 1, ... , n_f : a,b,c = 1, ... , n_v : a \neq b \neq c\}$ is a set of $n_f$ faces. We also define $E:=\{ e_{i}(a,b) \mid i = 1, ... , n_e : a,b = 1, ... , n_v :  a \neq b\}$ as a set of $n_e$ edges found in the surface $\mathscr{M}$. We assume that the mesh has genus $g$ topology. 
 
 
 \section{\uppercase{Related Works}}
 \label{sec:related works}
-\noindent As for a topic of topological converting in the past years, there was a novel work  by \cite{Erickson:2002:OCS:513400.513430} that studied the problem of cutting a topological surface into a disk efficiently. They have proposed a cutting method that gave some elegant theoretical guarantees. However, the algorithm is very complex to be implemented. It finds the shortest loop path connecting vertices to the vertex itself by using a front propagation technique, and then tests if the considering loop path reduces the surface genus or simply cuts the surface into two pieces. It has topologically-sufficient cut as $2g$ loops. The generation of minimal length cut that converts a high genus surface into a topological disk is a NP-hard problem. One method is a brute force approach which consumes a lot of time. However, it is an approximation of the shortest cut graph in $O(g^2 n \log n)$ where $n$ denotes complexity of the surface. \cite{Erickson:2005:GOH:1070432.1070581} studied about a greedy homotopy basis and improved its calculation speed in $O(n \log n)$
+\noindent As for a topic of topological converting in the past years, there was a novel work  by \cite{Erickson:2002:OCS:513400.513430} that studied the problem of cutting a topological surface into a disk efficiently. They proposed a cutting method that gave some elegant theoretical guarantees. However, the algorithm is very complex to be implemented. It finds the shortest loop path connecting vertices to the vertex itself by using a front propagation technique, and then tests if the considering loop path reduces the surface genus or simply cuts the surface into two pieces. It has topologically-sufficient cut as $2g$ loops. The generation of minimal length cut that converts a high genus surface into a topological disk is a NP-hard problem. One method is a brute force approach which consumes a lot of time. However, it is an approximation of the shortest cut graph calculated in $O(g^2 n \log n)$ where $n$ denotes complexity of the surface. \cite{Erickson:2005:GOH:1070432.1070581} studied about a greedy homotopy basis and improved its calculation speed in $O(n \log n)$
 by using a straightforward application of Dijkstra's shortest path algorithm \cite{Dijkstra59anote}. 
 
 From the efficiency point of view, it is important to compute non-trivial cycles on orientable surfaces. Non-trivial cycles mean non-contractible and non-separating cycles which guarantee the topological surface cutting into disk. Recently, \cite{Kutz:2006:CSN:1137856.1137919} presents an algorithm that computes a shortest non-trivial cycle in $O(n \log n)$ on an orientable combinatorial surface of bounded genus. The algorithm is based on universal-cover constructions to find short cycles.
 
-There are several studies that try to define a cut graph by surface properties. A study by \cite{Patane:2007:FCB:1224804.1224947} presents an algorithm that builds up the cut graph on the iso-contours from Reeb graph which codes the topology of a given surface $\mathscr{M}$ in a combinatorial structure and generates loops together. Another study by \cite{Jin:2013:CSH:2396897.2396971} presents an algorithm to compute the shortest homotopic loop with negative Euler characteristic based on the surface hyperbolic uniformization metric. They also demonstrate two applications: constructing extremal quasi-conformal mappings between same topology surfaces, and detecting homotopy between two paths or cycles on a surface. 
+There are several studies that try to define a cut graph by surface properties. A study by \cite{Patane:2007:FCB:1224804.1224947} presents an algorithm that builds up the cut graph on the iso-contours from Reeb graph which codes the topology of a given surface $\mathscr{M}$ in a combinatorial structure and generates loops together. Another study by \cite{Jin:2013:CSH:2396897.2396971} presents an algorithm to compute the shortest homotopic loop with negative Euler characteristic based on the surface hyperbolic uniformization metric. They also demonstrated two applications: constructing extremal quasi-conformal mappings between same topology surfaces, and detecting homotopy between two paths or cycles on a surface. 
 
-There is an iterative method called "geometry images" by \cite{Gu:2002:GI:566654.566589}, which is similar to that \cite{Dey:1994:NTC:177424.178001}. This method presents a remeshing approach using square surface parameterization to create a mapping between irregular surface $\mathscr{M}$ in $\mathbb{R}^3$ domain, and square plane in $\mathbb{R}^2$ domain. To get low error on the remeshing, they present how to create a cut graph from any kinds of surfaces $\mathscr{M}$ regardless from the pre-analysis of topology and boundary edges.
+There is an iterative method called "geometry images" by \cite{Gu:2002:GI:566654.566589}, which is similar to that of \cite{Dey:1994:NTC:177424.178001}. This method presents a remeshing approach using square surface parameterization to create a mapping between irregular surface $\mathscr{M}$ in $\mathbb{R}^3$ domain, and square plane in $\mathbb{R}^2$ domain. To get low error on the remeshing, they present how to create a cut graph from any kinds of surfaces $\mathscr{M}$ regardless from the pre-analysis of topology and boundary edges.
 
 \begin{figure}[!h]
 	%\vspace{-0.2cm}
@@ -147,19 +147,19 @@ For the case of closed surface of genus $g=0$, the overall processes from this p
 	\label{fig:mmp algorithm}
 \end{figure}
 
-MMP algorithm creates a geodesic path for "single source and all destinations" scheme. The algorithm computes a set of intervals of each edge. An interval represents an accessible pencil of lines from its pseudo-source. Each internal also acts as a pseudo-source to propagate across faces of the rest of mesh. The algorithm propagates the distance information out from the source in a Dijkstra-like fashion which can traceback any positions on mesh to the source.
+MMP algorithm creates a geodesic path for "single source and all destinations" scheme. The algorithm computes a set of intervals of each edge. An interval represents an accessible pencil of lines from its pseudo-source. Each interval also acts as a pseudo-source to propagate across faces of the rest of mesh. The algorithm propagates the distance information out from the source in a Dijkstra-like fashion which can traceback any positions on mesh to the source.
 
 The performance of MMP algorithm : They prove a worst case
 running time of $O(n^2 \log n)$ when $n$ is the number of mesh edges. However in practical calculation, it can achieve on 100K triangles mesh within a few seconds. Also there is an approximate version of MMP algorithm proposed by \cite{Surazhsky:2005:FEA:1073204.1073228} that can speed up the calculation by trying to merge an interval with adjacent intervals on the same edge before starting the propagation.
 
 \subsection*{Notations}
-After calculating the exact geodesic distance from a vertex $v_s$, each edge $e_i$ that is not a boundary one, has a set of $m$ intervals $I_{e_i}:=\{ i_{e_{i,j}}(f_p,e_p,D) \mid i = 1, ... ,n_v , j = 1,...,m\}$, where $f_p$ represents the face where propagation of interval's pseudo-source across and $e_p$ represents the edge that has interval's pseudo-source. $D$ represents another informations about geodesic distance of considering interval.
+After calculating the exact geodesic distance from a vertex $v_s$, each edge $e_i$ that is not a boundary one, has a set of $m$ intervals $I_{e_i}:=\{ i_{e_{i,j}}(f_p,e_p,D) \mid i = 1, ... ,n_v , j = 1,...,m\}$, where $f_p$ represents the face where propagation of interval's pseudo-source across and $e_p$ represents the edge that has interval's pseudo-source. $D$ represents another information about geodesic distance of considering interval.
 
 \section{\uppercase{Our Approach}}
 \label{sec:our approach}
 \noindent Given a triangular 2-manifold mesh $\mathscr{M}$ without any topological information about genus $g$, we adopt a geometry image method \cite{Gu:2002:GI:566654.566589} to define $2g$ cut loop graph for homotopy basis. Instead of having a cut graph along the propagation by geodesic distance criteria, we try to have a cut graph in the area where it has the same geodesic distance but its pseudo-sources come from different edges.
 
-To define such area, we calculate the exact geodesic distance from a source vertex $v_{s}$ by MMP algorithm \cite{Mitchell:1987:DGP:33367.33372} and then  analyze the set of intervals in each edge $e_i$. First, we define edges whose intervals have pseudo-sources laid on both side of adjacent faces. However, this case typically can detect few edges and cannot cover all areas where the cut graph should exist. Second, we define remaining edges whose intervals cannot be a pseudo-source of adjacent edges. We define these two specific characteristic edges as a set of edges $\tilde{E}$. At this point, $\tilde{E}$ contains a lot of unnecessary dangling edges. Therefore, we eliminate them from $\tilde{E}$ by the same approach in original method.
+To define such area, we calculate the exact geodesic distance from a source vertex $v_{s}$ by MMP algorithm \cite{Mitchell:1987:DGP:33367.33372} and then  analyze the set of intervals in each edge $e_i$. First, we define edges whose intervals have pseudo-sources laid on both side of adjacent faces. However, this case typically can detect few edges and cannot cover all areas where the cut graph should exist. Second, we define remaining edges whose intervals cannot be a pseudo-source of adjacent edges. We define these two specific characteristic edges as a set of edges $\tilde{E}$. At this point, $\tilde{E}$ contains a lot of unnecessary dangling edges. Therefore, we eliminate them from $\tilde{E}$ by the same approach in the original method.
 
 
 \begin{figure*}[ht!]
@@ -178,7 +178,7 @@ To define such area, we calculate the exact geodesic distance from a source vert
 
 
 We ensure that the cut graph has non-separating cycles by considering neighbor edges of $\tilde{E}$. We define a set of neighbor edges as $\hat{E}$, 
-then the candidate cut graph edges can be given by $\rho \equiv (\tilde{E} \cup \hat{E})$, and the rest edges $\acute{E}$ are given as $\acute{E} \equiv (E - \rho)$. However, $\rho$ may contain contractible cycles too. Therefore, we again need to define non-separating and non-contractible cycles from $\rho$. We follow similar basis from original method by removing an edge adjacent exactly to one triangle. However, we create priority of removing edges in queue according to $\acute{E}$,  $\hat{E}$ and $\tilde{E}$. From this point, we follow the remaining original processes: removing dangling edges and shorten loop.
+then the candidate cut graph edges can be given by $\rho \equiv (\tilde{E} \cup \hat{E})$, and the rest edges $\acute{E}$ are given as $\acute{E} \equiv (E - \rho)$. However, $\rho$ may contain contractible cycles too. Therefore, we again need to define non-separating and non-contractible cycles from $\rho$. We follow similar basis from the original method by removing an edge exactly adjacent to one triangle. However, we create priority of removing edges in a queue according to $\acute{E}$,  $\hat{E}$ and $\tilde{E}$. From this point, we follow the remaining original processes: removing dangling edges and shorten loop.
 
 We explain in details how to define the set $\tilde{E}$ and how to ensure the generation of non-separating and non-contractible cut graph.
 
@@ -203,15 +203,15 @@ First, we detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: 
 \label{subsec:intervals fail to propagate}
 Along with the edge type described in section \ref{subsec:pseudo-sources laid on both side of adjacent faces},  we need to define another edge type in cut graph. That is, this type of edges are nearby crossing geodesic distance's paths.
 
-We detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: all intervals have pseudo-sources from same face $f_p$ (pseudo-source edge $e_p$ can be different). Let opposite face be $f_{\bar{p}}$ and other two adjacent edges of $f_{\bar{p}}$ be $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$. We consider both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ edges by the following condition.
+We detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: all intervals have pseudo-sources from same face $f_p$ (pseudo-source edge $e_p$ can be different). Let opposite face be $f_{\bar{p}}$ and other two adjacent edges of $f_{\bar{p}}$ be $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$. We consider both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ edges by the following conditions.
 \begin{itemize}
 	\item Edge intervals have pseudo-sources from both sides (section \ref{subsec:pseudo-sources laid on both side of adjacent faces}).
 	\item Edge intervals have $e_p \neq e_i$.
 \end{itemize}
 
-if both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ match one of above conditions, then we consider $e_i \in \tilde{E}$. 
+If both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ match one of above conditions, then we consider $e_i \in \tilde{E}$. 
 
-Considering an edge $e_a$ in figure \subref*{fig:geodesic_fail_propagte}, we can clearly see that edges $e_b$ and $e_c$ of opposite face $f_r$ ($e_{\bar{i}_1}$ and $e_{\bar{i}_2}$) have all intervals where their pseudo-sources are not on $e_a$, so we include $e_a$ into $\tilde{E}$. Vise-versa, when we are considering edge $e_c$; we can clearly see that edge $e_b$ has interval where its pseudo-source is on $e_c$ so we exclude $e_c$ from $\tilde{E}$.
+Considering an edge $e_a$ in figure \subref*{fig:geodesic_fail_propagte}, we can clearly see that edges $e_b$ and $e_c$ of opposite face $f_r$ ($e_{\bar{i}_1}$ and $e_{\bar{i}_2}$) have all intervals where their pseudo-sources are not on $e_a$, so we include $e_a$ into $\tilde{E}$. Vise-versa, when we are considering edge $e_c$; we can clearly see that edge $e_b$ has an interval where its pseudo-source is on $e_c$ so we exclude $e_c$ from $\tilde{E}$.
 
 Typically, this kind of edges can be found a lot in mesh and cover all areas of mesh (blue edges in figure \subref*{fig:edge nearby crossing}). Therefore, we need to eliminate unnecessary edges in $\tilde{E}$. Present state of cut graph looks similar to dangling edges in original one so we run the same iterative process to remove the valance-1 vertices in the graph. 
 
@@ -219,30 +219,30 @@ Typically, this kind of edges can be found a lot in mesh and cover all areas of 
 
 \subsection{Ensure for non-separating cycles}
 \label{subsec:ensure non-trivia}
-After detecting the edges in $\tilde{E}$ whose geodesic distance's paths are crossing, we aim to create a homotopy cut graph which require non-separating and non-contractible cycles from $\tilde{E}$.
+After detecting the edges in $\tilde{E}$ whose geodesic distance's paths are crossing, we aim to create a homotopy cut graph which requires non-separating and non-contractible cycles from $\tilde{E}$.
 
 At this stage, $\tilde{E}$ may typically contains separating or contractible cycles (see figure \subref*{fig:after truncate}).  For separating cycles issue, we define all edges in $\hat{E}$ to be neighbors of each edge in $\tilde{E}$. We consider that a set of edges $\rho \equiv (\tilde{E} \cup \hat{E})$ contains $2g$ loops inside it.  
 
 \subsection{Prioritize removing-edge queues}
 After making sure that $\rho$ contains $2g$ loops inside them, we try to create a valid cut graph along them. From this condition, we must eliminate edges that cause contractible cycles from $\rho$ and maintain non-separating property. Also, there are non-considered edges $\acute{E} \equiv (E - \rho)$ which will be excluded from the cut graph.
 
-One advantage of original method is to guarantee a valid cut graph when the propagation finished. Because of that, we used the original propagation scheme. However, we also want the cut graph to be around $\tilde{E}$ as first priority and around $\hat{E}$ as second priority. Therefore, we altered the orders of removing edge in the original propagation scheme. We created 3 removing-edge queues rather than single queue in original one. Each queue contains edges based on: 
+One advantage of the original method is to guarantee a valid cut graph when the propagation finished. Because of that, we used the original propagation scheme. However, we also want the cut graph to be around $\tilde{E}$ as first priority and around $\hat{E}$ as second priority. Therefore, we altered the orders of removing edge in the original propagation scheme. We created 3 removing-edge queues rather than single queue in the original one. Each queue contains edges based on: 
 $\acute{E}$, $\hat{E}$ and $\tilde{E}$.  And we mark each of them for low-to-high priority in the order of $\acute{E}$, $\hat{E}$ and $\tilde{E}$.
 
-First, we remove faces around $v_s$ as seed triangles. Next, we iteratively analyze edges (adjacent only one triangle) in a non-empty queue under the conditions that we try to remove the edge and its adjacent face on low priority queue first and the edge with shortest geodesic distance in the queue will be removed first.
+First, we remove faces around $v_s$ as seed triangles. Next, we iteratively analyze edges (adjacent only one triangle) in a non-empty queue under the conditions that the edge and its adjacent face on low priority queue are removed first and then the edge with shortest geodesic distance in the queue will be removed first.
 
 After the propagation terminates and all queues become empty, the remaining edges contain $2g$ loops with non-separating and non-contractible properties. Again, we might shorten each loop for better quality in some further applications. At last, we generate a cut graph that enables to convert the mesh with genus $g$ into topological disk patch.
 
 
 \section{\uppercase{Experimental Results}}
 \label{sec:Experiment Results}
-\noindent We tested the algorithms on a PC by using parameterization results from both original and our approach methods. We manually selected a vertex in input mesh to be $v_s$ then generated a cut graph. To create cut graphs from both methods with similar conditions, we want the both propagations to be spread out from a same location. Although the original algorithm removes single seed triangle, our approach removes seed triangles around $v_s$. Therefore, we altered how to remove a seed triangle in original one to be same as our approach. With this alternation, it should not affect to overall performance in original one. Also, we applied shorten loops process after the propagation terminates.
+\noindent We tested the algorithms on a PC by using parameterization results from both original and our approach methods. We manually selected a vertex in the input mesh as $v_s$ then generated a cut graph. To create cut graphs from both methods with similar conditions, we want the both propagations to be spread out from a same location. Although the original algorithm removes single seed triangle, our approach removes seed triangles around $v_s$. Therefore, we altered how to remove a seed triangle in original one to be same as our approach. With this alternation, it should not affect to overall performance in original one. Also, we applied shorten loops process after the propagation terminated.
 
-After converting input mesh into disk topological patch, we applied stretch-minimizing parameterization from \cite{Yoshizawa_SMI04}.  We evaluated the parameterization results from both methods by using $L^2$ error (the root-mean-square stretch over all direction in planar domain) proposed by \cite{Sander:2001:TMP:383259.383307,Sander:2002:SP:581896.581909}.  
+After converting the input mesh into disk topological patch, we applied stretch-minimizing parameterization by \cite{Yoshizawa_SMI04}.  We evaluated the parameterization results from both methods by using $L^2$ error (the root-mean-square stretch over all direction in planar domain) proposed by \cite{Sander:2001:TMP:383259.383307,Sander:2002:SP:581896.581909}.  
 
-After evaluating several meshes whose genuses are greater than or equal 1 ($g \geq 1$), we noticed that original method and our approach can generate very similar or same cut graphs on asymmetry lookalike meshes in most cases. However, on some symmetry shapes, cut graphs can be different from each others. Therefore, we selected some results which have noticeable difference on cut graphs between original and our approach, and do parameterizations.
+After evaluating several meshes whose genuses are greater than or equal 1 ($g \geq 1$), we noticed that original method and our approach can generate very similar or same cut graphs on asymmetry lookalike meshes in most cases. However, on some symmetrical shapes, cut graphs can be different from each others. Therefore, we selected some results which have noticeable difference on cut graphs between original and our approaches, and do parameterizations.
 
-As shown in Table \ref{table:result}, our approach can deliver lower  $L^2$ error than original one in most cases. There are some cases that original one has a large error value while our approach can deliver a small error.
+As shown in Table \ref{table:result}, our approach can deliver lower $L^2$ error than the original one in most cases. There are some cases that the original one has a large error value while our approach can deliver a small error.
 
 \begin{table}[h]
 	\setlength\extrarowheight{03pt}
@@ -277,14 +277,15 @@ We show some visual results obtained from our experiments in figure \ref{fig:exp
 \section{\uppercase{Conclusions}}
 \label{sec:conclusion}
 
-\noindent We presented an enhancement method to generate a cut graph in high-genus surface for homotopy cutting. Cut graph is generated based on an exact geodesic distance theory, by detecting areas where geodesic distance's paths are crossing together. We showed how to detect these areas into a set of edges by analyzing edges' intervals. Then, we also showed how to ensure non-separating and non-contractible cycles by including neighbor edges into the set and applying original approach with minor adjustments in propagation queues. We can generate equally or more suitable edge-graph than original method while keeping similar performance and stability as original one.
+\noindent We presented an enhancement method to generate a cut graph in high-genus surface for homotopy cutting. Cut graph is generated based on an exact geodesic distance theory, by detecting areas where geodesic distance's paths are crossing together. We showed how to detect these areas into a set of edges by analyzing edges' intervals. Then, we also showed how to ensure non-separating and non-contractible cycles by including neighbor edges into the set and applying original approach with minor adjustments in propagation queues. We can generate equally or more suitable edge-graph than the original method while keeping similar performance and stability as original one.
 
 An open topic of this propagation scheme is, it still requires manual starting location of propagation (seed triangle or $v_s$ in our approach). The quality of cut graph depends on user specific positions. To generate an optimal cut graph on a high genus surface, it is better to have shortest cut loop where it passes through on each surface's handle. Therefore, it is interesting to consider how to define starting location $v_s$ for generating optimal cut graph.
 
 
 \section*{\uppercase{Acknowledgements}}
 \noindent The images in figures \ref{fig:gim figure} and \ref{fig:fig-original_genus_reducing_process}  are from \cite{Gu:2002:GI:566654.566589} paper and presentation file. Models are courtesy of the AIM@SHAPE repository. Special thanks are given to Danil Kirsanov for exact geodesic distance code, to Shin Yoshizawa for parameterization code and to the anonymous reviewers for comments and suggestions.
-This study is supported by JSPS KAKENHI (Grant Number 24300035).
+%This study is supported by JSPS KAKENHI (Grant Number 24300035).
+This study is supported by ****** (Grant Number ******).
 
 
 
