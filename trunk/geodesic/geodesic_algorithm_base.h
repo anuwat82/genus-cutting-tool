@@ -24,7 +24,8 @@ public:
 	GeodesicAlgorithmBase(geodesic::Mesh* mesh):
 		m_type(UNDEFINED_ALGORITHM),
 		m_max_propagation_distance(1e100),
-		m_mesh(mesh)
+		m_mesh(mesh),
+		m_time_consumed(0)
 	{};	
 
 	virtual ~GeodesicAlgorithmBase(){};
@@ -57,6 +58,7 @@ public:
 	virtual std::string name();
 
 	geodesic::Mesh* mesh(){return m_mesh;};
+	double GetConsumedTime(){return m_time_consumed;};
 protected:
 
 	void set_stop_conditions(std::vector<SurfacePoint>* stop_points, 
@@ -74,7 +76,7 @@ protected:
 
 	geodesic::Mesh* m_mesh;
 
-	double m_time_consumed;		//how much time does the propagation step takes
+	double m_time_consumed;		//how much time does the propagation step takes	
 	double m_propagation_distance_stopped;		//at what distance (if any) the propagation algorithm stopped 
 };
 

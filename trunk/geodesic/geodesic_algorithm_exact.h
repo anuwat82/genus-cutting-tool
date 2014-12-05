@@ -19,7 +19,8 @@ public:
 	GeodesicAlgorithmExact(geodesic::Mesh* mesh):
 	  	GeodesicAlgorithmBase(mesh),
 		m_memory_allocator((unsigned int)mesh->edges().size(), (unsigned int)mesh->edges().size()),
-		m_edge_interval_lists(mesh->edges().size())
+		m_edge_interval_lists(mesh->edges().size()),
+		m_time_consumed_sourcecollision(0)
 	{
 		m_type = EXACT;
 
@@ -49,6 +50,7 @@ public:
 	void print_statistics();
 
 	const std::vector<edge_pointer>&  CollisionEdges(){return m_collisionTwoPathEdges;}
+	double GetConsumedTime2(){return m_time_consumed_sourcecollision;};
 private:
 	typedef std::set<interval_pointer, Interval> IntervalQueue;
 	Interval::DirectionType get_edge_source_direction(edge_pointer e);
@@ -151,6 +153,7 @@ private:
 	SortedSources m_sources;
 
 	std::vector<edge_pointer> m_collisionTwoPathEdges;
+	double m_time_consumed_sourcecollision;		//how much time does the propagation step takes
 };
 
 
