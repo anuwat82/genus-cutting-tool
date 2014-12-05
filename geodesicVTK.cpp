@@ -28,7 +28,7 @@ vtkWeakPointer<vtkActor> actorPoly1;
 vtkWeakPointer<vtkActor> actorPoly2;
 vtkWeakPointer<vtkActor> actorPoly3;
 geodesic::Mesh geosesic_mesh;
-
+geodesic::GeodesicAlgorithmExact *exact_algorithm;
 struct collisionEdgeInfo
 {
 	int v0;
@@ -187,7 +187,7 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 	std::cout << "==========================" << endl;
 	std::cout << "source vertex id " << sourceVertexID << endl;
 
-	geodesic::GeodesicAlgorithmExact *exact_algorithm = new geodesic::GeodesicAlgorithmExact(&geosesic_mesh);
+	exact_algorithm = new geodesic::GeodesicAlgorithmExact(&geosesic_mesh);
 	GenerateGeodesicDistance(*exact_algorithm,sourceVertexID,collision_edges);
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphBeforeTruncate = GenerateCollisionEdgeGraph(polydata,collision_edges);
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphAfterTruncate  = TruncateGraph(collisionEdgesGraphBeforeTruncate);
@@ -332,9 +332,9 @@ int main(int argc, char* argv[])
 	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
 	actor->SetMapper(mapper);
 	actorMainPoly = actor;
-	actor->GetProperty()->SetEdgeVisibility(1);
-	actor->GetProperty()->SetLineWidth(0.25);
-	actor->GetProperty()->SetOpacity(0.5);
+	actor->GetProperty()->SetEdgeVisibility(0);
+	actor->GetProperty()->SetLineWidth(0.1);
+	actor->GetProperty()->SetOpacity(0.65);
 	// Visualize
 	vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
 	vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
@@ -347,7 +347,9 @@ int main(int argc, char* argv[])
 	renderer->SetUseDepthPeeling(1);
 	renderer->SetMaximumNumberOfPeels(100);
 	renderer->SetOcclusionRatio(0.1);
-
+	
+	
+	
 	renderWindow->AddRenderer(renderer);
 	vtkSmartPointer<MouseInteractorStylePP> TrackballStyle = vtkSmartPointer<MouseInteractorStylePP>::New();		
 	vtkSmartPointer<vtkPointPicker> picker =  vtkSmartPointer<vtkPointPicker>::New();
@@ -376,7 +378,16 @@ int main(int argc, char* argv[])
 	pickCallback->SetClientData(TrackballStyle);
 	picker->AddObserver(vtkCommand::EndPickEvent,pickCallback);	
 	
-
+	{
+		vtkCamera *cam  = renderer->GetActiveCamera();
+		double pos[3] = {7.21609, -25.5471, 20.343};
+		
+		double up[3] = {-0.17565, 0.582402, 0.793697};
+		
+		cam->SetPosition(pos);
+		cam->SetViewUp(up);
+		
+	}
 
 	ColoredPoint( renderer,modelReader->GetOutput()->GetPoint(sourceVertex), 1.0,0.5,0.0);
 
@@ -395,6 +406,12 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 	char *ch = iren->GetKeySym();
 	switch (*ch)
 	{
+		case 'r':
+			{
+				vtkCamera *cam  = renderer->GetActiveCamera();
+				cout<< *cam << endl;
+			}
+			break;
 		case '1':
 			renderer->RemoveActor(actorEdge1);
 			renderer->RemoveActor(actorEdge2);
@@ -503,6 +520,10 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 				actorEdge4 = edge_actor4;
 			renderer->Modified();
 			iren->GetRenderWindow()->Render();
+			double time_original = exact_algorithm->GetConsumedTime() + originalTruncate.GetTimeConsumed();
+			double time_proposed = exact_algorithm->GetConsumedTime() + exact_algorithm->GetConsumedTime2() +  modTruncate.GetTimeConsumed();
+			cout << "time consume original:" << time_original << "sec" << endl;
+			cout << "time consume proposed:" << time_proposed << "sec" << endl;
 			}
 			break;
 		case 'c':
@@ -619,6 +640,7 @@ bool GenerateGeodesicDistance(geodesic::GeodesicAlgorithmExact &geoAlgo,int vert
 	
 	geodesic::SurfacePoint source(&geoAlgo.mesh()->vertices()[vertexID]);		//create source 
 	std::vector<geodesic::SurfacePoint> all_sources(1,source);					//in general, there could be multiple sources, but now we have only one
+	
 	geoAlgo.propagate(all_sources);	//cover the whole mesh
 
 	
@@ -631,8 +653,6 @@ bool GenerateGeodesicDistance(geodesic::GeodesicAlgorithmExact &geoAlgo,int vert
 		info.v1 = e->adjacent_vertices()[1]->id();
 		info.type = e->source_collision();
 		collision_edges.push_back(info);
-		
-
 	}
 	return true;
 }
@@ -660,7 +680,7 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GenerateCollisionEdgeGraph(vtkSmartPo
 	int numCollisionEdge = (int) collision_edges.size();
 	for (int i = 0 ; i < numCollisionEdge ; i++)
 	{
-		if (collision_edges[i].type == 1 || collision_edges[i].type == 2)
+		if (collision_edges[i].type == 1|| collision_edges[i].type == 2)
 			graph->AddEdge(collision_edges[i].v0,collision_edges[i].v1);
 	}
 	return graph;
@@ -992,27 +1012,33 @@ vtkSmartPointer<vtkActor> CreateBeforeTruncatePipeline(vtkSmartPointer<vtkMutabl
 	g2pBT->Update();
 	vtkSmartPointer<vtkPolyData> collisionEdgesBTPolydata = vtkSmartPointer<vtkPolyData>::New();
 	collisionEdgesBTPolydata->ShallowCopy(g2pBT->GetOutput());
+	
+	
 
 
 	// Setup the colors array
 	vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
-	colors->SetNumberOfComponents(3);
+	colors->SetNumberOfComponents(4);
 	colors->SetName("Colors");
 	// Setup two colors 
-	unsigned char red[3] = {255, 0, 0};
-	unsigned char green[3] = {0, 255, 0};
-	unsigned char blue[3] = {0, 0, 255};
-	unsigned char yellow[3] = {255, 255, 0};
+	unsigned char white[4] = {255, 255, 255,0};
+	unsigned char red[4] = {255, 0, 0,0};
+	unsigned char green[4] = {0, 255, 0,255};
+	unsigned char blue[4] = {0, 0, 255,255};
+	unsigned char yellow[4] = {255, 255, 0,255};
 	int numEdge = collisionEdgesBTPolydata->GetLines()->GetNumberOfCells();
 	for (int cellID = 0 ; cellID < collisionEdgesBTPolydata->GetLines()->GetNumberOfCells(); cellID++)
 	{
 		if (collision_edges[cellID].type == 1)
-			colors->InsertNextTupleValue(red);	
+			colors->InsertNextTupleValue(blue);	
 		else if (collision_edges[cellID].type == 2)
 			colors->InsertNextTupleValue(green);
 
 	}
+
 	
+
+	/*
 	//special edges former FROM_BOTHFACE tag
 	int numCollisionEdge = (int) collision_edges.size();
 	for (int i = 0 ; i < numCollisionEdge ; i++)
@@ -1026,7 +1052,7 @@ vtkSmartPointer<vtkActor> CreateBeforeTruncatePipeline(vtkSmartPointer<vtkMutabl
 			colors->InsertNextTupleValue(yellow);
 		}
 	}
-	
+	*/
 	collisionEdgesBTPolydata->GetCellData()->SetScalars(colors);
 
 	vtkSmartPointer<vtkPolyDataMapper> edge_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -1034,8 +1060,8 @@ vtkSmartPointer<vtkActor> CreateBeforeTruncatePipeline(vtkSmartPointer<vtkMutabl
  
 	vtkSmartPointer<vtkActor> edge_actor = vtkSmartPointer<vtkActor>::New();
 	edge_actor->SetMapper(edge_mapper);
-	edge_actor->GetProperty()->SetLineWidth(2.0);
-	edge_actor->GetProperty()->SetOpacity(0.75);
+	edge_actor->GetProperty()->SetLineWidth(5.0);
+	edge_actor->GetProperty()->SetOpacity(1.0);
 	return edge_actor;
 }
 vtkSmartPointer<vtkActor> CreateAfterTruncatePipeline(vtkSmartPointer<vtkMutableUndirectedGraph> ATGraph,std::vector<collisionEdgeInfo>& collision_edges)
@@ -1072,13 +1098,16 @@ vtkSmartPointer<vtkActor> CreateAfterTruncatePipeline(vtkSmartPointer<vtkMutable
  
 	vtkSmartPointer<vtkActor> edge_actor = vtkSmartPointer<vtkActor>::New();
 	edge_actor->SetMapper(edge_mapper);
-	edge_actor->GetProperty()->SetLineWidth(2.0);
-	edge_actor->GetProperty()->SetOpacity(0.75);
+	edge_actor->GetProperty()->SetLineWidth(4.0);
+	edge_actor->GetProperty()->SetOpacity(1.0);
 	return edge_actor;
 }
 
 vtkSmartPointer<vtkActor> CreateStrightUpPipeline(vtkSmartPointer<vtkMutableUndirectedGraph> SUGraph)
 {
+	vtkSmartPointer<vtkMutableUndirectedGraph> modGraph =  vtkSmartPointer<vtkMutableUndirectedGraph>::New();
+
+
 	vtkSmartPointer<vtkGraphToPolyData> g2pAT = vtkSmartPointer<vtkGraphToPolyData>::New(); 
 	g2pAT->SetInputData(SUGraph);
 	g2pAT->Update();
@@ -1086,10 +1115,11 @@ vtkSmartPointer<vtkActor> CreateStrightUpPipeline(vtkSmartPointer<vtkMutableUndi
 	suPolydata->ShallowCopy(g2pAT->GetOutput());
 	
 	vtkSmartPointer<vtkUnsignedCharArray> edgecolors = vtkUnsignedCharArray::SafeDownCast( SUGraph->GetEdgeData()->GetArray("EdgeColors"));
+	vtkSmartPointer<vtkUnsignedCharArray> collisionTags = vtkUnsignedCharArray::SafeDownCast( SUGraph->GetEdgeData()->GetArray("CollisionTag"));
 
 	// Setup the colors array
 	vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
-	colors->SetNumberOfComponents(3);
+	colors->SetNumberOfComponents(4);
 	colors->SetName("Colors");
 	// Setup two colors 
 	unsigned char red[3] = {255, 0, 0};
@@ -1099,7 +1129,10 @@ vtkSmartPointer<vtkActor> CreateStrightUpPipeline(vtkSmartPointer<vtkMutableUndi
 	int numEdge = suPolydata->GetLines()->GetNumberOfCells();
 	for (int cellID = 0 ; cellID < suPolydata->GetLines()->GetNumberOfCells(); cellID++)
 	{
-		unsigned char edgeColor[3];
+		
+		unsigned char edgeColor[4];
+
+
 		edgecolors->GetTupleValue(cellID,edgeColor);
 		colors->InsertNextTupleValue(edgeColor);
 		
@@ -1113,7 +1146,7 @@ vtkSmartPointer<vtkActor> CreateStrightUpPipeline(vtkSmartPointer<vtkMutableUndi
 	vtkSmartPointer<vtkActor> edge_actor = vtkSmartPointer<vtkActor>::New();
 	edge_actor->SetMapper(edge_mapper);
 	edge_actor->GetProperty()->SetLineWidth(4.0);
-	edge_actor->GetProperty()->SetOpacity(0.75);
+	edge_actor->GetProperty()->SetOpacity(1.0);
 	return edge_actor;
 }
 
@@ -1146,7 +1179,7 @@ vtkSmartPointer<vtkActor> CreateCleanPipeline(vtkSmartPointer<vtkMutableUndirect
  
 	vtkSmartPointer<vtkActor> edge_actor = vtkSmartPointer<vtkActor>::New();
 	edge_actor->SetMapper(edge_mapper);
-	edge_actor->GetProperty()->SetLineWidth(2.0);
+	edge_actor->GetProperty()->SetLineWidth(1.0);
 	edge_actor->GetProperty()->SetOpacity(0.75);
 	return edge_actor;
 }
@@ -1209,7 +1242,7 @@ void ColoredPoint(vtkSmartPointer<vtkRenderer> _renderer ,  double pt[3],double 
 
 		vtkSmartPointer<vtkActor> pointsActor =  vtkSmartPointer<vtkActor>::New();
 		pointsActor->SetMapper(pointsMapper);
-		pointsActor->GetProperty()->SetPointSize(5);
+		pointsActor->GetProperty()->SetPointSize(15);
 		pointsActor->GetProperty()->SetColor(r,g,b);
 
 		_renderer->AddActor(pointsActor);

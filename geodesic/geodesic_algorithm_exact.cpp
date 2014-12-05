@@ -527,19 +527,12 @@ void GeodesicAlgorithmExact::propagate(std::vector<SurfacePoint>& sources,
 	m_propagation_distance_stopped = m_queue.empty() ? GEODESIC_INF : (*m_queue.begin())->min();
 	clock_t stop = clock();
 	m_time_consumed = (static_cast<double>(stop)-static_cast<double>(start))/CLOCKS_PER_SEC;
+
+	
+	start = clock();
 	compute_collision_edges2();
-/*	for(unsigned i=0; i<m_edge_interval_lists.size(); ++i)
-	{
-		list_pointer list = &m_edge_interval_lists[i];
-		interval_pointer p = list->first();
-		assert(p->start() == 0.0);
-		while(p->next())
-		{
-			assert(p->stop() == p->next()->start());
-			assert(p->d() < GEODESIC_INF);
-			p = p->next();
-		}
-	}*/
+	stop = clock();
+	m_time_consumed_sourcecollision = (static_cast<double>(stop)-static_cast<double>(start))/CLOCKS_PER_SEC;
 }
 
 

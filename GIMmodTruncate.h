@@ -46,6 +46,7 @@ public:
 	vtkSmartPointer<vtkPolyData> GetDiskTopologyPolydata();
 
 	bool isReadyToCut();
+	double GetTimeConsumed() {return timeConsumed;} ;
 protected:
 	vtkWeakPointer<vtkPolyData> polydata;
 	vtkSmartPointer<vtkPolyData> original_polydata;
@@ -58,6 +59,7 @@ protected:
 	bool firstTruncateDone;
 	bool shortenRingsDone;
 	bool largestGraphDone;
+	double timeConsumed;
 	std::multimap<double,hedge_data> candidate_nonTagEdges;
 	std::multimap<double,hedge_data> candidate_TagEdges;
 
