@@ -18,7 +18,7 @@
 \usepackage[table]{xcolor}
 
 \captionsetup[subfloat]{farskip=0pt,nearskip=0pt,captionskip=5pt}
-
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 
 %\subfigtopskip=0pt
 %\subfigcapskip=0pt
@@ -28,9 +28,9 @@
 
 \title{A Homotopy Surface Cutting Using Paths Crossing in Geodesic Distance}
 
-\author{\authorname{Author1, Author2 and Author3}
-\affiliation{Department of **** ,  university ****  , **** }
-\email{author@university-domain}
+\author{\authorname{Anuwat Dechvijankit, Hiroshi Nagahashi and Kota Aoki}
+\affiliation{Department of Computational Intelligence and Systems Science, Tokyo Institute of Technology, Japan}
+\email{dechvijankit.a.aa@m.titech.ac.jp, longb@isl.titech.ac.jp, aoki.k.af@m.titech.ac.jp}
 }
 
 \keywords{geodesic distance, graph cut, homotopy, surface parameterization, topology}
@@ -51,7 +51,7 @@ This paper presents a homotopy cutting on high genus surfaces. Our approach is a
 \begin{figure}[!h]
 	\centering
 	{\includegraphics[width=0.9\columnwidth]{images/geodesic_rocket-arm.png}}
-	\caption{Geodesic distance radius from a starting point on genus 1 rocket arm model. At the hole, we can see some sharp pattern which can be recognize as geodesic path came from different directions.}
+	\caption{Geodesic distance radius from a starting point on genus 1 rocket arm model. At the hole (tunnel), we can see some sharp pattern which can be recognize as geodesic path came from different directions.}
 	\label{fig:geodesic rocket arm}
 \end{figure}
 
@@ -66,7 +66,7 @@ by using a straightforward application of Dijkstra's shortest path algorithm \ci
 
 From the efficiency point of view, it is important to compute non-trivial cycles on orientable surfaces. Non-trivial cycles mean non-contractible and non-separating cycles which guarantee the topological surface cutting into disk. Recently, \cite{Kutz:2006:CSN:1137856.1137919} presents an algorithm that computes a shortest non-trivial cycle in $O(n \log n)$ on an orientable combinatorial surface of bounded genus. The algorithm is based on universal-cover constructions to find short cycles.
 
-There are several studies that try to define a cut graph by surface properties. A study by \cite{Patane:2007:FCB:1224804.1224947} presents an algorithm that builds up the cut graph on the iso-contours from Reeb graph which codes the topology of a given surface $\mathscr{M}$ in a combinatorial structure and generates loops together. Another study by \cite{Jin:2013:CSH:2396897.2396971} presents an algorithm to compute the shortest homotopic loop with negative Euler characteristic based on the surface hyperbolic uniformization metric. They also demonstrated two applications: constructing extremal quasi-conformal mappings between same topology surfaces, and detecting homotopy between two paths or cycles on a surface. 
+There are several studies that try to define a cut graph by surface properties. A study by \cite{Patane:2007:FCB:1224804.1224947} presents an algorithm that builds up the cut graph on the iso-contours from Reeb graph which codes the topology of a given surface $\mathscr{M}$ in a combinatorial structure and generates loops together. Another study by \cite{Jin:2013:CSH:2396897.2396971} presents an algorithm to compute the shortest homotopic loop with negative Euler characteristic based on the surface hyperbolic uniformization metric. They also demonstrated two applications: constructing extremal quasi-conformal mappings between same topology surfaces, and detecting homotopy between two paths or cycles on a surface. \cite{Dey:2008:CGH:1360612.1360644} \cite{Dey:2013:ECH:2461912.2462017}
 
 There is an iterative method called "geometry images" by \cite{Gu:2002:GI:566654.566589}, which is similar to that of \cite{Dey:1994:NTC:177424.178001}. This method presents a remeshing approach using square surface parameterization to create a mapping between irregular surface $\mathscr{M}$ in $\mathbb{R}^3$ domain, and square plane in $\mathbb{R}^2$ domain. To get low error on the remeshing, they present how to create a cut graph from any kinds of surfaces $\mathscr{M}$ regardless from the pre-analysis of topology and boundary edges.
 
@@ -147,7 +147,7 @@ For the case of closed surface of genus $g=0$, the overall processes from this p
 	\label{fig:mmp algorithm}
 \end{figure}
 
-MMP algorithm creates a geodesic path for "single source and all destinations" scheme. The algorithm computes a set of intervals of each edge. An interval represents an accessible pencil of lines from its pseudo-source. Each interval also acts as a pseudo-source to propagate across faces of the rest of mesh. The algorithm propagates the distance information out from the source in a Dijkstra-like fashion which can traceback any positions on mesh to the source.
+MMP algorithm creates a geodesic path for "single source and all destinations" scheme. The algorithm computes a set of intervals of each edge. An interval represents an accessible pencil of lines from its pseudo-source. Each interval also acts as a pseudo-source to propagate across faces of the rest of mesh. The algorithm propagates the distance information out from the source in a Dijkstra-like fashion which can traceback any positions on mesh to the source. Figure \ref{fig:mmp algorithm} shows the concept of propagation of the algorithm where intervals $i_{\beta}$ and $i_{\gamma}$ can be traceback to $v_{source}$ through $i_{\alpha}$.
 
 The performance of MMP algorithm : They prove a worst case
 running time of $O(n^2 \log n)$ when $n$ is the number of mesh edges. However in practical calculation, it can achieve on 100K triangles mesh within a few seconds. Also there is an approximate version of MMP algorithm proposed by \cite{Surazhsky:2005:FEA:1073204.1073228} that can speed up the calculation by trying to merge an interval with adjacent intervals on the same edge before starting the propagation.
@@ -236,38 +236,40 @@ After the propagation terminates and all queues become empty, the remaining edge
 
 \section{\uppercase{Experimental Results}}
 \label{sec:Experiment Results}
-\noindent We tested the algorithms on a PC by using parameterization results from both original and our approach methods. We manually selected a vertex in the input mesh as $v_s$ then generated a cut graph. To create cut graphs from both methods with similar conditions, we want the both propagations to be spread out from a same location. Although the original algorithm removes single seed triangle, our approach removes seed triangles around $v_s$. Therefore, we altered how to remove a seed triangle in original one to be same as our approach. With this alternation, it should not affect to overall performance in original one. Also, we applied shorten loops process after the propagation terminated.
+\noindent We tested the algorithms on a workstation PC (10 cores at 2.50GHz) by using parameterization results from both original and our approach methods. Also, we recorded time consuming for generating cut graphs. We manually selected a vertex in the input mesh as $v_s$ then generated a cut graph. To create cut graphs from both methods with similar conditions, we want the both propagations to be spread out from a same location. Although the original algorithm removes single seed triangle, our approach removes seed triangles around $v_s$. Therefore, we altered how to remove a seed triangle in original one to be same as our approach. With this alternation, it should not affect to overall performance in original one. Also, we applied shorten loops process after the propagation terminated.
 
 After converting the input mesh into disk topological patch, we applied stretch-minimizing parameterization by \cite{Yoshizawa_SMI04}.  We evaluated the parameterization results from both methods by using $L^2$ error (the root-mean-square stretch over all direction in planar domain) proposed by \cite{Sander:2001:TMP:383259.383307,Sander:2002:SP:581896.581909}.  
 
 After evaluating several meshes whose genuses are greater than or equal 1 ($g \geq 1$), we noticed that original method and our approach can generate very similar or same cut graphs on asymmetry lookalike meshes in most cases. However, on some symmetrical shapes, cut graphs can be different from each others. Therefore, we selected some results which have noticeable difference on cut graphs between original and our approaches, and do parameterizations.
 
-As shown in Table \ref{table:result}, our approach can deliver lower $L^2$ error than the original one in most cases. There are some cases that the original one has a large error value while our approach can deliver a small error.
-
+As shown in Table \ref{table:result}, our approach can deliver lower $L^2$ error than the original one in most cases. There are some cases that the original one has a large error value while our approach can deliver a small error. Although, our approach might double calculation time but it can deliver results very fast even on high-details meshes.
+\setlength{\tabcolsep}{2pt}
 \begin{table}[h]
-	\setlength\extrarowheight{03pt}
-	\caption{Experimental Results. Yellow and green cells indicate lower errors in comparison.}	
+	\setlength\extrarowheight{00pt}
+	\caption{Experimental Results. Blue and green cells indicate lower errors in comparison.}	
 	\label{table:result} 
 	\centering
-	{\small 
-	\begin{tabular}{|c|c|c|c|c|c|}
+	{\scriptsize
+	\begin{tabular}{|C{16pt}|C{24pt}|C{22pt}|C{22pt}|C{22pt}|C{22pt}|C{22pt}|C{22pt}|}
 		
 		\hline
-	\multirow{2}{*}{case} & \multirow{2}{*}{genus} & \multicolumn{2}{ c|}{ square } & \multicolumn{2}{ c|}{ circular} \\\cline{3-6}
-		         &       &   original &   our      &   original &   our\\
+	\multirow{2}{*}{{\small case}} & \multirow{2}{*}{{\small genus}} & \multicolumn{2}{ c|}{ {\small time (sec)}} & \multicolumn{2}{ c|}{ {\small square} } & \multicolumn{2}{ c|}{{\small circular}} \\\cline{3-8}
+		                                   &       &   {\scriptsize original} &   {\scriptsize our}&   {\scriptsize original} &   {\scriptsize our}      &   {\scriptsize original} &   {\scriptsize our}\\
 		\hline
-		01    & 1  & 1.351   &  \cellcolor{yellow!25}1.335    &  1.493  &  \cellcolor{green!25}1.446 \\
-		02    & 1  & 1.492   &  \cellcolor{yellow!25}1.468    &  1.687  &  \cellcolor{green!25}1.663 \\
-		03    & 1  & \cellcolor{yellow!25}1.562   &  1.636    &  \cellcolor{green!25}1.800  &  2.102 \\
-		04    & 1  & 1.551   &  \cellcolor{yellow!25}1.417    &  2.011  &  \cellcolor{green!25}1.635 \\
-		05    & 1  & 1.561   &  \cellcolor{yellow!25}1.362    &  1.924  &  \cellcolor{green!25}1.538 \\
-		06    & 2  & 1.667   &  \cellcolor{yellow!25}1.466    &  2.246  &  \cellcolor{green!25}1.701 \\
-		07    & 2  & \cellcolor{yellow!25}1.390   &  1.442    &  1.603  &  \cellcolor{green!25} 1.554 \\
-		08    & 3  & 1.457   &  \cellcolor{yellow!25}1.452    &  1.688  &  \cellcolor{green!25}1.679 \\
-		09    & 3  & 2.041   &  \cellcolor{yellow!25}2.025    &  \cellcolor{green!25}9.279  &  9.827 \\
-		10   & 3  & 471.2   &  \cellcolor{yellow!25}1.509    &  4.068  &  \cellcolor{green!25}1.978 \\
-		11   & 3  & 939.2   &  \cellcolor{yellow!25}1.625    &  6.348  &  \cellcolor{green!25}4.115 \\
-		12   & 3  & 221.3K   &  \cellcolor{yellow!25}79.9K    &  383.2K  &  \cellcolor{green!25}203.4K \\
+
+		01    & 1  & 0.006 & 0.009 & 1.351   &  \cellcolor{cyan!30}1.335    &  1.493  &  \cellcolor{green!25}1.446 \\
+		02    & 1  & 0.014 & 0.030 & 1.492   &  \cellcolor{cyan!30}1.468    &  1.687  &  \cellcolor{green!25}1.663 \\
+		03    & 1  & 0.014 & 0.029 & \cellcolor{cyan!30}1.562   &  1.636    &  \cellcolor{green!25}1.800  &  2.102 \\
+		04    & 1  & 0.040 & 0.106 & 1.551   &  \cellcolor{cyan!30}1.417    &  2.011  &  \cellcolor{green!25}1.635 \\
+		05    & 1  & 0.040 & 0.106 & 1.561   &  \cellcolor{cyan!30}1.362    &  1.924  &  \cellcolor{green!25}1.538 \\
+		06    & 2  & 0.028 & 0.051 & 1.667   &  \cellcolor{cyan!30}1.466    &  2.246  &  \cellcolor{green!25}1.701 \\
+		07    & 2  & 0.028 & 0.052 & \cellcolor{cyan!30}1.390   &  1.442    &  1.603  &  \cellcolor{green!25} 1.554 \\
+		08    & 3  & 0.489 & 1.217 & 1.457   &  \cellcolor{cyan!30}1.452    &  1.688  &  \cellcolor{green!25}1.679 \\
+		09    & 3  & 0.527 & 1.228 & 2.041   &  \cellcolor{cyan!30}2.025    &  \cellcolor{green!25}9.279  &  9.827 \\
+		10   & 3  & 0.263 & 0.574 & 471.2   &  \cellcolor{cyan!30}1.509    &  4.068  &  \cellcolor{green!25}1.978 \\
+		11   & 3  & 0.497 & 1.163 & 939.2   &  \cellcolor{cyan!30}1.625    &  6.348  &  \cellcolor{green!25}4.115 \\
+		12   & 3  & 0.110 & 0.142 & 221.3K   &  \cellcolor{cyan!30}79.9K    &  383.2K  &  \cellcolor{green!25}203.4K \\
+	
 		\hline		
 	\end{tabular}}
 \end{table}
@@ -279,13 +281,13 @@ We show some visual results obtained from our experiments in figure \ref{fig:exp
 
 \noindent We presented an enhancement method to generate a cut graph in high-genus surface for homotopy cutting. Cut graph is generated based on an exact geodesic distance theory, by detecting areas where geodesic distance's paths are crossing together. We showed how to detect these areas into a set of edges by analyzing edges' intervals. Then, we also showed how to ensure non-separating and non-contractible cycles by including neighbor edges into the set and applying original approach with minor adjustments in propagation queues. We can generate equally or more suitable edge-graph than the original method while keeping similar performance and stability as original one.
 
-An open topic of this propagation scheme is, it still requires manual starting location of propagation (seed triangle or $v_s$ in our approach). The quality of cut graph depends on user specific positions. To generate an optimal cut graph on a high genus surface, it is better to have shortest cut loop where it passes through on each surface's handle. Therefore, it is interesting to consider how to define starting location $v_s$ for generating optimal cut graph.
+An open topic of this propagation scheme is, it still requires manual starting location of propagation (seed triangle or $v_s$ in our approach). The quality of cut graph depends on user specific positions. To generate an optimal cut graph on a high genus surface, it is better to have shortest cut loop where it passes through on each surface's tunnel. Therefore, it is interesting to consider how to define starting location $v_s$ for generating optimal cut graph.
 
 
 \section*{\uppercase{Acknowledgements}}
 \noindent The images in figures \ref{fig:gim figure} and \ref{fig:fig-original_genus_reducing_process}  are from \cite{Gu:2002:GI:566654.566589} paper and presentation file. Models are courtesy of the AIM@SHAPE repository. Special thanks are given to Danil Kirsanov for exact geodesic distance code, to Shin Yoshizawa for parameterization code and to the anonymous reviewers for comments and suggestions.
-%This study is supported by JSPS KAKENHI (Grant Number 24300035).
-This study is supported by ****** (Grant Number ******).
+This study is supported by JSPS KAKENHI (Grant Number 24300035).
+%This study is supported by ****** (Grant Number ******).
 
 
 
