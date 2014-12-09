@@ -101,7 +101,7 @@ At the beginning, when the mesh $\mathscr{M}$ has boundaries, let $\mathscr{B}$ 
 
 In the first phase, it repeatedly detects an edge adjacent exactly to one triangle that is not in $\mathscr{B}$, and removes both the edge and the triangle from the mesh structure. The rest two edges are left (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep03}). If the rest edges of the removing triangle are not adjacent to any triangle, then the edges will become one of candidates of cut graph (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep04}). Generally, removing one edge and one triangle triggers additional two edges to be adjacent to only one triangle further. Because of the above condition, the removing propagation will keep spreading out from the seed triangle according to geodesic distance in order to get minimum radius result. Since a 2-manifold triangle mesh is being processed, every triangle will be removed eventually. Therefore, this phase ends when there is no triangle left and there remain only edges and their vertices as candidate cut graph edges (see figure \subref*{fig:fig-original_genus_reducing_process-c}). At this point, the cut $\rho$ consists of a set of connecting $2g$ loops.
 
-In the second phase, we again iteratively detect a valence-1 vertex and its corresponding edge, and remove both the vertex and the edge (see figure \ref{fig:fig-original_remove_dangling_edges_step_by_step}). The purpose of this phase is to remove unnecessary dangling edges remained in the first phase. The dangling edges will be repeatedly trimmed away until there is no valence-1 vertex left in the cut $\rho$. There are only edges that form connected loops as a cut graph in the cut $\rho$. At last, all loops in $\rho$ are straightened by computing a local shortest path in each loop. Finally, the connected $2g$ loop cut graph in $\rho$ is homotopy basis: a cut graph that converts the surface into a topological disk patch. See figure \ref{fig:fig-original_genus_reducing_process} for overall process of finding graph cut on a genus-3 mesh.
+In the second phase, we again iteratively detect a valence-1 vertex and its corresponding edge, and remove both the vertex and the edge (see figure \ref{fig:fig-original_remove_dangling_edges_step_by_step}). The purpose of this phase is to remove unnecessary dangling edges remained in the first phase. The dangling edges will be repeatedly trimmed away until there is no valence-1 vertex left in the cut $\rho$. There are only edges that form connected loops as a cut graph in the cut $\rho$. At last, all loops in $\rho$ are straightened by computing a local shortest path in each loop. Finally, the connected $2g$ loop cut graph in $\rho$ is homotopy basis: a cut graph that converts the surface into a topological disk patch. %See figure \ref{fig:fig-original_genus_reducing_process} for overall process of finding graph cut on a genus-3 mesh.
 
 For the case of closed surface of genus $g=0$, the overall processes from this part will generate the cut $\rho$ that consists of only one vertex. To enable the mapping into planar domain, we add two adjacent edges of the vertex into the cut graph $\rho$. On the other hand, for the case of a mesh having one or more holes, it will result in connected graphs between any two holes.
 
@@ -118,22 +118,22 @@ For the case of closed surface of genus $g=0$, the overall processes from this p
 \end{figure}
 
 
-\begin{figure}[h!]
-	\centering		
-	\subfloat[\label{fig:fig-original_genus_reducing_process-a}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-a.png}}
-	\hspace{0.00\columnwidth}
-	\subfloat[\label{fig:fig-original_genus_reducing_process-b}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-b.png}}
-	\hspace{0.00\columnwidth}
-	\subfloat[\label{fig:fig-original_genus_reducing_process-c}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-c.png}}
-	\hspace{0.00\columnwidth}
-	\subfloat[\label{fig:fig-original_genus_reducing_process-d}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-d.png}}
-	\hspace{0.00\columnwidth}
-	\subfloat[\label{fig:fig-original_genus_reducing_process-e}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-e.png}}
-	\hspace{0.00\columnwidth}
-	\subfloat[\label{fig:fig-original_genus_reducing_process-f}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-f.png}}
-	\caption[]{Process of genus-reduce cutting by sequentially removing triangles, edges and vertices. \subref{fig:fig-original_genus_reducing_process-a} shows a closed genus-3 mesh with one seed triangle (yellow dot). \subref{fig:fig-original_genus_reducing_process-b} shows the intermediate state of mesh when removing triangles and edges that are adjacent to only one triangle. \subref{fig:fig-original_genus_reducing_process-c} shows edge skeleton mesh after removing all triangles. \subref{fig:fig-original_genus_reducing_process-d} and \subref{fig:fig-original_genus_reducing_process-e} show the intermediate state of mesh when removing edges and vertices that are adjacent to only one edge. \subref{fig:fig-original_genus_reducing_process-f} shows final result of straightened cutting edges after removing edges and vertices.}
-	\label{fig:fig-original_genus_reducing_process}
-\end{figure}
+%\begin{figure}[h!]
+%	\centering		
+%	\subfloat[\label{fig:fig-original_genus_reducing_process-a}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-a.png}}
+%	\hspace{0.00\columnwidth}
+%	\subfloat[\label{fig:fig-original_genus_reducing_process-b}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-b.png}}
+%	\hspace{0.00\columnwidth}
+%	\subfloat[\label{fig:fig-original_genus_reducing_process-c}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-c.png}}
+%	\hspace{0.00\columnwidth}
+%	\subfloat[\label{fig:fig-original_genus_reducing_process-d}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-d.png}}
+%	\hspace{0.00\columnwidth}
+%	\subfloat[\label{fig:fig-original_genus_reducing_process-e}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-e.png}}
+%	\hspace{0.00\columnwidth}
+%	\subfloat[\label{fig:fig-original_genus_reducing_process-f}]{\includegraphics[width=0.31\columnwidth]{images/fig-original_genus_reducing_process-f.png}}
+%	\caption[]{Process of genus-reduce cutting by sequentially removing triangles, edges and vertices. \subref{fig:fig-original_genus_reducing_process-a} shows a closed genus-3 mesh with one seed triangle (yellow dot). \subref{fig:fig-original_genus_reducing_process-b} shows the intermediate state of mesh when removing triangles and edges that are adjacent to only one triangle. \subref{fig:fig-original_genus_reducing_process-c} shows edge skeleton mesh after removing all triangles. \subref{fig:fig-original_genus_reducing_process-d} and \subref{fig:fig-original_genus_reducing_process-e} show the intermediate state of mesh when removing edges and vertices that are adjacent to only one edge. \subref{fig:fig-original_genus_reducing_process-f} shows final result of straightened cutting edges after removing edges and vertices.}
+%	\label{fig:fig-original_genus_reducing_process}
+%\end{figure}
 
 \section{\uppercase{Geodesic Distance}}
 \label{sec:geodesic distance}
@@ -288,7 +288,7 @@ An open topic of this propagation scheme is, it still requires manual starting l
 
 
 \section*{\uppercase{Acknowledgements}}
-\noindent The images in figures \ref{fig:gim figure} and \ref{fig:fig-original_genus_reducing_process}  are from \cite{Gu:2002:GI:566654.566589} paper and presentation file. Models are courtesy of the AIM@SHAPE repository. Special thanks are given to Danil Kirsanov for exact geodesic distance code, to Shin Yoshizawa for parameterization code and to the anonymous reviewers for comments and suggestions.
+\noindent The images in figures \ref{fig:gim figure} are from \cite{Gu:2002:GI:566654.566589} paper and presentation file. Models are courtesy of the AIM@SHAPE repository. Special thanks are given to Danil Kirsanov for exact geodesic distance code, to Shin Yoshizawa for parameterization code and to the anonymous reviewers for comments and suggestions.
 This study is supported by JSPS KAKENHI (Grant Number 24300035).
 %This study is supported by ****** (Grant Number ******).
 
@@ -297,7 +297,10 @@ This study is supported by JSPS KAKENHI (Grant Number 24300035).
 \bibliographystyle{apalike}
 {\small
 \bibliography{genus_cutting}}
+\section*{APPENDIX}
+calulation of L2 error
 \vfill
+
 
 \begin{figure*}[th!]
 	\centering	
