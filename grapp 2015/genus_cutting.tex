@@ -204,8 +204,7 @@ First, we detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: 
 Along with the edge type described in section \ref{subsec:pseudo-sources laid on both side of adjacent faces},  we need to define another edge type in cut graph. That is, this type of edges are nearby crossing geodesic distance's paths.
 
 We detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: all intervals have pseudo-sources from same face $f_p$ (pseudo-source edge $e_p$ can be different). Let opposite face be $f_{\bar{p}}$ and other two adjacent edges of $f_{\bar{p}}$ be $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$. We consider both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ edges by the following conditions.
-\begin{itemize}[noitemsep,topsep=0pt]
-
+\begin{itemize}[noitemsep,topsep=10pt]
 	  \setlength{\itemsep}{5pt}%
 	  \setlength{\parskip}{0cm}%
 	\item Edge intervals have pseudo-sources from both sides (section \ref{subsec:pseudo-sources laid on both side of adjacent faces}).
@@ -229,7 +228,7 @@ At this stage, $\tilde{E}$ may typically contains separating or contractible cyc
 \subsection{Prioritize removing-edge queues}
 After making sure that $\rho$ contains $2g$ loops, we try to create a valid cut graph along them. From this condition, we must eliminate edges that cause contractible cycles from $\rho$ and maintain non-separating property. Also, there are non-considered edges $\acute{E} \equiv (E - \rho)$ which will be excluded from the cut graph.
 
-One advantage of the original method is to guarantee a valid cut graph when the propagation finished. Because of that, we used the original propagation scheme. However, we also want the cut graph to be around $\tilde{E}$ as first priority and around $\hat{E}$ as second priority. Therefore, we altered the orders of removing edge in the original propagation scheme. We created 3 removing-edge queues rather than single queue in the original one. Each queue contains edges based on: 
+One advantage of the original method is to guarantee a valid cut graph when the propagation finished. Because of that, we used the original propagation scheme. However, we also want the cut graph to be around $\tilde{E}$ as first priority and around $\hat{E}$ as second priority. Therefore, we altered the orders of removing edge in the original propagation scheme. We created three removing-edge queues rather than single queue in the original one. Each queue contains edges based on: 
 $\acute{E}$, $\hat{E}$ and $\tilde{E}$.  And we mark each of them for low-to-high priority in the order of $\acute{E}$, $\hat{E}$ and $\tilde{E}$.
 
 First, we remove faces around $v_s$ as seed triangles. Next, we iteratively analyze edges (adjacent only one triangle) in a non-empty queue under the conditions that the edge and its adjacent face on low priority queue are removed first and the edge with shortest geodesic distance in the queue will be removed first.
@@ -241,7 +240,7 @@ After the propagation terminates and all queues become empty, the remaining edge
 \label{sec:Experiment Results}
 \noindent We tested the algorithms on a workstation PC (10 cores at 2.50GHz) by using parameterization results from both original and our approach methods. We also recorded time consuming for generating cut graphs. We manually selected a vertex in the input mesh as $v_s$ then generated a cut graph. To create cut graphs from both methods with similar conditions, we want the both propagations to be spread out from a same location. Although the original algorithm removes single seed triangle, our approach removes seed triangles around $v_s$. Therefore, we altered how to remove a seed triangle in original one to be same as our approach. With this alternation, it should not affect to overall performance in original one. Also, we applied shorten loops process after the propagation terminated.
 
-After converting the input mesh into disk topological patch, we applied stretch-minimizing parameterization by \cite{Yoshizawa_SMI04}.  We evaluated the parameterization results from both methods by using $L^2$ error (the root-mean-square stretch over all direction in planar domain) proposed by \cite{Sander:2001:TMP:383259.383307,Sander:2002:SP:581896.581909}.  
+After converting the input mesh into disk topological patch, we applied stretch-minimizing parameterization by \cite{Yoshizawa_SMI04}.  We evaluated the parameterization results from both methods by using $L^2$ error (the root-mean-square stretch over all direction in planar domain) proposed by \cite{Sander:2001:TMP:383259.383307,Sander:2002:SP:581896.581909}. See more details in appendix.   
 
 After evaluating several meshes whose genuses are greater than or equal 1 ($g \geq 1$), we noticed that original method and our approach can generate very similar or same cut graphs on asymmetry lookalike meshes in most cases. However, on some symmetrical shapes, cut graphs can be different from each others. Therefore, we selected some results which have noticeable difference on cut graphs between original and our approaches, and do parameterizations.
 
@@ -253,7 +252,7 @@ As shown in Table \ref{table:result}, our approach can deliver lower $L^2$ error
 	\label{table:result} 
 	\centering
 	{\scriptsize
-	\begin{tabular}{|C{16pt}|C{24pt}|C{22pt}|C{22pt}|C{22pt}|C{22pt}|C{22pt}|C{22pt}|}
+	\begin{tabular}{|C{16pt}|C{18pt}|C{23pt}|C{23pt}|C{23pt}|C{23pt}|C{23pt}|C{23pt}|}
 		
 		\hline
 	\multirow{2}{*}{{\scriptsize case}} & \multirow{2}{*}{{\scriptsize genus}} & \multicolumn{2}{ c|}{ {\scriptsize time (sec)}} & \multicolumn{2}{ c|}{ {\scriptsize square} } & \multicolumn{2}{ c|}{{\scriptsize circular}} \\\cline{3-8}
@@ -277,8 +276,8 @@ As shown in Table \ref{table:result}, our approach can deliver lower $L^2$ error
 	\end{tabular}}
 \end{table}
 
-We show some visual results obtained from our experiments in figure \ref{fig:experiment results}. Case 02-03, 04-05, 06-07 and 08-09 are same models with different $v_s$ location.
-
+We show some visual results obtained from our experiments in figure \ref{fig:experiment results}.  Note that all meshes do not contain any holes and case 02-03, 04-05, 06-07 and 08-09 are same models with different $v_s$ location.
+\vspace{-6pt}
 \section{\uppercase{Conclusions}}
 \label{sec:conclusion}
 
@@ -298,7 +297,21 @@ This study is supported by JSPS KAKENHI (Grant Number 24300035).
 {\small
 \bibliography{genus_cutting}}
 \section*{APPENDIX}
-calulation of L2 error
+\label{sec:appendix}
+\noindent Given a triangle $T$ with 2D planar coordinates $p_1,p_2,p_3$ where $p_i = (s_i,t_i)$  and corresponding 3D coordinates $q_1,q_2,q_3$. Since the mapping is affine, its partial derivatives are constant over $s$ and $t$ directions and given by:
+{\small \begin{align*}
+S_s=\partial S/\partial s = (q_1(t_2-t_3)+q_2(t_3-t_1)+q_3(t_1-t_2))/2A_P\\ 
+S_t=\partial S/\partial t = (q_1(t_2-t_3)+q_2(t_3-t_1)+q_3(t_1-t_2))/2A_P
+\end{align*}}where $A_P$ denotes area of triangle $(p_1,p_2,p_3)$ in planar domain. 
+
+Let denote $\Gamma(T)$ and $\gamma(T)$ are maximum and minimum lengths eigenvalues of Jacobian $[S_s,S_t]$, represent the largest and smallest length obtained when mapping unit vectors from planar domain to the surface. The local stretch norms over a triangle $T$ is given by:
+{\small \begin{align*}
+	L^{2}(T)=\sqrt{(\Gamma^2 + \gamma^2)/2} = \sqrt{(S_{s}^2 + S_{t}^2)/2}
+\end{align*}}
+We define norms over the entire mesh $\mathscr{M}=\{T_i\}$: 
+{\small \begin{align*}
+	L^{2}(\mathscr{M})=\sqrt{\sum\limits_{T_i \in \mathscr{M}}({L^{2}(T_i)}^2 A_{T_i})/\sum\limits_{T_i \in \mathscr{M}}A_{T_i}}
+	\end{align*}}where $A_{T_i}$ denotes area of triangle $T_i$ in 3D domain.
 \vfill
 
 
