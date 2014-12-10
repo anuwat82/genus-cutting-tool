@@ -161,22 +161,6 @@ After calculating the exact geodesic distance from a vertex $v_s$, each edge $e_
 
 To define such area, we calculate the exact geodesic distance from a source vertex $v_{s}$ by MMP algorithm \cite{Mitchell:1987:DGP:33367.33372} and then  analyze the set of intervals in each edge $e_i$. First, we define edges whose intervals have pseudo-sources laid on both side of adjacent faces. However, this case typically can detect few edges and cannot cover all areas where the cut graph should exist. Second, we define remaining edges whose intervals cannot be a pseudo-source of adjacent edges. We define these two specific characteristic edges as a set of edges $\tilde{E}$. At this point, $\tilde{E}$ contains a lot of unnecessary dangling edges. Therefore, we eliminate them from $\tilde{E}$ by the same approach in the original method.
 
-
-\begin{figure*}[ht!]
-	\centering		
-	%\subfloat[\label{fig:edge from two faces}]{\includegraphics[width=0.75\columnwidth]{images/edge_two_faces.png}}
-	%\hspace{20pt}
-	\subfloat[\label{fig:edge nearby crossing}]{\includegraphics[width=0.65\columnwidth]{images/edge_nearby_crossing.png}}
-	\hspace{10pt}
-	\subfloat[\label{fig:after truncate}]{\includegraphics[width=0.67\columnwidth]{images/after_truncation.png}}
-	\hspace{10pt}
-	\subfloat[\label{fig:neighbor edges}]{\includegraphics[width=0.67\columnwidth]{images/neighbor_edges.png}}	
-	
-	\caption[]{Processes to define $\tilde{E}$ and $\hat{E}$ on a torus model. \subref{fig:edge nearby crossing} shows green colored edges that their intervals' pseudo-sources are from both sides, and blue colored edges that their intervals have not propagated. \subref{fig:after truncate} shows the graph after removing dangling edges. \subref{fig:neighbor edges} shows $\tilde{E}$ in red color and $\hat{E}$ in  yellow color.}
-	\label{fig:fig-torus_edges_detected}
-\end{figure*}
-
-
 We ensure that the cut graph has non-separating cycles by considering neighbor edges of $\tilde{E}$. We define a set of neighbor edges as $\hat{E}$, 
 then the candidate cut graph edges can be given by $\rho \equiv (\tilde{E} \cup \hat{E})$, and the rest edges $\acute{E}$ are given as $\acute{E} \equiv (E - \rho)$. However, $\rho$ may contain contractible cycles too. Therefore, we again need to define non-separating and non-contractible cycles from $\rho$. We follow similar basis from the original method by removing an edge exactly adjacent to one triangle. However, we create priority of removing edges in a queue according to $\acute{E}$,  $\hat{E}$ and $\tilde{E}$. From this point, we follow the remaining original processes: removing dangling edges and shorten loop.
 
@@ -198,6 +182,20 @@ First, we detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: 
 	\caption[]{Two types of edges that are considered as area of crossing geodesic distance's path.}
 	\label{fig:fig-two-type-edges}
 \end{figure}
+
+\begin{figure*}[bht!]
+	\centering		
+	%\subfloat[\label{fig:edge from two faces}]{\includegraphics[width=0.75\columnwidth]{images/edge_two_faces.png}}
+	%\hspace{20pt}
+	\subfloat[\label{fig:edge nearby crossing}]{\includegraphics[width=0.65\columnwidth]{images/edge_nearby_crossing.png}}
+	\hspace{10pt}
+	\subfloat[\label{fig:after truncate}]{\includegraphics[width=0.67\columnwidth]{images/after_truncation.png}}
+	\hspace{10pt}
+	\subfloat[\label{fig:neighbor edges}]{\includegraphics[width=0.67\columnwidth]{images/neighbor_edges.png}}	
+	
+	\caption[]{Processes to define $\tilde{E}$ and $\hat{E}$ on a torus model. \subref{fig:edge nearby crossing} shows green colored edges that their intervals' pseudo-sources are from both sides, and blue colored edges that their intervals have not propagated. \subref{fig:after truncate} shows the graph after removing dangling edges. \subref{fig:neighbor edges} shows $\tilde{E}$ in red color and $\hat{E}$ in  yellow color.}
+	\label{fig:fig-torus_edges_detected}
+\end{figure*}
 
 \subsection{Non-propagation edge intervals}
 \label{subsec:intervals fail to propagate}
