@@ -11,12 +11,12 @@
 \usepackage{amsthm}
 \usepackage{multicol}
 \usepackage{pslatex}
-\usepackage{apalike}
-\usepackage{SCITEPRESS}
 \usepackage{mathrsfs}
 \usepackage{multirow}
 \usepackage[table]{xcolor}
 \usepackage{enumitem}
+\usepackage{apalike}
+\usepackage{SCITEPRESS}
 \captionsetup[subfloat]{farskip=0pt,nearskip=0pt,captionskip=5pt}
 \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 
@@ -236,7 +236,7 @@ After the propagation terminates and all queues become empty, the remaining edge
 
 \section{\uppercase{Experimental Results}}
 \label{sec:Experiment Results}
-\noindent We tested the algorithms on a workstation PC (Intel Xeon\texttrademark 10 cores running at 2.50GHz) by using parameterization results from both original and our approach methods. We also recorded time consumed for generating cut graphs. We manually selected a vertex in the input mesh as $v_s$ then generated a cut graph. To create cut graphs from both methods with similar conditions, we want the both propagations to be spread out from a same location. Although the original algorithm removes single seed triangle, our approach removes seed triangles around $v_s$. Therefore, we altered how to remove a seed triangle in original one to be same as our approach. With this alternation, it should not affect to overall performance in original one. Also, we applied shorten loops process after the propagation terminated.
+\noindent We tested the algorithms on a workstation PC (Intel Xeon\texttrademark 10 cores running at 2.50GHz) by using parameterization results from both original \cite{Gu:2002:GI:566654.566589} and our approach methods. We also recorded time consumed for generating cut graphs. We manually selected a vertex in the input mesh as $v_s$ then generated a cut graph. To create cut graphs from both methods with similar conditions, we want the both propagations to be spread out from a same location. Although the original algorithm removes single seed triangle, our approach removes seed triangles around $v_s$. Therefore, we altered how to remove a seed triangle in original one to be same as our approach. With this alternation, it should not affect to overall performance in original one. Also, we applied shorten loops process after the propagation terminated.
 
 After converting the input mesh into disk topological patch, we applied stretch-minimizing parameterization by \cite{Yoshizawa_SMI04}.  We evaluated the parameterization results from both methods by using $L^2$ error (the root-mean-square stretch over all direction in planar domain) proposed by \cite{Sander:2001:TMP:383259.383307,Sander:2002:SP:581896.581909}. See more details in appendix.   
 
@@ -246,7 +246,7 @@ As shown in table \ref{table:result}, our approach can deliver lower $L^2$ error
 \setlength{\tabcolsep}{2pt}
 \begin{table}[h]
 	\setlength\extrarowheight{00pt}
-	\caption{Experimental Results. Blue and green cells indicate lower errors in comparison.}	
+	\caption{Experimental results. Blue and green cells indicate lower errors in comparison.}	
 	\label{table:result} 
 	\centering
 	{\scriptsize
