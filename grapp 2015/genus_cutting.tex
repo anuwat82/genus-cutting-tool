@@ -104,7 +104,7 @@ In the first phase, it repeatedly detects an edge adjacent exactly to one triang
 
 In the second phase, we again iteratively detect a valence-1 vertex and its corresponding edge, and remove both the vertex and the edge (see figure \ref{fig:fig-original_remove_dangling_edges_step_by_step}). The purpose of this phase is to remove unnecessary dangling edges remained in the first phase. The dangling edges will be repeatedly trimmed away until there is no valence-1 vertex left in the cut $\rho$. There are only edges that form connected loops as a cut graph in the cut $\rho$. At last, all loops in $\rho$ are straightened by computing a local shortest path in each loop. Finally, the connected $2g$ loop cut graph in $\rho$ is homotopy basis: a cut graph that converts the surface into a topological disk patch. %See figure \ref{fig:fig-original_genus_reducing_process} for overall process of finding graph cut on a genus-3 mesh.
 
-For the case of closed surface of genus $g=0$, the overall processes from this part will generate the cut $\rho$ that consists of only one vertex. To enable the mapping into planar domain, we add two adjacent edges of the vertex into the cut graph $\rho$. On the other hand, for the case of a mesh having one or more holes, it will result in connected graphs between any two holes.
+For the case of closed surface of genus $g=0$, the overall processes from this part will generate the cut $\rho$ that consists of only one vertex. To enable the mapping into planar domain, we add two adjacent edges of the vertex into the cut graph $\rho$. On the other hand, for the case of a mesh having one or more holes, it will result in connected graphs between any holes' edges and homotopy basis.
 
 \begin{figure}[h!]
 	\centering		
@@ -140,6 +140,8 @@ For the case of closed surface of genus $g=0$, the overall processes from this p
 \label{sec:geodesic distance}
 \noindent The algorithm by \cite{Gu:2002:GI:566654.566589} creates front propagation on geodesic distance. We consider an exact geodesic distance proposed by \cite{Mitchell:1987:DGP:33367.33372} as knows as MMP algorithm. It computes exact shortest paths on a triangular mesh. These paths typically cut across faces in the mesh, which is different from typical Dijkstra shortest paths \cite{Dijkstra59anote} that run across edges in the mesh.
 
+MMP algorithm creates a geodesic path for ``single source and all destinations'' scheme. The algorithm computes a set of intervals of each edge. An interval represents an accessible pencil of lines from its pseudo-source. Each interval also acts as a pseudo-source to propagate across faces of the rest of mesh. The algorithm propagates the distance information out from the source in a Dijkstra-like fashion which can traceback any positions on mesh to the source. Figure \ref{fig:mmp algorithm} shows the concept of propagation of the algorithm where intervals $i_{\beta}$ and $i_{\gamma}$ can be traceback to $v_{source}$ through $i_{\alpha}$.
+
 \begin{figure}[!h]
 	%\vspace{-0.2cm}
 	\centering
@@ -147,8 +149,6 @@ For the case of closed surface of genus $g=0$, the overall processes from this p
 	\caption{Propagation scheme of MMP algorithm: interval $i_{\alpha}$ on edge $e_a$ propagates distance pencil paths across an adjacent face to adjacent edges $e_b$ and $e_c$ }
 	\label{fig:mmp algorithm}
 \end{figure}
-
-MMP algorithm creates a geodesic path for ``single source and all destinations'' scheme. The algorithm computes a set of intervals of each edge. An interval represents an accessible pencil of lines from its pseudo-source. Each interval also acts as a pseudo-source to propagate across faces of the rest of mesh. The algorithm propagates the distance information out from the source in a Dijkstra-like fashion which can traceback any positions on mesh to the source. Figure \ref{fig:mmp algorithm} shows the concept of propagation of the algorithm where intervals $i_{\beta}$ and $i_{\gamma}$ can be traceback to $v_{source}$ through $i_{\alpha}$.
 
 The performance of MMP algorithm : they prove a worst case
 running time of $O(n^2 \log n)$ when $n$ is the number of mesh edges. However in practical calculation, it can achieve on 100K triangles mesh within a few seconds. Also, there is an approximate version of MMP algorithm proposed by \cite{Surazhsky:2005:FEA:1073204.1073228} that can speed up the calculation by trying to merge an interval with adjacent intervals on the same edge before starting the propagation.
