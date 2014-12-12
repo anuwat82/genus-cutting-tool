@@ -28,15 +28,16 @@
 
 \title{A Homotopy Surface Cutting Using Paths Crossing in Geodesic Distance}
 
-\author{\authorname{Anuwat Dechvijankit, Hiroshi Nagahashi and Kota Aoki}
-\affiliation{Department of Computational Intelligence and Systems Science, Tokyo Institute of Technology, Tokyo, Japan}
+\author{\authorname{Anuwat Dechvijankit\sup{1}, Hiroshi Nagahashi\sup{2} and Kota Aoki\sup{2}}
+\affiliation{\sup{1}Department of Computational Intelligence and Systems Science, Tokyo Institute of Technology, Yokohama, Japan}
+\affiliation{\sup{2}Imaging Science and Engineering Laboratory, Tokyo Institute of Technology, Yokohama, Japan}
 \email{dechvijankit.a.aa@m.titech.ac.jp, longb@isl.titech.ac.jp, aoki.k.af@m.titech.ac.jp}
 }
 
 \keywords{geodesic distance, graph cut, homotopy, surface parameterization, topology}
 
 
-\abstract{Topology is a property in surfaces that plays a major role in computer graphics. Processing or analysis between two surfaces generally requires both of them to be in same topology. There are many tools or applications such as parameterization or remeshing that require disk topology surfaces as input. Therefore, it is important to convert any surfaces to be same as a topological disk. The common procedure is to define a graph of edges inside the surface that should be split into two edges and to turn the surface into topological disk. We call it as homotopy cutting. Problems become more difficult when dealing with high genus surfaces such as a torus. Based on a novel method, we present an enhancement method to generate a cut graph in high-genus surface for homotopy cutting. By using geodesic properties of each edge, we can generate equally or more suitable edge-graph than original method while keeping similar performance and stability as original one.}
+\abstract{Topology is a property of surfaces that plays a major role in computer graphics. Processing or analysis between two surfaces generally requires both of them to be in same topology. There are many tools or applications such as parameterization or remeshing that require disk topology surfaces as input. Therefore, it is important to convert any surfaces to be same as a topological disk. The common procedure is to define a graph of edges inside the surface that should be split into two edges and to turn the surface into topological disk. We call it as homotopy cutting. Problems become more difficult when dealing with high genus surfaces such as a torus. Based on a novel method, we present an enhancement method to generate a cut graph in high-genus surface for homotopy cutting. By using geodesic properties of each edge, we can generate equally or more suitable edge-graph than original method while keeping similar performance and stability as original one.}
 
 \onecolumn \maketitle \normalsize \vfill
 
@@ -50,7 +51,7 @@ When processing a mesh that requires disk topology input, all kinds of meshes ha
 This paper presents a homotopy cutting on high genus surfaces. Our approach is an enhancement of a novel method \cite{Gu:2002:GI:566654.566589} in homotopy cutting; cutting surfaces into disks. A benefit of this method is to be able to handle any kinds of 2-manifold surfaces, regardless of specific topology. We present an algorithm that creates a cut graph on the area where geodesic path comes from different directions in exact geodesic distance \cite{Mitchell:1987:DGP:33367.33372,Surazhsky:2005:FEA:1073204.1073228} (see example in figure \ref{fig:geodesic rocket arm}). With some extra calculation,  we can define equally or more appropriate cut graph from original method while keeping performance and stability.
 \begin{figure}[!h]
 	\centering
-	{\includegraphics[width=0.9\columnwidth]{images/geodesic_rocket-arm.png}}
+	{\includegraphics[width=0.74\columnwidth]{images/geodesic_rocket-arm.png}}
 	\caption{Geodesic distance radius from a starting point on genus 1 rocket arm model. At the hole (tunnel), we can see some sharp pattern which can be recognize as geodesic path came from different directions.}
 	\label{fig:geodesic rocket arm}
 \end{figure}
@@ -68,7 +69,7 @@ From the efficiency point of view, it is important to compute non-trivial cycles
 
 There are several studies that try to define a cut graph by surface properties. A study by \cite{Patane:2007:FCB:1224804.1224947} presents an algorithm that builds up the cut graph on the iso-contours from Reeb graph which codes the topology of a given surface $\mathscr{M}$ in a combinatorial structure and generates loops together. There are deep studies by \cite{Dey:2008:CGH:1360612.1360644,Dey:2013:ECH:2461912.2462017} that show how to recognize short handle and tunnel loops in a surface by using Reeb graph.  Another study by \cite{Jin:2013:CSH:2396897.2396971} presents an algorithm to compute the shortest homotopic loop with negative Euler characteristic based on the surface hyperbolic uniformization metric. They also demonstrated two applications: constructing extremal quasi-conformal mappings between same topology surfaces, and detecting homotopy between two paths or cycles on a surface. 
 
-There is an iterative method called "geometry images" by \cite{Gu:2002:GI:566654.566589}, which is similar to that of \cite{Dey:1994:NTC:177424.178001}. This method presents a remeshing approach using square surface parameterization to create a mapping between irregular surface $\mathscr{M}$ in $\mathbb{R}^3$ domain, and square plane in $\mathbb{R}^2$ domain. To get low error on the remeshing, they present how to create a cut graph from any kinds of surfaces $\mathscr{M}$ regardless from the pre-analysis of topology and boundary edges.
+There is an iterative method called ``geometry images'' by \cite{Gu:2002:GI:566654.566589}, which is similar to that of \cite{Dey:1994:NTC:177424.178001}. This method presents a remeshing approach using square surface parameterization to create a mapping between irregular surface $\mathscr{M}$ in $\mathbb{R}^3$ domain, and square plane in $\mathbb{R}^2$ domain. To get low error on the remeshing, they present how to create a cut graph from any kinds of surfaces $\mathscr{M}$ regardless from the pre-analysis of topology and boundary edges.
 
 \begin{figure}[!h]
 	%\vspace{-0.2cm}
@@ -81,7 +82,7 @@ There is an iterative method called "geometry images" by \cite{Gu:2002:GI:566654
 	\label{fig:gim figure}
 \end{figure}
 
-Since our approach is based on geometry images, we explain in section \ref{sec:previous algorithm} how it creates a cut graph for homotopy cutting on an irregular surface $\mathscr{M}$ with genus $g$.
+Since our approach is based on \cite{Gu:2002:GI:566654.566589} approach, we explain in section \ref{sec:previous algorithm} how it creates a cut graph for homotopy cutting on an irregular surface $\mathscr{M}$ with genus $g$.
 \section{\uppercase{Previous Algorithm}}
 \label{sec:previous algorithm}
 \noindent The algorithm of \cite{Gu:2002:GI:566654.566589} is divided into two parts, i.e., homotopy cutting and its augmentation. The augmentation aims to improve its subsequent square planar domain parameterization. We explain the first part that involves the definition of a cut graph and a converting surface $\mathscr{M}$ into disk.
@@ -149,15 +150,15 @@ For the case of closed surface of genus $g=0$, the overall processes from this p
 
 MMP algorithm creates a geodesic path for ``single source and all destinations'' scheme. The algorithm computes a set of intervals of each edge. An interval represents an accessible pencil of lines from its pseudo-source. Each interval also acts as a pseudo-source to propagate across faces of the rest of mesh. The algorithm propagates the distance information out from the source in a Dijkstra-like fashion which can traceback any positions on mesh to the source. Figure \ref{fig:mmp algorithm} shows the concept of propagation of the algorithm where intervals $i_{\beta}$ and $i_{\gamma}$ can be traceback to $v_{source}$ through $i_{\alpha}$.
 
-The performance of MMP algorithm : They prove a worst case
-running time of $O(n^2 \log n)$ when $n$ is the number of mesh edges. However in practical calculation, it can achieve on 100K triangles mesh within a few seconds. Also there is an approximate version of MMP algorithm proposed by \cite{Surazhsky:2005:FEA:1073204.1073228} that can speed up the calculation by trying to merge an interval with adjacent intervals on the same edge before starting the propagation.
+The performance of MMP algorithm : they prove a worst case
+running time of $O(n^2 \log n)$ when $n$ is the number of mesh edges. However in practical calculation, it can achieve on 100K triangles mesh within a few seconds. Also, there is an approximate version of MMP algorithm proposed by \cite{Surazhsky:2005:FEA:1073204.1073228} that can speed up the calculation by trying to merge an interval with adjacent intervals on the same edge before starting the propagation.
 
 \subsection*{Notations}
 After calculating the exact geodesic distance from a vertex $v_s$, each edge $e_i$ that is not a boundary one, has a set of $m$ intervals $I_{e_i}:=\{ i_{e_{i,j}}(f_p,e_p,D) \mid i = 1, ... ,n_v , j = 1,...,m\}$, where $f_p$ represents the face where propagation of interval's pseudo-source across and $e_p$ represents the edge that has interval's pseudo-source. $D$ represents another information about geodesic distance of considering interval.
 
 \section{\uppercase{Our Approach}}
 \label{sec:our approach}
-\noindent Given a triangular 2-manifold mesh $\mathscr{M}$ without any topological information about genus $g$, we adopt a geometry image method \cite{Gu:2002:GI:566654.566589} to define $2g$ cut loop graph for homotopy basis. Instead of having a cut graph along the propagation by geodesic distance criteria, we try to have a cut graph in the area where it has the same geodesic distance but its pseudo-sources come from different edges.
+\noindent Given a triangular 2-manifold mesh $\mathscr{M}$ without any topological information about genus $g$, we adopt a geometry image method \cite{Gu:2002:GI:566654.566589} to define $2g$ cut loop graph for homotopy basis. Instead of having a cut graph along the propagation by geodesic distance criteria, we try to have a cut graph in the area where it has the same geodesic distance but its pseudo-sources come from different edges and faces.
 
 To define such area, we calculate the exact geodesic distance from a source vertex $v_{s}$ by MMP algorithm \cite{Mitchell:1987:DGP:33367.33372} and then  analyze the set of intervals in each edge $e_i$. First, we define edges whose intervals have pseudo-sources laid on both side of adjacent faces. However, this case typically can detect few edges and cannot cover all areas where the cut graph should exist. Second, we define remaining edges whose intervals cannot be a pseudo-source of adjacent edges. We define these two specific characteristic edges as a set of edges $\tilde{E}$. At this point, $\tilde{E}$ contains a lot of unnecessary dangling edges. Therefore, we eliminate them from $\tilde{E}$ by the same approach in the original method.
 
@@ -199,7 +200,7 @@ First, we detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: 
 
 \subsection{Non-propagation edge intervals}
 \label{subsec:intervals fail to propagate}
-Along with the edge type described in section \ref{subsec:pseudo-sources laid on both side of adjacent faces},  we need to define another edge type in cut graph. That is, this type of edges are nearby crossing geodesic distance's paths.
+Along with the edge type described in section \ref{subsec:pseudo-sources laid on both side of adjacent faces},  we need to define another edge type in cut graph. That is, this type of edges are nearby crossing of geodesic distance's paths.
 
 We detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: all intervals have pseudo-sources from same face $f_p$ (pseudo-source edge $e_p$ can be different). Let opposite face be $f_{\bar{p}}$ and other two adjacent edges of $f_{\bar{p}}$ be $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$. We consider both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ edges by the following conditions.
 \begin{itemize}[noitemsep,topsep=10pt]
@@ -366,7 +367,7 @@ We define norms over the entire mesh $\mathscr{M}=\{T_i\}$:
 	\subfloat[\label{fig:case12}case 12 (vertices 2496, faces 5000)]{ \centering
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test12/original.png}\hspace{8pt} \includegraphics[width=0.35\columnwidth]{images/experiment/test12/propose.png}
 	}\\
-	\caption[]{Results of homotopy cutting from original (geometry images) and our approach methods. The meshes having yellow line are results obtained by  original approach. The meshes having red line are our results.}
+	\caption[]{Results of homotopy cutting from original \cite{Gu:2002:GI:566654.566589} and our approach methods. The meshes having yellow line are results obtained by original approach. The meshes having red line are our results.}
 	\label{fig:experiment results}
 \end{figure*}
 
