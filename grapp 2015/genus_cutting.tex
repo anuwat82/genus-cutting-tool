@@ -1,8 +1,8 @@
 \documentclass[a4paper,twoside]{article}
-\usepackage[small]{caption}
+
 \usepackage{epsfig}
-%\usepackage{subfigure}
-\usepackage[subrefformat=parens,labelformat=parens]{subfig}
+\usepackage{subfigure}
+%\usepackage[subrefformat=parens,labelformat=parens]{subfig}
 \usepackage{graphicx}
 \usepackage{calc}
 \usepackage{amssymb}
@@ -17,12 +17,13 @@
 \usepackage{enumitem}
 \usepackage{apalike}
 \usepackage{SCITEPRESS}
-\captionsetup[subfloat]{farskip=0pt,nearskip=0pt,captionskip=5pt}
+\usepackage[small]{caption}
+%\captionsetup[subfloat]{farskip=0pt,nearskip=0pt,captionskip=5pt}
 \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 
-%\subfigtopskip=0pt
-%\subfigcapskip=0pt
-%\subfigbottomskip=0pt
+\subfigtopskip=0pt
+\subfigcapskip=0pt
+\subfigbottomskip=0pt
 
 \begin{document}
 
@@ -74,9 +75,9 @@ There is an iterative method called ``geometry images'' by \cite{Gu:2002:GI:5666
 \begin{figure}[!h]
 	%\vspace{-0.2cm}
 	\centering
-	\subfloat[Geometry of surface]{\label{fig:gim3d}\includegraphics[width=0.45\columnwidth]{images/gim_bunny3D.png}}
+	\subfigure[Geometry of surface]{\label{fig:gim3d}\includegraphics[width=0.45\columnwidth]{images/gim_bunny3D.png}}
 	\hspace{10pt}
-	\subfloat[Geometry image]{\label{fig:gim2d}\includegraphics[width=0.45\columnwidth]{images/gim_bunny2D.png}}
+	\subfigure[Geometry image]{\label{fig:gim2d}\includegraphics[width=0.45\columnwidth]{images/gim_bunny2D.png}}
 	
 	\caption{A geometry image.}
 	\label{fig:gim figure}
@@ -89,18 +90,18 @@ Since our approach is based on \cite{Gu:2002:GI:566654.566589} approach, we expl
 
 \begin{figure*}[t]
 	\centering		
-	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep01}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_01.png}}\hspace{10pt}
-	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep02}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_02.png}}\hspace{10pt}
-	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep03}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_03.png}}\hspace{10pt}
-	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep04}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_04.png}}\hspace{10pt}		
-	\subfloat[\label{fig:OriginalGenusReduceMethodStepByStep05}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_05.png}}
+	\subfigure[\label{fig:OriginalGenusReduceMethodStepByStep01}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_01.png}}\hspace{10pt}
+	\subfigure[\label{fig:OriginalGenusReduceMethodStepByStep02}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_02.png}}\hspace{10pt}
+	\subfigure[\label{fig:OriginalGenusReduceMethodStepByStep03}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_03.png}}\hspace{10pt}
+	\subfigure[\label{fig:OriginalGenusReduceMethodStepByStep04}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_04.png}}\hspace{10pt}		
+	\subfigure[\label{fig:OriginalGenusReduceMethodStepByStep05}]{\includegraphics[width=0.175\linewidth]{images/gim_progress_05.png}}
 	\caption{Processes from removing a seed triangle from a mesh. Dash lines mean edges that are adjacent to only one triangle at the moment. \subref{fig:OriginalGenusReduceMethodStepByStep01} shows before removing stage. \subref{fig:OriginalGenusReduceMethodStepByStep02} shows after removing the seed triangle; that is, edges $e_1$,$e_2$ and $e_3$ are adjacent to only one triangle. Assume that geodesic distance from $f_{seed}$ to $e_1$ is the smallest. \subref{fig:OriginalGenusReduceMethodStepByStep03} shows the result of removing edge $e_1$ and face $f_1$. The edge $e_4$ become the one that adjacent to only one triangle. Let $e_2$ is next smallest geodesic distance. \subref{fig:OriginalGenusReduceMethodStepByStep04} shows the result of removing $e_2$ and $f_2$. The edge $e_4$ becomes a candidate of cut graph edge (red dot line). \subref{fig:OriginalGenusReduceMethodStepByStep05} shows the result of next step that removing $e_3$ and $f_3$.}
 	\label{fig:OriginalGenusReduceMethodStepByStep}
 \end{figure*}
 
-At the beginning, when the mesh $\mathscr{M}$ has boundaries, let $\mathscr{B}$  be the set of original boundary edges that remain unchanged in the whole process and will be included in final cut graph ${\rho}$. It first starts by removing a single seed triangle from the mesh. At this moment, each edge of the seed triangle is adjacent to only one triangle respectively (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep02}).  After removing the seed triangle from the mesh, there are two processing phases.
+At the beginning, when the mesh $\mathscr{M}$ has boundaries, let $\mathscr{B}$  be the set of original boundary edges that remain unchanged in the whole process and will be included in final cut graph ${\rho}$. It first starts by removing a single seed triangle from the mesh. At this moment, each edge of the seed triangle is adjacent to only one triangle respectively (see figure~\ref{fig:OriginalGenusReduceMethodStepByStep02}).  After removing the seed triangle from the mesh, there are two processing phases.
 
-In the first phase, it repeatedly detects an edge adjacent exactly to one triangle that is not in $\mathscr{B}$, and removes both the edge and the triangle from the mesh structure. The rest two edges are left (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep03}). If the rest edges of the removing triangle are not adjacent to any triangle, then the edges will become one of candidates of cut graph (see figure \subref*{fig:OriginalGenusReduceMethodStepByStep04}). Generally, removing one edge and one triangle triggers additional two edges to be adjacent to only one triangle further. Because of the above condition, the removing propagation will keep spreading out from the seed triangle according to geodesic distance in order to get minimum radius result. Since a 2-manifold triangle mesh is being processed, every triangle will be removed eventually. Therefore, this phase ends when there is no triangle left and there remain only edges and their vertices as candidate cut graph edges. At this point, the cut $\rho$ consists of a set of connecting $2g$ loops.
+In the first phase, it repeatedly detects an edge adjacent exactly to one triangle that is not in $\mathscr{B}$, and removes both the edge and the triangle from the mesh structure. The rest two edges are left (see figure~\ref{fig:OriginalGenusReduceMethodStepByStep03}). If the rest edges of the removing triangle are not adjacent to any triangle, then the edges will become one of candidates of cut graph (see figure~\ref{fig:OriginalGenusReduceMethodStepByStep04}). Generally, removing one edge and one triangle triggers additional two edges to be adjacent to only one triangle further. Because of the above condition, the removing propagation will keep spreading out from the seed triangle according to geodesic distance in order to get minimum radius result. Since a 2-manifold triangle mesh is being processed, every triangle will be removed eventually. Therefore, this phase ends when there is no triangle left and there remain only edges and their vertices as candidate cut graph edges. At this point, the cut $\rho$ consists of a set of connecting $2g$ loops.
 
 In the second phase, we again iteratively detect a valence-1 vertex and its corresponding edge, and remove both the vertex and the edge (see figure \ref{fig:fig-original_remove_dangling_edges_step_by_step}). The purpose of this phase is to remove unnecessary dangling edges remained in the first phase. The dangling edges will be repeatedly trimmed away until there is no valence-1 vertex left in the cut $\rho$. There are only edges that form connected loops as a cut graph in the cut $\rho$. At last, all loops in $\rho$ are straightened by computing a local shortest path in each loop. Finally, the connected $2g$ loop cut graph in $\rho$ is homotopy basis: a cut graph that converts the surface into a topological disk patch. %See figure \ref{fig:fig-original_genus_reducing_process} for overall process of finding graph cut on a genus-3 mesh.
 
@@ -108,12 +109,12 @@ For the case of closed surface of genus $g=0$, the overall processes from this p
 
 \begin{figure}[h!]
 	\centering		
-	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-a}]{\includegraphics[width=0.45\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-a.png}} \hspace{10pt}
-	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-b}]{\includegraphics[width=0.45\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-b.png}}\\		
-	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-c}]{\includegraphics[width=0.45\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-c.png}}	\hspace{10pt}	
-	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-d}]{\includegraphics[width=0.45\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-d.png}}	\\
-	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-e}]{\includegraphics[width=0.45\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-e.png}}	\hspace{10pt}
-	\subfloat[\label{fig:fig-original_remove_dangling_edges_step_by_step-f}]{\includegraphics[width=0.45\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-f.png}}	 
+	\subfigure[\label{fig:fig-original_remove_dangling_edges_step_by_step-a}]{\includegraphics[width=0.45\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-a.png}} \hspace{10pt}
+	\subfigure[\label{fig:fig-original_remove_dangling_edges_step_by_step-b}]{\includegraphics[width=0.45\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-b.png}}\\		
+	\subfigure[\label{fig:fig-original_remove_dangling_edges_step_by_step-c}]{\includegraphics[width=0.45\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-c.png}}	\hspace{10pt}	
+	\subfigure[\label{fig:fig-original_remove_dangling_edges_step_by_step-d}]{\includegraphics[width=0.45\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-d.png}}	\\
+	\subfigure[\label{fig:fig-original_remove_dangling_edges_step_by_step-e}]{\includegraphics[width=0.45\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-e.png}}	\hspace{10pt}
+	\subfigure[\label{fig:fig-original_remove_dangling_edges_step_by_step-f}]{\includegraphics[width=0.45\columnwidth]{images/fig-original_remove_dangling_edges_step_by_step-f.png}}	 
 	\caption[]{Process on removing dangling edges. The numbers on vertices indicate present valence number. We focus on the removing of blue dangling edges. \subref{fig:fig-original_remove_dangling_edges_step_by_step-a} shows initial state where there are two valence-1 edges. \subref{fig:fig-original_remove_dangling_edges_step_by_step-b} - \subref{fig:fig-original_remove_dangling_edges_step_by_step-d} show the following steps that remove valence-1 edge along with its vertex. \subref{fig:fig-original_remove_dangling_edges_step_by_step-e} shows that all blue dangling edges have been removed. \subref{fig:fig-original_remove_dangling_edges_step_by_step-f} shows the process of removing other dangling edges until valence-1 edge has not been found in graph.}
 	\label{fig:fig-original_remove_dangling_edges_step_by_step}
 \end{figure}
@@ -172,13 +173,13 @@ We explain in details how to define the set $\tilde{E}$ and how to ensure the ge
 \label{subsec:pseudo-sources laid on both side of adjacent faces}
 The main idea of our approach is to detect areas where geodesic distance's paths are crossing together, like wave occlusion. Since we generate a cut graph, we define such areas as a set of edges.
 
-First, we detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: if there is an interval that $f_p$ is not same as other intervals then we consider $e_i \in \tilde{E}$. From figure \subref*{fig:geodesic_both_face}, we can see clearly that $e_a$ has two intervals $i_{e_{a,1}}$ and $i_{e_{a,2}}$, where first one has a pseudo-source from $f_l$ while second one has another pseudo-source from $f_r$. Typically, this kind of edges can be found a few in mesh (green edges in figure \subref*{fig:edge nearby crossing}). 
+First, we detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: if there is an interval that $f_p$ is not same as other intervals then we consider $e_i \in \tilde{E}$. From figure~\ref{fig:geodesic_both_face}, we can see clearly that $e_a$ has two intervals $i_{e_{a,1}}$ and $i_{e_{a,2}}$, where first one has a pseudo-source from $f_l$ while second one has another pseudo-source from $f_r$. Typically, this kind of edges can be found a few in mesh (green edges in figure~\ref{fig:edge nearby crossing}). 
 
 \begin{figure}[h!]
 	\centering		
-	\subfloat[\label{fig:geodesic_both_face}from both sides type]{\includegraphics[width=0.49\columnwidth]{images/two_pseudosource.png}}
+	\subfigure[\label{fig:geodesic_both_face}from both sides type]{\includegraphics[width=0.48\columnwidth]{images/two_pseudosource.png}}
 	\hspace{0pt}
-	\subfloat[\label{fig:geodesic_fail_propagte}non-propagation type]{\includegraphics[width=0.49\columnwidth]{images/fail_propagate.png}}
+	\subfigure[\label{fig:geodesic_fail_propagte}non-propagation type]{\includegraphics[width=0.48\columnwidth]{images/fail_propagate.png}}
 	
 	\caption[]{Two types of edges that are considered as area of crossing geodesic distance's path.}
 	\label{fig:fig-two-type-edges}
@@ -188,11 +189,11 @@ First, we detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: 
 	\centering		
 	%\subfloat[\label{fig:edge from two faces}]{\includegraphics[width=0.75\columnwidth]{images/edge_two_faces.png}}
 	%\hspace{20pt}
-	\subfloat[\label{fig:edge nearby crossing}]{\includegraphics[width=0.65\columnwidth]{images/edge_nearby_crossing.png}}
-	\hspace{10pt}
-	\subfloat[\label{fig:after truncate}]{\includegraphics[width=0.67\columnwidth]{images/after_truncation.png}}
-	\hspace{10pt}
-	\subfloat[\label{fig:neighbor edges}]{\includegraphics[width=0.67\columnwidth]{images/neighbor_edges.png}}	
+	\subfigure[\label{fig:edge nearby crossing}]{\includegraphics[width=0.65\columnwidth]{images/edge_nearby_crossing.png}}
+	\hspace{6pt}
+	\subfigure[\label{fig:after truncate}]{\includegraphics[width=0.67\columnwidth]{images/after_truncation.png}}
+	\hspace{6pt}
+	\subfigure[\label{fig:neighbor edges}]{\includegraphics[width=0.67\columnwidth]{images/neighbor_edges.png}}	
 	
 	\caption[]{Processes to define $\tilde{E}$ and $\hat{E}$ on a torus model. \subref{fig:edge nearby crossing} shows green colored edges that their intervals' pseudo-sources are from both sides, and blue colored edges that their intervals have not propagated. \subref{fig:after truncate} shows the graph after removing dangling edges. \subref{fig:neighbor edges} shows $\tilde{E}$ in red color and $\hat{E}$ in  yellow color.}
 	\label{fig:fig-torus_edges_detected}
@@ -212,9 +213,9 @@ We detect an edge $e_i$ whose intervals $I_{e_i}$ satisfy the condition: all int
 
 If both $e_{\bar{i}_1}$ and $e_{\bar{i}_2}$ match one of above conditions, then we consider $e_i \in \tilde{E}$. 
 
-Considering an edge $e_a$ in figure \subref*{fig:geodesic_fail_propagte}, we can clearly see that edges $e_b$ and $e_c$ of opposite face $f_r$ ($e_{\bar{i}_1}$ and $e_{\bar{i}_2}$) have all intervals where their pseudo-sources are not on $e_a$, so we include $e_a$ into $\tilde{E}$. Vise-versa, when we are considering edge $e_c$; we can clearly see that edge $e_b$ has an interval where its pseudo-source is on $e_c$ so we exclude $e_c$ from $\tilde{E}$.
+Considering an edge $e_a$ in figure~\ref{fig:geodesic_fail_propagte}, we can clearly see that edges $e_b$ and $e_c$ of opposite face $f_r$ ($e_{\bar{i}_1}$ and $e_{\bar{i}_2}$) have all intervals where their pseudo-sources are not on $e_a$, so we include $e_a$ into $\tilde{E}$. Vise-versa, when we are considering edge $e_c$; we can clearly see that edge $e_b$ has an interval where its pseudo-source is on $e_c$ so we exclude $e_c$ from $\tilde{E}$.
 
-Typically, this kind of edges can be found a lot in mesh and cover all areas of mesh (blue edges in figure \subref*{fig:edge nearby crossing}). Therefore, we need to eliminate unnecessary edges in $\tilde{E}$. Present state of cut graph looks similar to dangling edges in original one so we run the same iterative process to remove the valance-1 vertices in the graph. 
+Typically, this kind of edges can be found a lot in mesh and cover all areas of mesh (blue edges in figure~\ref{fig:edge nearby crossing}). Therefore, we need to eliminate unnecessary edges in $\tilde{E}$. Present state of cut graph looks similar to dangling edges in original one so we run the same iterative process to remove the valance-1 vertices in the graph. 
 
 
 
@@ -222,7 +223,7 @@ Typically, this kind of edges can be found a lot in mesh and cover all areas of 
 \label{subsec:ensure non-trivia}
 After detecting the edges in $\tilde{E}$ whose geodesic distance's paths are crossing, we aim to create a homotopy cut graph which requires non-separating and non-contractible cycles from $\tilde{E}$.
 
-At this stage, $\tilde{E}$ may typically contains separating or contractible cycles (see figure \subref*{fig:after truncate}).  For separating cycles issue, we define all edges in $\hat{E}$ to be neighbors of each edge in $\tilde{E}$. We consider that a set of edges $\rho \equiv (\tilde{E} \cup \hat{E})$ contains $2g$ loops inside it.  
+At this stage, $\tilde{E}$ may typically contains separating or contractible cycles (see figure~\ref{fig:after truncate}).  For separating cycles issue, we define all edges in $\hat{E}$ to be neighbors of each edge in $\tilde{E}$. We consider that a set of edges $\rho \equiv (\tilde{E} \cup \hat{E})$ contains $2g$ loops inside it.  
 
 \subsection{Prioritize removing-edge queues}
 After making sure that $\rho$ contains $2g$ loops, we try to create a valid cut graph along them. From this condition, we must eliminate edges that cause contractible cycles from $\rho$ and maintain non-separating property. Also, there are non-considered edges $\acute{E} \equiv (E - \rho)$ which will be excluded from the cut graph.
@@ -317,54 +318,54 @@ We define norms over the entire mesh $\mathscr{M}=\{T_i\}$:
 \begin{figure*}[th!]
 	\centering	
 	\captionsetup[subfigure]{labelformat=empty}
-	\subfloat[\label{fig:case01}case 01 (vertices 200, faces 400)]{ \centering	
+	\subfigure[\label{fig:case01}case 01 (vertices 200, faces 400)]{ \centering	
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test01/original.png}\hspace{8pt} \includegraphics[width=0.35\columnwidth]{images/experiment/test01/propose.png}
 	}
 	\hspace{20pt}
-	\subfloat[\label{fig:case02}case 02 (vertices 500, faces 1000)]{ \centering
+	\subfigure[\label{fig:case02}case 02 (vertices 500, faces 1000)]{ \centering
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test02/original.png}\hspace{8pt} \includegraphics[width=0.35\columnwidth]{images/experiment/test02/propose.png}
 	}\\
 	
-	\subfloat[\label{fig:case03}case 03 (vertices 500, faces 1000)]{ \centering
+	\subfigure[\label{fig:case03}case 03 (vertices 500, faces 1000)]{ \centering
 		\includegraphics[width=0.33\columnwidth]{images/experiment/test03/original.png}\hspace{8pt} \includegraphics[width=0.33\columnwidth]{images/experiment/test03/propose.png}
 	}
 	\hspace{20pt}
-	\subfloat[\label{fig:case04}case 04 (vertices 1152, faces 2304)]{ \centering
+	\subfigure[\label{fig:case04}case 04 (vertices 1152, faces 2304)]{ \centering
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test04/original.png}\hspace{8pt} \includegraphics[width=0.35\columnwidth]{images/experiment/test04/propose.png}
 	}\\
 	
-	\subfloat[\label{fig:case05}case 05 (vertices 1152, faces 2304)]{ \centering
+	\subfigure[\label{fig:case05}case 05 (vertices 1152, faces 2304)]{ \centering
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test05/original.png}\hspace{8pt} \includegraphics[width=0.35\columnwidth]{images/experiment/test05/propose.png}
 	}
 	\hspace{20pt}
-	\subfloat[\label{fig:case06}case 06 (vertices 766, faces 1536)]{ \centering
+	\subfigure[\label{fig:case06}case 06 (vertices 766, faces 1536)]{ \centering
 		\includegraphics[width=0.33\columnwidth]{images/experiment/test06/original.png}\hspace{8pt} \includegraphics[width=0.33\columnwidth]{images/experiment/test06/propose.png}
 	}\\
 
-	\subfloat[\label{fig:case07}case 07 (vertices 766, faces 1536)]{ \centering
+	\subfigure[\label{fig:case07}case 07 (vertices 766, faces 1536)]{ \centering
 		\includegraphics[width=0.4\columnwidth, angle=45]{images/experiment/test07/original.png}
 		\includegraphics[width=0.4\columnwidth, angle=45]{images/experiment/test07/propose.png}
 	}
 	\hspace{20pt}
-	\subfloat[\label{fig:case08}case 08 (vertices 6568, faces 13144)]{
+	\subfigure[\label{fig:case08}case 08 (vertices 6568, faces 13144)]{
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test08/original.png}\hspace{8pt} \includegraphics[width=0.35\columnwidth]{images/experiment/test08/propose.png}
 	}\\
 
-	\subfloat[\label{fig:case09}case 09 (vertices 6568, faces 13144)]{ \centering
+	\subfigure[\label{fig:case09}case 09 (vertices 6568, faces 13144)]{ \centering
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test09/original.png} \hspace{8pt}
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test09/propose.png}
 	}
 	\hspace{20pt}
-	\subfloat[\label{fig:case10}case 10 (vertices 4192, faces 8392)]{ \centering
+	\subfigure[\label{fig:case10}case 10 (vertices 4192, faces 8392)]{ \centering
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test10/original.png}\hspace{8pt} \includegraphics[width=0.35\columnwidth]{images/experiment/test10/propose.png}
 	}\\
 
-	\subfloat[\label{fig:case11}case 11 (vertices 6652, faces 13312)]{ \centering
+	\subfigure[\label{fig:case11}case 11 (vertices 6652, faces 13312)]{ \centering
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test11/original.png}\hspace{8pt} 
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test11/propose.png}
 	}
 	\hspace{20pt}
-	\subfloat[\label{fig:case12}case 12 (vertices 2496, faces 5000)]{ \centering
+	\subfigure[\label{fig:case12}case 12 (vertices 2496, faces 5000)]{ \centering
 		\includegraphics[width=0.35\columnwidth]{images/experiment/test12/original.png}\hspace{8pt} \includegraphics[width=0.35\columnwidth]{images/experiment/test12/propose.png}
 	}\\
 	\caption[]{Results of homotopy cutting from original \cite{Gu:2002:GI:566654.566589} and our approach methods. The meshes having yellow line are results obtained by original approach. The meshes having red line are our results.}
