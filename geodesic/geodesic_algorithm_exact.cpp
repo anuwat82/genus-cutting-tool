@@ -449,8 +449,7 @@ void GeodesicAlgorithmExact::propagate(std::vector<SurfacePoint>& sources,
 
 			face_pointer face = edge->adjacent_faces()[i];			//if we come from 1, go to 2
 			edge_pointer next_edge = face->next_edge(edge,edge->v0());
-			if (edge->isVertices(6,5))
-			int aa = 0;
+		
 			unsigned num_propagated = compute_propagated_parameters(min_interval->pseudo_x(), 
 																	 min_interval->pseudo_y(), 
 																	 min_interval->d(),		//parameters of the interval
