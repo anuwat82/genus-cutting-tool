@@ -1662,6 +1662,7 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 	//detect all direction of each each
 	const int num_edge = (const int)m_mesh->edges().size();
 	std::vector<geodesic::Interval::DirectionType> dirArray(num_edge);
+#pragma omp parallel for
 	for(int eid=0; eid< num_edge; ++eid)
 	{
 		
@@ -1669,8 +1670,7 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 		
 		int id = _edge->id();
 		int edge_vid[2] = {_edge->adjacent_vertices()[0]->id(),_edge->adjacent_vertices()[1]->id()};
-		if (_edge->isVertices(6,193))
-			int aa = 0;
+
 		list_pointer list = interval_list(_edge);
 		interval_pointer p = list->first();
 
@@ -1707,8 +1707,11 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 		dirArray[eid] = test_dir;
 		if (dirArray[eid] == geodesic::Interval::FROM_BOTHFACE)
 		{
-			m_collisionTwoPathEdges.push_back(_edge);
-			_edge->source_collision() = 2;
+			#pragma omp critical
+			{
+				m_collisionTwoPathEdges.push_back(_edge);
+				_edge->source_collision() = 2;
+			}			
 		}
 		/*
 		//test ... 
@@ -1753,16 +1756,11 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 	//each edge check for edge collision
 #if 1	
 	std::vector<Face>& faceArray = m_mesh->faces();
+#pragma omp parallel for
 	for(int eid=0; eid< num_edge; ++eid)
 	{
 		edge_pointer _edge = &m_mesh->edges()[eid];	
 		geodesic::Interval::DirectionType _dir =dirArray[eid];
-		if (_edge->isVertices(6,193))
-			int aa = 0;
-		if (_edge->isVertices(290,273))
-			int aa = 0;
-		if (_edge->isVertices(396,436))
-			int aa = 0;
 		if (dirArray[eid] == geodesic::Interval::FROM_FACE_0 || dirArray[eid] == geodesic::Interval::FROM_FACE_1)
 		{
 			//check two edges that adjacent oppsite face 
@@ -1790,37 +1788,6 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 							if (adjedges_path[1] != _edge)
 							{
 								cost++;
-								//if passing face of path is not two bothface tags
-								/*
-								if (dirArray[adjedges_path[1]->id()] == geodesic::Interval::FROM_BOTHFACE)
-								{
-									face_pointer pass_face = belongToFace(adjedges_path[0],adjedges_path[1]);
-									edge_pointer reminding_edge = NULL;
-									for (int k = 0; k < pass_face->adjacent_edges().size(); k++)
-									{
-										if (pass_face->adjacent_edges()[k] != adjedges_path[0] && pass_face->adjacent_edges()[k] != adjedges_path[1])
-										{
-											reminding_edge = pass_face->adjacent_edges()[k];
-											break;
-										}
-									}
-									if (dirArray[reminding_edge->id()] != geodesic::Interval::FROM_BOTHFACE)
-									{
-										cost++;
-									}
-									else
-										int aaa = 0;
-								}
-								else
-									cost++;
-								*/
-								
-								/*
-								if (dirArray[adjedges_path[1]->id()] != geodesic::Interval::FROM_BOTHFACE &&
-									dirArray[adjedges_path[2]->id()] != geodesic::Interval::FROM_BOTHFACE)
-									cost++;
-								*/
-
 							}
 							
 						}
@@ -1837,8 +1804,11 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 			}
 			if (cost == 3)
 			{
-				m_collisionTwoPathEdges.push_back(_edge);
-				_edge->source_collision() = 1;
+				#pragma omp critical
+				{
+					m_collisionTwoPathEdges.push_back(_edge);
+					_edge->source_collision() = 1;
+				}
 			}
 #if 0
 			//adjust triangle collision in face

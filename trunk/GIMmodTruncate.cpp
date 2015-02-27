@@ -69,10 +69,13 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::Init( vtkSmartPointer
 	collisionTag->SetNumberOfComponents(1);
 	collisionTag->SetName("CollisionTag");
 
-	for (OmMesh::EdgeIter e_it=mesh.edges_begin(); e_it!=mesh.edges_end(); ++e_it) 
+	//for (OmMesh::EdgeIter e_it=mesh.edges_begin(); e_it!=mesh.edges_end(); ++e_it) 
+	int num_edges = mesh.n_edges();
+#pragma omp parallel for	
+	for (int i = 0 ; i < num_edges; ++i)
 	{
-		OmMesh::EdgeHandle eh = *e_it;
-		
+		//OmMesh::EdgeHandle eh = *e_it;
+		OmMesh::EdgeHandle eh = mesh.edge_handle(i);	
 		
 		OmMesh::HalfedgeHandle heh = mesh.halfedge_handle(eh,0);
 		if (!heh.is_valid())
@@ -80,12 +83,12 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::Init( vtkSmartPointer
 		OmMesh::HalfedgeHandle heh_prev = mesh.prev_halfedge_handle(heh);
 		int a = mesh.to_vertex_handle(heh).idx();
 		int b = mesh.to_vertex_handle(heh_prev).idx();
-		_graph->AddEdge(a,b);		
-		
-
-		colors->InsertNextTupleValue(yellow);
-		collisionTag->InsertNextValue(0);
-
+		#pragma omp critical
+		{
+			_graph->AddEdge(a,b);
+			colors->InsertNextTupleValue(yellow);
+			collisionTag->InsertNextValue(0);
+		}
 	}
 	_graph->GetEdgeData()->AddArray(colors);
 	_graph->GetEdgeData()->AddArray(collisionTag);
@@ -140,11 +143,14 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::InitOriginal( vtkSmar
 	vtkSmartPointer<vtkUnsignedCharArray> collisionTag = vtkSmartPointer<vtkUnsignedCharArray>::New();
 	collisionTag->SetNumberOfComponents(1);
 	collisionTag->SetName("CollisionTag");
-
-	for (OmMesh::EdgeIter e_it=mesh.edges_begin(); e_it!=mesh.edges_end(); ++e_it) 
+	
+	//for (OmMesh::EdgeIter e_it=mesh.edges_begin(); e_it!=mesh.edges_end(); ++e_it) 
+	int num_edges = mesh.n_edges();
+#pragma omp parallel for
+	for (int i = 0 ; i < num_edges; ++i)
 	{
-		OmMesh::EdgeHandle eh = *e_it;
-		
+		//OmMesh::EdgeHandle eh = *e_it;
+		OmMesh::EdgeHandle eh = mesh.edge_handle(i);
 		
 		OmMesh::HalfedgeHandle heh = mesh.halfedge_handle(eh,0);
 		if (!heh.is_valid())
@@ -152,11 +158,12 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::InitOriginal( vtkSmar
 		OmMesh::HalfedgeHandle heh_prev = mesh.prev_halfedge_handle(heh);
 		int a = mesh.to_vertex_handle(heh).idx();
 		int b = mesh.to_vertex_handle(heh_prev).idx();
-		_graph->AddEdge(a,b);		
-		
-
-		colors->InsertNextTupleValue(yellow);
-		collisionTag->InsertNextValue(0);
+		#pragma omp critical
+		{
+			_graph->AddEdge(a,b);
+			colors->InsertNextTupleValue(yellow);
+			collisionTag->InsertNextValue(0);
+		}
 
 	}
 	_graph->GetEdgeData()->AddArray(colors);
