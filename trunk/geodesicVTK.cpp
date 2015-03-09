@@ -186,9 +186,11 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 	}
 	std::cout << "==========================" << endl;
 	std::cout << "source vertex id " << sourceVertexID << endl;
-
+	
 	exact_algorithm = new geodesic::GeodesicAlgorithmExact(&geosesic_mesh);
 	GenerateGeodesicDistance(*exact_algorithm,sourceVertexID,collision_edges);
+	std::cout << "number of edges:" << exact_algorithm->mesh()->edges().size() << endl; 
+
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphBeforeTruncate = GenerateCollisionEdgeGraph(polydata,collision_edges);
 	vtkSmartPointer<vtkMutableUndirectedGraph> collisionEdgesGraphAfterTruncate  = TruncateGraph(collisionEdgesGraphBeforeTruncate);
 	//vtkSmartPointer<vtkPolyData> surroundPolydata = CreateSurroundGraphPolydata(collisionEdgesGraphAfterTruncate,polydata,2);	

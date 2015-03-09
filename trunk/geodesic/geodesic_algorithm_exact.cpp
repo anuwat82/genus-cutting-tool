@@ -527,7 +527,7 @@ void GeodesicAlgorithmExact::propagate(std::vector<SurfacePoint>& sources,
 	clock_t stop = clock();
 	m_time_consumed = (static_cast<double>(stop)-static_cast<double>(start))/CLOCKS_PER_SEC;
 
-	
+	//detect all direction of each each
 	start = clock();
 	compute_collision_edges2();
 	stop = clock();
