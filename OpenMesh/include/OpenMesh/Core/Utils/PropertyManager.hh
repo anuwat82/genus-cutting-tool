@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
@@ -57,7 +57,7 @@ namespace OpenMesh {
  *
  * \code
  * TriMesh mesh;
- * PropertyManager<VPropHandleT<bool>, MeshT> visited(mesh, "visited.plugin-example.i8.informatik.rwth-aachen.de");
+ * PropertyManager<VPropHandleT<bool>, TriMesh> visited(mesh, "visited.plugin-example.i8.informatik.rwth-aachen.de");
  *
  * for (TriMesh::VertexIter vh_it = mesh.begin(); ... ; ...) {
  *     if (!visited[*vh_it]) {
@@ -318,6 +318,68 @@ class PropertyManager {
                 typename PROPTYPE::const_reference value) {
             for (; begin != end; ++begin)
                 (*this)[*begin] = value;
+        }
+
+        /**
+         * Conveniently transfer the values managed by one property manager
+         * onto the values managed by a different property manager.
+         *
+         * @param begin Start iterator. Needs to dereference to HandleType. Will
+         * be used with this property manager.
+         * @param end End iterator. (Exclusive.) Will be used with this property
+         * manager.
+         * @param dst_propmanager The destination property manager.
+         * @param dst_begin Start iterator. Needs to dereference to the
+         * HandleType of dst_propmanager. Will be used with dst_propmanager.
+         * @param dst_end End iterator. (Exclusive.)
+         * Will be used with dst_propmanager. Used to double check the bounds.
+         */
+        template<typename HandleTypeIterator, typename PROPTYPE_2,
+                 typename MeshT_2, typename HandleTypeIterator_2>
+        void copy_to(HandleTypeIterator begin, HandleTypeIterator end,
+                PropertyManager<PROPTYPE_2, MeshT_2> &dst_propmanager,
+                HandleTypeIterator_2 dst_begin, HandleTypeIterator_2 dst_end) const {
+
+            for (; begin != end && dst_begin != dst_end; ++begin, ++dst_begin) {
+                dst_propmanager[*dst_begin] = (*this)[*begin];
+            }
+        }
+
+        template<typename RangeType, typename PROPTYPE_2,
+                 typename MeshT_2, typename RangeType_2>
+        void copy_to(const RangeType &range,
+                PropertyManager<PROPTYPE_2, MeshT_2> &dst_propmanager,
+                const RangeType_2 &dst_range) const {
+            copy_to(range.begin(), range.end(), dst_propmanager,
+                    dst_range.begin(), dst_range.end());
+        }
+
+        /**
+         * Copy the values of a property from a source range to
+         * a target range. The source range must not be smaller than the
+         * target range.
+         *
+         * @param prop_name Name of the property to copy. Must exist on the
+         * source mesh. Will be created on the target mesh if it doesn't exist.
+         *
+         * @param src_mesh Source mesh from which to copy.
+         * @param src_range Source range which to copy. Must not be smaller than
+         * dst_range.
+         * @param dst_mesh Destination mesh on which to copy.
+         * @param dst_range Destination range.
+         */
+        template<typename RangeType, typename MeshT_2, typename RangeType_2>
+        static void copy(const char *prop_name,
+                MeshT &src_mesh, const RangeType &src_range,
+                MeshT_2 &dst_mesh, const RangeType_2 &dst_range) {
+
+            typedef OpenMesh::PropertyManager<PROPTYPE, MeshT> DstPM;
+            DstPM dst(DstPM::createIfNotExists(dst_mesh, prop_name));
+
+            typedef OpenMesh::PropertyManager<PROPTYPE, MeshT_2> SrcPM;
+            SrcPM src(src_mesh, prop_name, true);
+
+            src.copy_to(src_range, dst, dst_range);
         }
 
     private:

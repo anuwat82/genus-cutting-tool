@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------* 
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *             
- *   $Revision: 990 $                                                         *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1208 $                                                         *
+ *   $Date: 2015-01-17 00:24:36 +0900 (Sat, 17 Jan 2015) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -166,12 +166,12 @@ compute_new_positions_C1()
       for (voh_it = Base::mesh_.cvoh_iter(*v_it); voh_it.is_valid(); ++voh_it) {
         w  = this->weight(Base::mesh_.edge_handle(*voh_it));
         uu   -= Base::mesh_.property(umbrellas_, Base::mesh_.to_vertex_handle(*voh_it));
-        diag += (w * this->weight(Base::mesh_.to_vertex_handle(*voh_it)) + 1.0) * w;
+        diag += (w * this->weight(Base::mesh_.to_vertex_handle(*voh_it)) + static_cast<typename Mesh::Scalar>(1.0) ) * w;
       }
       uu   *= this->weight(*v_it);
       diag *= this->weight(*v_it);
       uu   += Base::mesh_.property(umbrellas_, *v_it);
-      if (diag) uu *= 1.0/diag;
+      if (diag) uu *= static_cast<typename Mesh::Scalar>(1.0) / diag;
 
       // damping
       uu *= 0.25;

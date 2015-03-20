@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *
- *   $Revision: 990 $                                                         *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1188 $                                                         *
+ *   $Date: 2015-01-06 00:34:10 +0900 (Tue, 06 Jan 2015) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -129,6 +129,7 @@ private:
   bool read_binary(std::istream& _in, BaseImporter& _bi, bool swap, const Options& _opt) const;
 
   float readToFloatValue(ValueType _type , std::fstream& _in) const;
+  void readCustomProperty(std::istream& _in, BaseImporter& _bi, VertexHandle _vh, const std::string& _propName, const ValueType _valueType) const;
 
   void readValue(ValueType _type , std::istream& _in, float& _value) const;
   void readValue(ValueType _type, std::istream& _in, double& _value) const;
@@ -164,7 +165,7 @@ private:
     XCOORD,YCOORD,ZCOORD,
     TEXX,TEXY,
     COLORRED,COLORGREEN,COLORBLUE,COLORALPHA,
-    XNORM,YNORM,ZNORM,
+    XNORM,YNORM,ZNORM, CUSTOM_PROP,
     UNSUPPORTED
   };
 
@@ -173,7 +174,16 @@ private:
 
   // Number of vertex properties
   mutable unsigned int vertexPropertyCount_;
-  mutable std::map< int , std::pair< VertexProperty, ValueType> > vertexPropertyMap_;
+  struct VertexPropertyInfo
+  {
+    VertexProperty property;
+    ValueType      value;
+    std::string    name;//for custom properties
+    VertexPropertyInfo():property(UNSUPPORTED),value(Unsupported),name(""){}
+    VertexPropertyInfo(VertexProperty _p, ValueType _v):property(_p),value(_v),name(""){}
+    VertexPropertyInfo(VertexProperty _p, ValueType _v, const std::string& _n):property(_p),value(_v),name(_n){}
+  };
+  mutable std::map< int , VertexPropertyInfo > vertexPropertyMap_;
 
 };
 

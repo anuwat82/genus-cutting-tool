@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------* 
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *             
- *   $Revision: 990 $                                                         *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1196 $                                                         *
+ *   $Date: 2015-01-15 00:41:22 +0900 (Thu, 15 Jan 2015) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -174,7 +174,11 @@ public: // data access interface
 
   /// Get reference to property vector (be careful, improper usage, e.g. resizing, may crash OpenMesh!!!)
   vector_type& data_vector() {
+    return data_;
+  }
 
+  /// Const access to property vector
+  const vector_type& data_vector() const {
     return data_;
   }
 
@@ -338,7 +342,11 @@ public:
 
   /// Get reference to property vector (be careful, improper usage, e.g. resizing, may crash OpenMesh!!!)
   vector_type& data_vector() {
+    return data_;
+  }
 
+  /// Const access to property vector
+  const vector_type& data_vector() const {
     return data_;
   }
 

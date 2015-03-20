@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------* 
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *             
- *   $Revision: 990 $                                                         *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1231 $                                                         *
+ *   $Date: 2015-03-04 22:03:44 +0900 (Wed, 04 Mar 2015) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -73,7 +73,7 @@ check(unsigned int _targets, std::ostream& _os)
   {
     typename Mesh::ConstVertexIter v_it(mesh_.vertices_begin()), v_end(mesh_.vertices_end());
     typename Mesh::VertexHandle    vh;
-    typename Mesh::ConstVertexVertexIter vv_it;
+    typename Mesh::ConstVertexVertexCWIter vv_it;
     typename Mesh::HalfedgeHandle  heh;
     unsigned int                   count;
     const unsigned int             max_valence(10000);
@@ -115,7 +115,7 @@ check(unsigned int _targets, std::ostream& _os)
 
 
         // check whether circulators are still in order
-        vv_it = mesh_.cvv_iter(vh);
+        vv_it = mesh_.cvv_cwiter(vh);
         for (count=0; vv_it.is_valid() && (count < max_valence); ++vv_it, ++count) {};
         if (count == max_valence)
         {
@@ -123,7 +123,7 @@ check(unsigned int _targets, std::ostream& _os)
               << ": ++circulator problem, one ring corrupt\n";
           ok = false;
         }
-        vv_it = mesh_.cvv_iter(vh);
+        vv_it = mesh_.cvv_cwiter(vh);
         for (count=0; vv_it.is_valid() && (count < max_valence); --vv_it, ++count) {};
         if (count == max_valence)
         {
