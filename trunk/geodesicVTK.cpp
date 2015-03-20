@@ -541,6 +541,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			{
 			modTruncate.Process();
 			originalTruncate.Process();
+			cout << "num original edge:" << originalTruncate.GetGraph()->GetNumberOfEdges() << endl;
 			vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(modTruncate.GetGraph());
 			if (actorEdge3)
 				actorEdge3->ShallowCopy(edge_actor3);
