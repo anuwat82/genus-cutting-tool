@@ -62,3 +62,4 @@
 #include <vtkPLYWriter.h>
 #include <vtkWindowToImageFilter.h>
 #include <vtkPNGWriter.h>
+#include <vtkOBBTree.h>

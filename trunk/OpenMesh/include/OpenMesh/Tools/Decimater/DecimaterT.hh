@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------* 
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *             
- *   $Revision: 990 $                                                         *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1240 $                                                         *
+ *   $Date: 2015-03-11 02:01:09 +0900 (Wed, 11 Mar 2015) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -59,8 +59,6 @@
 #include <OpenMesh/Core/Utils/Property.hh>
 #include <OpenMesh/Tools/Utils/HeapT.hh>
 #include <OpenMesh/Tools/Decimater/BaseDecimaterT.hh>
-
-
 
 //== NAMESPACE ================================================================
 
@@ -168,7 +166,11 @@ private: //------------------------------------------------------- private data
   Mesh&      mesh_;
 
   // heap
-  std::auto_ptr<DeciHeap> heap_;
+  #if __cplusplus > 199711L || defined( __GXX_EXPERIMENTAL_CXX0X__ )
+    std::unique_ptr<DeciHeap> heap_;
+  #else
+    std::auto_ptr<DeciHeap> heap_;
+  #endif
 
   // vertex properties
   VPropHandleT<HalfedgeHandle>  collapse_target_;

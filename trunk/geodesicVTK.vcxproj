@@ -27,26 +27,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler XE 15.0</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler XE 15.0</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler XE 15.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler XE 15.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -73,7 +73,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VTK_DIR)\include\vtk-6.1;.\OpenMesh\include;.\customVTK;$(IncludePath)</IncludePath>
+    <IncludePath>$(VTK_DIR)\include\vtk-6.2;.\OpenMesh\include;.\customVTK;$(IncludePath)</IncludePath>
     <LibraryPath>.\OpenMesh\lib;$(VTK_DIR)\lib\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -83,7 +83,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VTK_DIR)\include\vtk-6.1;.\OpenMesh\include;.\customVTK;$(IncludePath)</IncludePath>
+    <IncludePath>$(VTK_DIR)\include\vtk-6.2;.\OpenMesh\include;.\customVTK;$(IncludePath)</IncludePath>
     <LibraryPath>.\OpenMesh\lib;$(VTK_DIR)\lib\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -105,14 +105,15 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_USE_MATH_DEFINES;OM_STATIC_BUILD;WIN32;NOMINMAX;vtkRenderingCore_INCLUDE="$(VTK_DIR)\CMakeFiles\vtkRenderingCore_AUTOINIT_vtkInteractionStyle_vtkRenderingFreeType_vtkRenderingOpenGL.h";vtkRenderingVolume_AUTOINIT=1(vtkRenderingVolumeOpenGL);_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_USE_MATH_DEFINES;OM_STATIC_BUILD;WIN32;NOMINMAX;VTK_IN_VTK;vtkRenderingCore_INCLUDE="$(VTK_DIR)/build/CMakeFiles/vtkRenderingCore_AUTOINIT_vtkInteractionStyle_vtkRenderingOpenGL2.h";_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <OpenMPSupport>true</OpenMPSupport>
+      <OpenMP>GenerateParallelCode</OpenMP>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;OpenMeshCored.lib;vtkalglib-6.1.lib;vtkChartsCore-6.1.lib;vtkCommonColor-6.1.lib;vtkCommonComputationalGeometry-6.1.lib;vtkCommonCore-6.1.lib;vtkCommonDataModel-6.1.lib;vtkCommonExecutionModel-6.1.lib;vtkCommonMath-6.1.lib;vtkCommonMisc-6.1.lib;vtkCommonSystem-6.1.lib;vtkCommonTransforms-6.1.lib;vtkDICOMParser-6.1.lib;vtkDomainsChemistry-6.1.lib;vtkexoIIc-6.1.lib;vtkexpat-6.1.lib;vtkFiltersAMR-6.1.lib;vtkFiltersCore-6.1.lib;vtkFiltersExtraction-6.1.lib;vtkFiltersFlowPaths-6.1.lib;vtkFiltersGeneral-6.1.lib;vtkFiltersGeneric-6.1.lib;vtkFiltersGeometry-6.1.lib;vtkFiltersHybrid-6.1.lib;vtkFiltersHyperTree-6.1.lib;vtkFiltersImaging-6.1.lib;vtkFiltersModeling-6.1.lib;vtkFiltersParallel-6.1.lib;vtkFiltersParallelImaging-6.1.lib;vtkFiltersProgrammable-6.1.lib;vtkFiltersSelection-6.1.lib;vtkFiltersSMP-6.1.lib;vtkFiltersSources-6.1.lib;vtkFiltersStatistics-6.1.lib;vtkFiltersTexture-6.1.lib;vtkFiltersVerdict-6.1.lib;vtkfreetype-6.1.lib;vtkftgl-6.1.lib;vtkGeovisCore-6.1.lib;vtkgl2ps-6.1.lib;vtkhdf5-6.1.lib;vtkhdf5_hl-6.1.lib;vtkImagingColor-6.1.lib;vtkImagingCore-6.1.lib;vtkImagingFourier-6.1.lib;vtkImagingGeneral-6.1.lib;vtkImagingHybrid-6.1.lib;vtkImagingMath-6.1.lib;vtkImagingMorphological-6.1.lib;vtkImagingSources-6.1.lib;vtkImagingStatistics-6.1.lib;vtkImagingStencil-6.1.lib;vtkInfovisCore-6.1.lib;vtkInfovisLayout-6.1.lib;vtkInteractionImage-6.1.lib;vtkInteractionStyle-6.1.lib;vtkInteractionWidgets-6.1.lib;vtkIOAMR-6.1.lib;vtkIOCore-6.1.lib;vtkIOEnSight-6.1.lib;vtkIOExodus-6.1.lib;vtkIOExport-6.1.lib;vtkIOGeometry-6.1.lib;vtkIOImage-6.1.lib;vtkIOImport-6.1.lib;vtkIOInfovis-6.1.lib;vtkIOLegacy-6.1.lib;vtkIOLSDyna-6.1.lib;vtkIOMINC-6.1.lib;vtkIOMovie-6.1.lib;vtkIONetCDF-6.1.lib;vtkIOParallel-6.1.lib;vtkIOPLY-6.1.lib;vtkIOSQL-6.1.lib;vtkIOVideo-6.1.lib;vtkIOXML-6.1.lib;vtkIOXMLParser-6.1.lib;vtkjpeg-6.1.lib;vtkjsoncpp-6.1.lib;vtklibxml2-6.1.lib;vtkmetaio-6.1.lib;vtkNetCDF-6.1.lib;vtkNetCDF_cxx-6.1.lib;vtkoggtheora-6.1.lib;vtkParallelCore-6.1.lib;vtkpng-6.1.lib;vtkproj4-6.1.lib;vtkRenderingAnnotation-6.1.lib;vtkRenderingContext2D-6.1.lib;vtkRenderingCore-6.1.lib;vtkRenderingFreeType-6.1.lib;vtkRenderingFreeTypeOpenGL-6.1.lib;vtkRenderingGL2PS-6.1.lib;vtkRenderingImage-6.1.lib;vtkRenderingLabel-6.1.lib;vtkRenderingLIC-6.1.lib;vtkRenderingLOD-6.1.lib;vtkRenderingOpenGL-6.1.lib;vtkRenderingVolume-6.1.lib;vtkRenderingVolumeAMR-6.1.lib;vtkRenderingVolumeOpenGL-6.1.lib;vtksqlite-6.1.lib;vtksys-6.1.lib;vtktiff-6.1.lib;vtkverdict-6.1.lib;vtkViewsContext2D-6.1.lib;vtkViewsCore-6.1.lib;vtkViewsGeovis-6.1.lib;vtkViewsInfovis-6.1.lib;vtkzlib-6.1.lib;vtkInfovisBoostGraphAlgorithms-6.1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;OpenMeshCored.lib;vtkalglib-6.2.lib;vtkChartsCore-6.2.lib;vtkCommonColor-6.2.lib;vtkCommonComputationalGeometry-6.2.lib;vtkCommonCore-6.2.lib;vtkCommonDataModel-6.2.lib;vtkCommonExecutionModel-6.2.lib;vtkCommonMath-6.2.lib;vtkCommonMisc-6.2.lib;vtkCommonSystem-6.2.lib;vtkCommonTransforms-6.2.lib;vtkDICOMParser-6.2.lib;vtkDomainsChemistry-6.2.lib;vtkDomainsChemistryOpenGL2-6.2.lib;vtkexoIIc-6.2.lib;vtkexpat-6.2.lib;vtkFiltersAMR-6.2.lib;vtkFiltersCore-6.2.lib;vtkFiltersExtraction-6.2.lib;vtkFiltersFlowPaths-6.2.lib;vtkFiltersGeneral-6.2.lib;vtkFiltersGeneric-6.2.lib;vtkFiltersGeometry-6.2.lib;vtkFiltersHybrid-6.2.lib;vtkFiltersHyperTree-6.2.lib;vtkFiltersImaging-6.2.lib;vtkFiltersModeling-6.2.lib;vtkFiltersParallel-6.2.lib;vtkFiltersParallelImaging-6.2.lib;vtkFiltersProgrammable-6.2.lib;vtkFiltersReebGraph-6.2.lib;vtkFiltersSelection-6.2.lib;vtkFiltersSMP-6.2.lib;vtkFiltersSources-6.2.lib;vtkFiltersStatistics-6.2.lib;vtkFiltersTexture-6.2.lib;vtkFiltersVerdict-6.2.lib;vtkfreetype-6.2.lib;vtkftgl-6.2.lib;vtkGeovisCore-6.2.lib;vtkglew-6.2.lib;vtkhdf5-6.2.lib;vtkhdf5_hl-6.2.lib;vtkImagingColor-6.2.lib;vtkImagingCore-6.2.lib;vtkImagingFourier-6.2.lib;vtkImagingGeneral-6.2.lib;vtkImagingHybrid-6.2.lib;vtkImagingMath-6.2.lib;vtkImagingMorphological-6.2.lib;vtkImagingSources-6.2.lib;vtkImagingStatistics-6.2.lib;vtkImagingStencil-6.2.lib;vtkInfovisBoostGraphAlgorithms-6.2.lib;vtkInfovisCore-6.2.lib;vtkInfovisLayout-6.2.lib;vtkInteractionImage-6.2.lib;vtkInteractionStyle-6.2.lib;vtkInteractionWidgets-6.2.lib;vtkIOAMR-6.2.lib;vtkIOCore-6.2.lib;vtkIOEnSight-6.2.lib;vtkIOExodus-6.2.lib;vtkIOExport-6.2.lib;vtkIOGeometry-6.2.lib;vtkIOImage-6.2.lib;vtkIOImport-6.2.lib;vtkIOInfovis-6.2.lib;vtkIOLegacy-6.2.lib;vtkIOLSDyna-6.2.lib;vtkIOMINC-6.2.lib;vtkIOMovie-6.2.lib;vtkIONetCDF-6.2.lib;vtkIOParallel-6.2.lib;vtkIOParallelXML-6.2.lib;vtkIOPLY-6.2.lib;vtkIOSQL-6.2.lib;vtkIOVideo-6.2.lib;vtkIOXML-6.2.lib;vtkIOXMLParser-6.2.lib;vtkjpeg-6.2.lib;vtkjsoncpp-6.2.lib;vtklibxml2-6.2.lib;vtkLocalExample-6.2.lib;vtkmetaio-6.2.lib;vtkmyCommon.lib;vtkmyEx2.lib;vtkmyImaging.lib;vtkmyUnsorted.lib;vtkNetCDF-6.2.lib;vtkNetCDF_cxx-6.2.lib;vtkoggtheora-6.2.lib;vtkParallelCore-6.2.lib;vtkpng-6.2.lib;vtkproj4-6.2.lib;vtkRenderingAnnotation-6.2.lib;vtkRenderingContext2D-6.2.lib;vtkRenderingContextOpenGL2-6.2.lib;vtkRenderingCore-6.2.lib;vtkRenderingFreeType-6.2.lib;vtkRenderingFreeTypeOpenGL2-6.2.lib;vtkRenderingImage-6.2.lib;vtkRenderingLabel-6.2.lib;vtkRenderingLOD-6.2.lib;vtkRenderingOpenGL2-6.2.lib;vtkRenderingVolume-6.2.lib;vtkRenderingVolumeOpenGL2-6.2.lib;vtksqlite-6.2.lib;vtksys-6.2.lib;vtktiff-6.2.lib;vtkverdict-6.2.lib;vtkViewsContext2D-6.2.lib;vtkViewsCore-6.2.lib;vtkViewsInfovis-6.2.lib;vtkzlib-6.2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>MSVCRTD.lib</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -141,16 +142,17 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_USE_MATH_DEFINES;OM_STATIC_BUILD;WIN32;NOMINMAX;vtkRenderingCore_INCLUDE="$(VTK_DIR)\CMakeFiles\vtkRenderingCore_AUTOINIT_vtkInteractionStyle_vtkRenderingFreeType_vtkRenderingOpenGL.h";vtkRenderingVolume_AUTOINIT=1(vtkRenderingVolumeOpenGL);NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_USE_MATH_DEFINES;OM_STATIC_BUILD;WIN32;NOMINMAX;VTK_IN_VTK;vtkRenderingCore_INCLUDE="$(VTK_DIR)/build/CMakeFiles/vtkRenderingCore_AUTOINIT_vtkInteractionStyle_vtkRenderingOpenGL2.h";NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <OpenMPSupport>true</OpenMPSupport>
+      <OpenMP>GenerateParallelCode</OpenMP>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;OpenMeshCore.lib;vtkalglib-6.1.lib;vtkChartsCore-6.1.lib;vtkCommonColor-6.1.lib;vtkCommonComputationalGeometry-6.1.lib;vtkCommonCore-6.1.lib;vtkCommonDataModel-6.1.lib;vtkCommonExecutionModel-6.1.lib;vtkCommonMath-6.1.lib;vtkCommonMisc-6.1.lib;vtkCommonSystem-6.1.lib;vtkCommonTransforms-6.1.lib;vtkDICOMParser-6.1.lib;vtkDomainsChemistry-6.1.lib;vtkexoIIc-6.1.lib;vtkexpat-6.1.lib;vtkFiltersAMR-6.1.lib;vtkFiltersCore-6.1.lib;vtkFiltersExtraction-6.1.lib;vtkFiltersFlowPaths-6.1.lib;vtkFiltersGeneral-6.1.lib;vtkFiltersGeneric-6.1.lib;vtkFiltersGeometry-6.1.lib;vtkFiltersHybrid-6.1.lib;vtkFiltersHyperTree-6.1.lib;vtkFiltersImaging-6.1.lib;vtkFiltersModeling-6.1.lib;vtkFiltersParallel-6.1.lib;vtkFiltersParallelImaging-6.1.lib;vtkFiltersProgrammable-6.1.lib;vtkFiltersSelection-6.1.lib;vtkFiltersSMP-6.1.lib;vtkFiltersSources-6.1.lib;vtkFiltersStatistics-6.1.lib;vtkFiltersTexture-6.1.lib;vtkFiltersVerdict-6.1.lib;vtkfreetype-6.1.lib;vtkftgl-6.1.lib;vtkGeovisCore-6.1.lib;vtkgl2ps-6.1.lib;vtkhdf5-6.1.lib;vtkhdf5_hl-6.1.lib;vtkImagingColor-6.1.lib;vtkImagingCore-6.1.lib;vtkImagingFourier-6.1.lib;vtkImagingGeneral-6.1.lib;vtkImagingHybrid-6.1.lib;vtkImagingMath-6.1.lib;vtkImagingMorphological-6.1.lib;vtkImagingSources-6.1.lib;vtkImagingStatistics-6.1.lib;vtkImagingStencil-6.1.lib;vtkInfovisCore-6.1.lib;vtkInfovisLayout-6.1.lib;vtkInteractionImage-6.1.lib;vtkInteractionStyle-6.1.lib;vtkInteractionWidgets-6.1.lib;vtkIOAMR-6.1.lib;vtkIOCore-6.1.lib;vtkIOEnSight-6.1.lib;vtkIOExodus-6.1.lib;vtkIOExport-6.1.lib;vtkIOGeometry-6.1.lib;vtkIOImage-6.1.lib;vtkIOImport-6.1.lib;vtkIOInfovis-6.1.lib;vtkIOLegacy-6.1.lib;vtkIOLSDyna-6.1.lib;vtkIOMINC-6.1.lib;vtkIOMovie-6.1.lib;vtkIONetCDF-6.1.lib;vtkIOParallel-6.1.lib;vtkIOPLY-6.1.lib;vtkIOSQL-6.1.lib;vtkIOVideo-6.1.lib;vtkIOXML-6.1.lib;vtkIOXMLParser-6.1.lib;vtkjpeg-6.1.lib;vtkjsoncpp-6.1.lib;vtklibxml2-6.1.lib;vtkmetaio-6.1.lib;vtkNetCDF-6.1.lib;vtkNetCDF_cxx-6.1.lib;vtkoggtheora-6.1.lib;vtkParallelCore-6.1.lib;vtkpng-6.1.lib;vtkproj4-6.1.lib;vtkRenderingAnnotation-6.1.lib;vtkRenderingContext2D-6.1.lib;vtkRenderingCore-6.1.lib;vtkRenderingFreeType-6.1.lib;vtkRenderingFreeTypeOpenGL-6.1.lib;vtkRenderingGL2PS-6.1.lib;vtkRenderingImage-6.1.lib;vtkRenderingLabel-6.1.lib;vtkRenderingLIC-6.1.lib;vtkRenderingLOD-6.1.lib;vtkRenderingOpenGL-6.1.lib;vtkRenderingVolume-6.1.lib;vtkRenderingVolumeAMR-6.1.lib;vtkRenderingVolumeOpenGL-6.1.lib;vtksqlite-6.1.lib;vtksys-6.1.lib;vtktiff-6.1.lib;vtkverdict-6.1.lib;vtkViewsContext2D-6.1.lib;vtkViewsCore-6.1.lib;vtkViewsGeovis-6.1.lib;vtkViewsInfovis-6.1.lib;vtkzlib-6.1.lib;vtkInfovisBoostGraphAlgorithms-6.1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;OpenMeshCore.lib;vtkalglib-6.2.lib;vtkChartsCore-6.2.lib;vtkCommonColor-6.2.lib;vtkCommonComputationalGeometry-6.2.lib;vtkCommonCore-6.2.lib;vtkCommonDataModel-6.2.lib;vtkCommonExecutionModel-6.2.lib;vtkCommonMath-6.2.lib;vtkCommonMisc-6.2.lib;vtkCommonSystem-6.2.lib;vtkCommonTransforms-6.2.lib;vtkDICOMParser-6.2.lib;vtkDomainsChemistry-6.2.lib;vtkDomainsChemistryOpenGL2-6.2.lib;vtkexoIIc-6.2.lib;vtkexpat-6.2.lib;vtkFiltersAMR-6.2.lib;vtkFiltersCore-6.2.lib;vtkFiltersExtraction-6.2.lib;vtkFiltersFlowPaths-6.2.lib;vtkFiltersGeneral-6.2.lib;vtkFiltersGeneric-6.2.lib;vtkFiltersGeometry-6.2.lib;vtkFiltersHybrid-6.2.lib;vtkFiltersHyperTree-6.2.lib;vtkFiltersImaging-6.2.lib;vtkFiltersModeling-6.2.lib;vtkFiltersParallel-6.2.lib;vtkFiltersParallelImaging-6.2.lib;vtkFiltersProgrammable-6.2.lib;vtkFiltersReebGraph-6.2.lib;vtkFiltersSelection-6.2.lib;vtkFiltersSMP-6.2.lib;vtkFiltersSources-6.2.lib;vtkFiltersStatistics-6.2.lib;vtkFiltersTexture-6.2.lib;vtkFiltersVerdict-6.2.lib;vtkfreetype-6.2.lib;vtkftgl-6.2.lib;vtkGeovisCore-6.2.lib;vtkglew-6.2.lib;vtkhdf5-6.2.lib;vtkhdf5_hl-6.2.lib;vtkImagingColor-6.2.lib;vtkImagingCore-6.2.lib;vtkImagingFourier-6.2.lib;vtkImagingGeneral-6.2.lib;vtkImagingHybrid-6.2.lib;vtkImagingMath-6.2.lib;vtkImagingMorphological-6.2.lib;vtkImagingSources-6.2.lib;vtkImagingStatistics-6.2.lib;vtkImagingStencil-6.2.lib;vtkInfovisBoostGraphAlgorithms-6.2.lib;vtkInfovisCore-6.2.lib;vtkInfovisLayout-6.2.lib;vtkInteractionImage-6.2.lib;vtkInteractionStyle-6.2.lib;vtkInteractionWidgets-6.2.lib;vtkIOAMR-6.2.lib;vtkIOCore-6.2.lib;vtkIOEnSight-6.2.lib;vtkIOExodus-6.2.lib;vtkIOExport-6.2.lib;vtkIOGeometry-6.2.lib;vtkIOImage-6.2.lib;vtkIOImport-6.2.lib;vtkIOInfovis-6.2.lib;vtkIOLegacy-6.2.lib;vtkIOLSDyna-6.2.lib;vtkIOMINC-6.2.lib;vtkIOMovie-6.2.lib;vtkIONetCDF-6.2.lib;vtkIOParallel-6.2.lib;vtkIOParallelXML-6.2.lib;vtkIOPLY-6.2.lib;vtkIOSQL-6.2.lib;vtkIOVideo-6.2.lib;vtkIOXML-6.2.lib;vtkIOXMLParser-6.2.lib;vtkjpeg-6.2.lib;vtkjsoncpp-6.2.lib;vtklibxml2-6.2.lib;vtkLocalExample-6.2.lib;vtkmetaio-6.2.lib;vtkmyCommon.lib;vtkmyEx2.lib;vtkmyImaging.lib;vtkmyUnsorted.lib;vtkNetCDF-6.2.lib;vtkNetCDF_cxx-6.2.lib;vtkoggtheora-6.2.lib;vtkParallelCore-6.2.lib;vtkpng-6.2.lib;vtkproj4-6.2.lib;vtkRenderingAnnotation-6.2.lib;vtkRenderingContext2D-6.2.lib;vtkRenderingContextOpenGL2-6.2.lib;vtkRenderingCore-6.2.lib;vtkRenderingFreeType-6.2.lib;vtkRenderingFreeTypeOpenGL2-6.2.lib;vtkRenderingImage-6.2.lib;vtkRenderingLabel-6.2.lib;vtkRenderingLOD-6.2.lib;vtkRenderingOpenGL2-6.2.lib;vtkRenderingVolume-6.2.lib;vtkRenderingVolumeOpenGL2-6.2.lib;vtksqlite-6.2.lib;vtksys-6.2.lib;vtktiff-6.2.lib;vtkverdict-6.2.lib;vtkViewsContext2D-6.2.lib;vtkViewsCore-6.2.lib;vtkViewsInfovis-6.2.lib;vtkzlib-6.2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

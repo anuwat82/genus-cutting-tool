@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------* 
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *             
- *   $Revision: 990 $                                                         *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1188 $                                                         *
+ *   $Date: 2015-01-06 00:34:10 +0900 (Tue, 06 Jan 2015) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -76,10 +76,11 @@ VFront::
 remove(VHierarchyNodeHandle _node_handle)
 {
   VHierarchyNodeHandleListIter node_it = front_location_[_node_handle.idx()];
+  const bool isFront = (front_it_ == node_it);
   VHierarchyNodeHandleListIter next_it = front_.erase(node_it);
   front_location_[_node_handle.idx()] = front_.end();
 
-  if (front_it_ == node_it)
+  if (isFront)
     front_it_ = next_it;
 }
 

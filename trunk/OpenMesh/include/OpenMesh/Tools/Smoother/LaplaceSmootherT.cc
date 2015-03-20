@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------* 
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *             
- *   $Revision: 990 $                                                         *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1208 $                                                         *
+ *   $Date: 2015-01-17 00:24:36 +0900 (Sat, 17 Jan 2015) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -184,13 +184,13 @@ compute_weights(LaplaceWeighting _weighting)
         p2     = &Base::mesh_.point(Base::mesh_.to_vertex_handle(heh2));
         d0     = (*p0 - *p2); d0.normalize();
         d1     = (*p1 - *p2); d1.normalize();
-        weight += 1.0 / tan(acos(std::max(lb, std::min(ub, dot(d0,d1) ))));
+        weight += static_cast<typename Mesh::Scalar>(1.0) / tan(acos(std::max(lb, std::min(ub, dot(d0,d1) ))));
 
         heh2   = Base::mesh_.next_halfedge_handle(heh1);
         p2     = &Base::mesh_.point(Base::mesh_.to_vertex_handle(heh2));
         d0     = (*p0 - *p2); d0.normalize();
         d1     = (*p1 - *p2); d1.normalize();
-        weight += 1.0 / tan(acos(std::max(lb, std::min(ub, dot(d0,d1) ))));
+        weight += static_cast<typename Mesh::Scalar>(1.0) / tan(acos(std::max(lb, std::min(ub, dot(d0,d1) ))));
 
         Base::mesh_.property(edge_weights_, *e_it) = weight;
         Base::mesh_.property(vertex_weights_, v0)  += weight;
@@ -208,7 +208,7 @@ compute_weights(LaplaceWeighting _weighting)
   {
     weight = Base::mesh_.property(vertex_weights_, *v_it);
     if (weight)
-      Base::mesh_.property(vertex_weights_, *v_it) = 1.0 / weight;
+      Base::mesh_.property(vertex_weights_, *v_it) = static_cast<typename Mesh::Scalar>(1.0) / weight;
   }
 }
 

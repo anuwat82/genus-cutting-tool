@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *
- *   $Revision: 1049 $                                                        *
- *   $Date: 2014-05-09 15:12:17 +0700 (Fri, 09 May 2014) $                   *
+ *   $Revision: 1208 $                                                        *
+ *   $Date: 2015-01-17 00:24:36 +0900 (Sat, 17 Jan 2015) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -134,7 +134,7 @@ public:
 
   /// Set normal deviation ( 0 .. 360 )
   void set_normal_deviation(Scalar _s) {
-    normal_deviation_ = _s / 180.0 * M_PI;
+    normal_deviation_ = _s / static_cast<Scalar>(180.0) * static_cast<Scalar>(M_PI);
   }
 
 
@@ -207,7 +207,7 @@ public:
       // the smaller the factor, the smaller normal_deviation_ gets
       // thus creating a stricter constraint
       // division by error_tolerance_factor_ is for normalization
-      Scalar normal_deviation = (normal_deviation_ * 180.0/M_PI) * _factor / this->error_tolerance_factor_;
+      Scalar normal_deviation = (normal_deviation_ * static_cast<Scalar>(180.0)/static_cast<Scalar>(M_PI) ) * _factor / this->error_tolerance_factor_;
       set_normal_deviation(normal_deviation);
       this->error_tolerance_factor_ = _factor;
     }

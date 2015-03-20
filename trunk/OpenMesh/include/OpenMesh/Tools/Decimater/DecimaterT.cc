@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *
- *   $Revision: 1049 $                                                         *
- *   $Date: 2014-05-09 15:12:17 +0700 (Fri, 09 May 2014) $                   *
+ *   $Revision: 1240 $                                                         *
+ *   $Date: 2015-03-11 02:01:09 +0900 (Wed, 11 Mar 2015) $                   *
  *                                                                           *
  \*===========================================================================*/
 
@@ -70,7 +70,14 @@ namespace Decimater {
 template<class Mesh>
 DecimaterT<Mesh>::DecimaterT(Mesh& _mesh) :
   BaseDecimaterT<Mesh>(_mesh),
-    mesh_(_mesh), heap_(NULL) {
+    mesh_(_mesh),
+#if __cplusplus > 199711L || defined( __GXX_EXPERIMENTAL_CXX0X__ )
+  heap_(nullptr)
+#else
+  heap_(NULL)
+#endif
+
+{
 
   // private vertex properties
   mesh_.add_property(collapse_target_);
@@ -163,7 +170,14 @@ size_t DecimaterT<Mesh>::decimate(size_t _n_collapses) {
 
   // initialize heap
   HeapInterface HI(mesh_, priority_, heap_position_);
+
+#if __cplusplus > 199711L || defined( __GXX_EXPERIMENTAL_CXX0X__ )
+  heap_ = std::unique_ptr<DeciHeap>(new DeciHeap(HI));
+#else
   heap_ = std::auto_ptr<DeciHeap>(new DeciHeap(HI));
+#endif
+
+
   heap_->reserve(mesh_.n_vertices());
 
   for (v_it = mesh_.vertices_begin(); v_it != v_end; ++v_it) {
@@ -215,6 +229,10 @@ size_t DecimaterT<Mesh>::decimate(size_t _n_collapses) {
       assert(!mesh_.status(*s_it).deleted());
       heap_vertex(*s_it);
     }
+
+    // notify observer and stop if the observer requests it
+    if (!this->notify_observer(n_collapses))
+        return n_collapses;
   }
 
   // delete heap
@@ -254,7 +272,11 @@ size_t DecimaterT<Mesh>::decimate_to_faces(size_t _nv, size_t _nf) {
 
   // initialize heap
   HeapInterface HI(mesh_, priority_, heap_position_);
-  heap_ = std::auto_ptr<DeciHeap>(new DeciHeap(HI));
+  #if __cplusplus > 199711L || defined( __GXX_EXPERIMENTAL_CXX0X__ )
+    heap_ = std::unique_ptr<DeciHeap>(new DeciHeap(HI));
+  #else
+    heap_ = std::auto_ptr<DeciHeap>(new DeciHeap(HI));
+  #endif
   heap_->reserve(mesh_.n_vertices());
 
   for (v_it = mesh_.vertices_begin(); v_it != v_end; ++v_it) {
@@ -316,6 +338,10 @@ size_t DecimaterT<Mesh>::decimate_to_faces(size_t _nv, size_t _nf) {
       assert(!mesh_.status(*s_it).deleted());
       heap_vertex(*s_it);
     }
+
+    // notify observer and stop if the observer requests it
+    if (!this->notify_observer(n_collapses))
+        return n_collapses;
   }
 
   // delete heap

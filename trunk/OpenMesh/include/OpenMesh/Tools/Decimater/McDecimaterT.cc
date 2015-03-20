@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *
- *   $Revision: 1049 $                                                         *
- *   $Date: 2014-05-09 15:12:17 +0700 (Fri, 09 May 2014) $                   *
+ *   $Revision: 1197 $                                                         *
+ *   $Date: 2015-01-15 19:19:39 +0900 (Thu, 15 Jan 2015) $                   *
  *                                                                           *
  \*===========================================================================*/
 
@@ -198,6 +198,10 @@ size_t McDecimaterT<Mesh>::decimate(size_t _n_collapses) {
       // post-process collapse
       this->postprocess_collapse(ci);
 
+      // notify observer and stop if the observer requests it
+      if (!this->notify_observer(n_collapses))
+          return n_collapses;
+
     } else {
       if (oldCollapses == n_collapses) {
         if (collapsesUnchanged == false) {
@@ -336,6 +340,10 @@ size_t McDecimaterT<Mesh>::decimate_to_faces(size_t _nv, size_t _nf) {
 
       // post-process collapse
       this->postprocess_collapse(ci);
+
+      // notify observer and stop if the observer requests it
+      if (!this->notify_observer(n_collapses))
+          return n_collapses;
 
     } else {
       if (oldCollapses == n_collapses) {
@@ -490,6 +498,10 @@ size_t McDecimaterT<Mesh>::decimate_constraints_only(float _factor) {
 
       // post-process collapse
       this->postprocess_collapse(ci);
+
+      // notify observer and stop if the observer requests it
+      if (!this->notify_observer(n_collapses))
+          return n_collapses;
 
     } else {
       if (oldCollapses == n_collapses) {

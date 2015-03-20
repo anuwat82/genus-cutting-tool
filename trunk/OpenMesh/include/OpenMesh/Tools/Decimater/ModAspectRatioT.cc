@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *
- *   $Revision: 990 $                                                        *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1208 $                                                        *
+ *   $Date: 2015-01-17 00:24:36 +0900 (Sat, 17 Jan 2015) $                   *
  *                                                                           *
  \*===========================================================================*/
 
@@ -102,7 +102,7 @@ void ModAspectRatioT<MeshT>::initialize() {
     typename Mesh::Point& p1 = mesh_.point(*(++fv_it));
     typename Mesh::Point& p2 = mesh_.point(*(++fv_it));
 
-    mesh_.property(aspect_, *f_it) = 1.0 / aspectRatio(p0, p1, p2);
+    mesh_.property(aspect_, *f_it) = static_cast<typename Mesh::Scalar>(1.0) / aspectRatio(p0, p1, p2);
   }
 }
 
@@ -121,7 +121,7 @@ void ModAspectRatioT<MeshT>::preprocess_collapse(const CollapseInfo& _ci) {
       typename Mesh::Point& p1 = mesh_.point(*(++fv_it));
       typename Mesh::Point& p2 = mesh_.point(*(++fv_it));
 
-      mesh_.property(aspect_, fh) = 1.0 / aspectRatio(p0, p1, p2);
+      mesh_.property(aspect_, fh) = static_cast<typename Mesh::Scalar>(1.0) / aspectRatio(p0, p1, p2);
     }
   }
 }
@@ -157,7 +157,7 @@ float ModAspectRatioT<MeshT>::collapse_priority(const CollapseInfo& _ci) {
 
       // aspect after
       if (!(v2 == _ci.v1 || v3 == _ci.v1))
-        if ((r1 = 1.0 / aspectRatio(*p1, *p2, *p3)) < r1_min)
+        if ((r1 = static_cast<typename Mesh::Scalar>(1.0) / aspectRatio(*p1, *p2, *p3)) < r1_min)
           r1_min = r1;
     }
   }

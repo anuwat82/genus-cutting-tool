@@ -1,7 +1,7 @@
 /*===========================================================================*\
 *                                                                           *
 *                               OpenMesh                                    *
-*      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+*      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
 *                           www.openmesh.org                                *
 *                                                                           *
 *---------------------------------------------------------------------------*
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
 *                                                                           *
-*   $Revision: 990 $                                                         *
-*   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+*   $Revision: 1197 $                                                         *
+*   $Date: 2015-01-15 19:19:39 +0900 (Thu, 15 Jan 2015) $                   *
 *                                                                           *
 \*===========================================================================*/
 
@@ -92,6 +92,11 @@ size_t MixedDecimaterT<Mesh>::decimate(const size_t _n_collapses, const float _m
   size_t r_collapses = 0;
   if (_mc_factor > 0.0)
     r_collapses = McDecimaterT<Mesh>::decimate(n_collapses_mc);
+
+  // returns, if the previous steps were aborted by the observer
+  if (this->observer() && this->observer()->abort())
+      return r_collapses;
+
   if (_mc_factor < 1.0)
     r_collapses += DecimaterT<Mesh>::decimate(n_collapses_inc);
 
@@ -146,6 +151,10 @@ size_t MixedDecimaterT<Mesh>::decimate_to_faces(const size_t  _n_vertices,const 
 
   //Update the mesh::n_vertices function, otherwise the next Decimater function will delete too much
   this->mesh().garbage_collection();
+
+  // returns, if the previous steps were aborted by the observer
+  if (this->observer() && this->observer()->abort())
+      return r_collapses;
 
   //reduce the rest of the mesh
   if (_mc_factor < 1.0) {

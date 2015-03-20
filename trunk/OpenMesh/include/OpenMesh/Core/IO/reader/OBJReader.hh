@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *
- *   $Revision: 990 $                                                         *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1222 $                                                         *
+ *   $Date: 2015-02-18 17:25:32 +0900 (Wed, 18 Feb 2015) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -117,7 +117,7 @@ private:
     }
 
     bool is_valid(void) const
-    { return Kd_is_set_ || Ka_is_set_ || Ks_is_set_ || Tr_is_set_; }
+    { return Kd_is_set_ || Ka_is_set_ || Ks_is_set_ || Tr_is_set_ || map_Kd_is_set_; }
 
     bool has_Kd(void)     { return Kd_is_set_;     }
     bool has_Ka(void)     { return Ka_is_set_;     }

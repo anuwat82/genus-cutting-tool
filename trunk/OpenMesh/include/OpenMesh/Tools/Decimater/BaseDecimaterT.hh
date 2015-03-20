@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *
- *   $Revision: 990 $                                                         *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1200 $                                                         *
+ *   $Date: 2015-01-16 16:57:02 +0900 (Fri, 16 Jan 2015) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -59,6 +59,7 @@
 #include <OpenMesh/Core/Utils/Property.hh>
 #include <OpenMesh/Tools/Decimater/ModBaseT.hh>
 #include <OpenMesh/Core/Utils/Noncopyable.hh>
+#include <OpenMesh/Tools/Decimater/Observer.hh>
 
 
 
@@ -113,6 +114,24 @@ public: //------------------------------------------------------ public methods
 
 public: //--------------------------------------------------- module management
 
+  /** \brief Add observer
+   *
+   * You can set an observer which is used as a callback to check the decimators progress and to
+   * abort it if necessary.
+   *
+   * @param _o Observer to be used
+   */
+  void set_observer(Observer* _o)
+  {
+      observer_ = _o;
+  }
+
+  /// Get current observer of a decimater
+  Observer* observer()
+  {
+      return observer_;
+  }
+
   /// access mesh. used in modules.
   Mesh& mesh() { return mesh_; }
 
@@ -166,7 +185,18 @@ public: //--------------------------------------------------- module management
 
 protected:
 
-  // Reset the initialized flag, and clear the bmodules_ and cmodule_
+  /// returns false, if abort requested by observer
+  bool notify_observer(size_t _n_collapses)
+  {
+    if (observer() && _n_collapses % observer()->get_interval() == 0)
+    {
+      observer()->notify(_n_collapses);
+      return !observer()->abort();
+    }
+    return true;
+  }
+
+  /// Reset the initialized flag, and clear the bmodules_ and cmodule_
   void set_uninitialized() {
     initialized_ = false;
     cmodule_ = 0;
@@ -219,21 +249,23 @@ protected: //---------------------------------------------------- private method
 private: //------------------------------------------------------- private data
 
 
-  // reference to mesh
+  /// reference to mesh
   Mesh&      mesh_;
 
-  // list of binary modules
+  /// list of binary modules
   ModuleList bmodules_;
 
-  // the current priority module
+  /// the current priority module
   Module*    cmodule_;
 
-  // list of all allocated modules (including cmodule_ and all of bmodules_)
+  /// list of all allocated modules (including cmodule_ and all of bmodules_)
   ModuleList all_modules_;
 
-  // Flag if all modules were initialized
+  /// Flag if all modules were initialized
   bool       initialized_;
 
+  /// observer
+  Observer* observer_;
 
 };
 

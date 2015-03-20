@@ -327,6 +327,15 @@ int main(int argc, char* argv[])
 	}
 	polydata = modelReader->GetOutput();
 	Process(modelReader->GetOutput() , sourceVertex);
+
+
+	// Create the tree
+	vtkSmartPointer<vtkOBBTree> obbTree = vtkSmartPointer<vtkOBBTree>::New();  
+	obbTree->SetDataSet(polydata);
+	obbTree->BuildLocator();
+	
+	
+
 	
 	vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 	mapper->SetInputConnection(modelReader->GetOutputPort());
@@ -369,6 +378,28 @@ int main(int argc, char* argv[])
 	actorPoly1 = actor;
 	renderer->AddActor(actorPoly1);
 	renderer->AddActor(actorEdge2);
+	
+
+	// Initialize the representation
+	for (int level = 0; level <= 2; level++)
+	{
+		vtkSmartPointer<vtkPolyData> obbpolydata = vtkSmartPointer<vtkPolyData>::New();
+		obbTree->GenerateRepresentation(level, obbpolydata);
+ 
+		vtkSmartPointer<vtkPolyDataMapper> obbtreeMapper =  vtkSmartPointer<vtkPolyDataMapper>::New();
+		obbtreeMapper->SetInputData(obbpolydata); 
+	
+		vtkSmartPointer<vtkActor> obbtreeActor = vtkSmartPointer<vtkActor>::New();
+		obbtreeActor->SetMapper(obbtreeMapper);
+		obbtreeActor->GetProperty()->SetInterpolationToFlat();
+		obbtreeActor->GetProperty()->SetRepresentationToWireframe();
+
+		double color[3] = {0,0,0};
+		color[level] +=0.5;
+		obbtreeActor->GetProperty()->SetColor( color);
+		renderer->AddActor(obbtreeActor);
+	}
+
 	
 	vtkSmartPointer<vtkCallbackCommand> keypressCallback = vtkSmartPointer<vtkCallbackCommand>::New();
 	keypressCallback->SetCallback ( keyPressCallbackFunc );

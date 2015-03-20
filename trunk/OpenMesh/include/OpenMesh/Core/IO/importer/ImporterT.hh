@@ -1,7 +1,7 @@
 /*===========================================================================*\
  *                                                                           *
  *                               OpenMesh                                    *
- *      Copyright (C) 2001-2014 by Computer Graphics Group, RWTH Aachen      *
+ *      Copyright (C) 2001-2015 by Computer Graphics Group, RWTH Aachen      *
  *                           www.openmesh.org                                *
  *                                                                           *
  *---------------------------------------------------------------------------*
@@ -34,8 +34,8 @@
 
 /*===========================================================================*\
  *                                                                           *
- *   $Revision: 990 $                                                         *
- *   $Date: 2014-02-05 16:01:07 +0700 (Wed, 05 Feb 2014) $                   *
+ *   $Revision: 1188 $                                                         *
+ *   $Date: 2015-01-06 00:34:10 +0900 (Tue, 06 Jan 2015) $                   *
  *                                                                           *
 \*===========================================================================*/
 
@@ -94,6 +94,10 @@ public:
     return mesh_.add_vertex(vector_cast<Point>(_point));
   }
 
+  virtual VertexHandle add_vertex()
+  {
+    return mesh_.new_vertex();
+  }
 
   virtual FaceHandle add_face(const VHandles& _indices)
   {
@@ -153,6 +157,11 @@ public:
   }
 
   // vertex attributes
+
+  virtual void set_point(VertexHandle _vh, const Vec3f& _point)
+  {
+    mesh_.set_point(_vh,vector_cast<Point>(_point));
+  }
 
   virtual void set_normal(VertexHandle _vh, const Vec3f& _normal)
   {
