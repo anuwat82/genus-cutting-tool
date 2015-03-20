@@ -133,11 +133,12 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::InitOriginal( vtkSmar
 
 	// Setup the colors array
 	vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
-	colors->SetNumberOfComponents(3);
+	colors->SetNumberOfComponents(4);
 	colors->SetName("EdgeColors");
 	// Setup two colors 
-	unsigned char red[3] = {255, 0, 0};
-	unsigned char yellow[3] = {255, 255, 0};
+	unsigned char red[4] = {255, 0, 0,255};
+	unsigned char yellow[4] = {255, 255, 0,255};
+	unsigned char purple[4] = {255, 0, 255,255};
 	
 	// Setup the collision tag array
 	vtkSmartPointer<vtkUnsignedCharArray> collisionTag = vtkSmartPointer<vtkUnsignedCharArray>::New();
