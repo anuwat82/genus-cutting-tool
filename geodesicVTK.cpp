@@ -379,7 +379,7 @@ int main(int argc, char* argv[])
 	renderer->AddActor(actorPoly1);
 	renderer->AddActor(actorEdge2);
 	
-
+	/*
 	// Initialize the representation
 	for (int level = 0; level <= 2; level++)
 	{
@@ -399,7 +399,7 @@ int main(int argc, char* argv[])
 		obbtreeActor->GetProperty()->SetColor( color);
 		renderer->AddActor(obbtreeActor);
 	}
-
+	*/
 	
 	vtkSmartPointer<vtkCallbackCommand> keypressCallback = vtkSmartPointer<vtkCallbackCommand>::New();
 	keypressCallback->SetCallback ( keyPressCallbackFunc );
