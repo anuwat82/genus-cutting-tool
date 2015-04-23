@@ -1,4 +1,5 @@
 #include "GIMmodTruncate.h"
+#include "customVTK\vtkFeatureEdgesEx.h"
 #include "utils.h"
 
 GIMmodTruncate::GIMmodTruncate(void)
@@ -1003,6 +1004,45 @@ void GIMmodTruncate::ShorthenRings(bool step)
 	*/
 	
 }
+
+
+void GIMmodTruncate::MergeWithOriginalBoundaries(bool step)
+{	
+	//find border points/edges
+	vtkSmartPointer<vtkFeatureEdgesEx> borderEdges = vtkSmartPointer<vtkFeatureEdgesEx>::New();
+	borderEdges->SetInputData(original_polydata);
+	borderEdges->FeatureEdgesOff();
+	borderEdges->BoundaryEdgesOn();
+	borderEdges->ManifoldEdgesOff();
+	borderEdges->NonManifoldEdgesOff();
+	borderEdges->Update();	
+	
+	vtkSmartPointer<vtkCellArray> lines= borderEdges->GetOutput()->GetLines();	
+	vtkSmartPointer<vtkPoints> points = borderEdges->GetOutput()->GetPoints();
+	{
+		int numBorderEdges = lines->GetNumberOfCells();
+		std::set<int> _tmpBPoints;	
+		for(vtkIdType i = 0; i < numBorderEdges; i++)
+		{			
+			vtkLine* line = vtkLine::SafeDownCast(borderEdges->GetOutput()->GetCell(i));		
+			int numID = line->GetPointIds()->GetNumberOfIds();
+			int id0 = line->GetPointIds()->GetId(0);
+			int id1 = line->GetPointIds()->GetId(1);
+			int oid0 = borderEdges->GetOldIdFromCurrentID(id0);
+			int oid1 = borderEdges->GetOldIdFromCurrentID(id1);
+			_tmpBPoints.insert(oid0);
+			_tmpBPoints.insert(oid1);		
+		}	
+	}	
+	
+	//analyze loops in bouundary edges
+
+	
+	//connect each loop to either graph or another loop, if its shortest path is connecting to graph then merge to graph.
+
+}
+
+
 
 
 vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()

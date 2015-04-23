@@ -175,15 +175,6 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 	std::vector<collisionEdgeInfo> collision_edges;
 	OmMesh mesh;
 	vtkPolydata2OpenMesh(polydata,&mesh );
-
-
-	//create linking holes 
-	//find original border and link with shortest path
-	mesh.
-
-
-
-
 	if (polydata)	
 		LoadToGeodesic(polydata);
 

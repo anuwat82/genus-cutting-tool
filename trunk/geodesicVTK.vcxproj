@@ -156,6 +156,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="customVTK\vtkDijkstraGraphGeodesicPathMultiEndPoints.h" />
     <ClInclude Include="customVTK\vtkFeatureEdgesEx.h" />
     <ClInclude Include="geodesic\geodesic_algorithm_base.h" />
     <ClInclude Include="geodesic\geodesic_algorithm_dijkstra.h" />
@@ -179,6 +180,7 @@
     <ClInclude Include="VTK_Header.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="customVTK\vtkDijkstraGraphGeodesicPathMultiEndPoints.cxx" />
     <ClCompile Include="customVTK\vtkFeatureEdgesEx.cxx" />
     <ClCompile Include="geodesic\geodesic_algorithm_exact.cpp" />
     <ClCompile Include="GIMmodTruncate.cpp" />
