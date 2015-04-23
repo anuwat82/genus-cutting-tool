@@ -16,6 +16,9 @@
     <Filter Include="geodesic">
       <UniqueIdentifier>{c820f6ca-fda5-4902-af23-fc4600e8c1ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="customVTK">
+      <UniqueIdentifier>{ed5bb65a-3c7b-4f8c-bae0-466648fc9f8d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -78,6 +81,9 @@
     <ClInclude Include="GIMmodTruncate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="customVTK\vtkFeatureEdgesEx.h">
+      <Filter>customVTK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -103,6 +109,9 @@
     </ClCompile>
     <ClCompile Include="GIMmodTruncate.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="customVTK\vtkFeatureEdgesEx.cxx">
+      <Filter>customVTK</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
