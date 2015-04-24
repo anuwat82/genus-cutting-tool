@@ -38,7 +38,7 @@
 #include "vtkFiltersCoreModule.h" // For export macro
 #include "vtkFeatureEdges.h"
 
-class VTKFILTERSCORE_EXPORT vtkFeatureEdgesEx : public vtkFeatureEdges
+class VTKFILTERSCORE_NO_EXPORT vtkFeatureEdgesEx : public vtkFeatureEdges
 {
 public:
   vtkTypeMacro(vtkFeatureEdgesEx,vtkFeatureEdges);
