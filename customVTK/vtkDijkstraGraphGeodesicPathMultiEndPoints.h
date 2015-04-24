@@ -38,7 +38,7 @@
 #include "vtkFiltersModelingModule.h" // For export macro
 #include "vtkDijkstraGraphGeodesicPath.h"
 
-class VTKFILTERSMODELING_EXPORT vtkDijkstraGraphGeodesicPathMultiEndPoints :
+class VTKFILTERSMODELING_NO_EXPORT vtkDijkstraGraphGeodesicPathMultiEndPoints :
                            public vtkDijkstraGraphGeodesicPath
 {
 public:
