@@ -1666,7 +1666,12 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 	{
 		
 		edge_pointer _edge = &m_mesh->edges()[eid];
-		
+		if (_edge->is_boundary())
+		{
+			dirArray[eid] = geodesic::Interval::FROM_BOTHFACE;			
+		}
+		else
+		{
 		int id = _edge->id();
 		int edge_vid[2] = {_edge->adjacent_vertices()[0]->id(),_edge->adjacent_vertices()[1]->id()};
 
@@ -1704,6 +1709,7 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 			falseDir = true;
 			
 		dirArray[eid] = test_dir;
+		}
 		if (dirArray[eid] == geodesic::Interval::FROM_BOTHFACE)
 		{
 			#pragma omp critical
@@ -1759,7 +1765,11 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 	for(int eid=0; eid< num_edge; ++eid)
 	{
 		edge_pointer _edge = &m_mesh->edges()[eid];	
-		geodesic::Interval::DirectionType _dir =dirArray[eid];
+		if (_edge->is_boundary())
+		{
+			continue;
+		}
+		geodesic::Interval::DirectionType _dir =dirArray[eid];		
 		if (dirArray[eid] == geodesic::Interval::FROM_FACE_0 || dirArray[eid] == geodesic::Interval::FROM_FACE_1)
 		{
 			//check two edges that adjacent oppsite face 

@@ -63,3 +63,4 @@
 #include <vtkWindowToImageFilter.h>
 #include <vtkPNGWriter.h>
 #include <vtkOBBTree.h>
+#include <vtkPolyDataConnectivityFilter.h>
