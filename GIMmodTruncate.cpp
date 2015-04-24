@@ -190,8 +190,13 @@ void GIMmodTruncate::Process()
 		TruncateGraph(false);
 		firstTruncateDone = true;
 
+		
+
 		ShorthenRings(false);
 		shortenRingsDone = true;
+
+		MergeWithOriginalBoundaries(false);
+		
 		clock_t stop = clock();
 		timeConsumed += (static_cast<double>(stop)-static_cast<double>(start))/CLOCKS_PER_SEC;
 		graph->Modified();
@@ -223,12 +228,18 @@ void GIMmodTruncate::Step()
 			throw;
 		
 		TruncateGraph(true);
+		//RemoveOriginalBoundariesFromGraph();
+		//TruncateGraph(true);
 		firstTruncateDone = true;
 	}
 	else if (!shortenRingsDone)
 	{
 		ShorthenRings(true);
 		shortenRingsDone = true;
+	}
+	else
+	{
+		MergeWithOriginalBoundaries(false);
 	}
 
 
@@ -865,8 +876,6 @@ void GIMmodTruncate::ShorthenRings(bool step)
 		if (pointCheck[vid[0]] && pointCheck[vid[1]])
 			continue;
 
-
-
 		if (graph->GetDegree(vid[0]) == 2 && graph->GetDegree(vid[1]) == 2 ) 
 		{
 			//find start and end vertices of this edges 
@@ -1017,24 +1026,46 @@ void GIMmodTruncate::MergeWithOriginalBoundaries(bool step)
 	borderEdges->NonManifoldEdgesOff();
 	borderEdges->Update();	
 	
-	vtkSmartPointer<vtkCellArray> lines= borderEdges->GetOutput()->GetLines();	
-	vtkSmartPointer<vtkPoints> points = borderEdges->GetOutput()->GetPoints();
-	{
-		int numBorderEdges = lines->GetNumberOfCells();
-		std::set<int> _tmpBPoints;	
-		for(vtkIdType i = 0; i < numBorderEdges; i++)
+	vtkSmartPointer<vtkPolyData> borderPolydata = borderEdges->GetOutput();
+	vtkSmartPointer<vtkCellArray> lines= borderPolydata->GetLines();	
+	vtkSmartPointer<vtkPoints> points = borderPolydata->GetPoints();
+	int numBorderEdges = lines->GetNumberOfCells();
+	if (numBorderEdges == 0) //if no original boundary .... exit		
+		return;
+	
+	vtkSmartPointer<vtkPolyDataConnectivityFilter> connectivityFilter =  vtkSmartPointer<vtkPolyDataConnectivityFilter>::New();
+	connectivityFilter->SetInputData(borderPolydata);
+	connectivityFilter->SetExtractionModeToAllRegions();
+	connectivityFilter->Update();
+
+	int numRegions =  connectivityFilter->GetNumberOfExtractedRegions();
+	return;
+	/*
+
+	vtkSmartPointer<vtkPolyData> process_borderPolydata = vtkSmartPointer<vtkPolyData>::New();
+	process_borderPolydata->DeepCopy(borderPolydata);
+
+	vtkLine* _edge = vtkLine::SafeDownCast(process_borderPolydata->GetCell(0));
+
+	
+	std::set<int> BorderPoints;	
+	std::vector<int> 
+	vtkLine* _edge = vtkLine::SafeDownCast(borderEdges->GetOutput()->GetCell(0));
+	
+	
+		for(vtkIdType i = 1; i < numBorderEdges; i++)
 		{			
 			vtkLine* line = vtkLine::SafeDownCast(borderEdges->GetOutput()->GetCell(i));		
 			int numID = line->GetPointIds()->GetNumberOfIds();
-			int id0 = line->GetPointIds()->GetId(0);
-			int id1 = line->GetPointIds()->GetId(1);
-			int oid0 = borderEdges->GetOldIdFromCurrentID(id0);
-			int oid1 = borderEdges->GetOldIdFromCurrentID(id1);
-			_tmpBPoints.insert(oid0);
-			_tmpBPoints.insert(oid1);		
+			vtkIdType id0 = line->GetPointIds()->GetId(0);
+			vtkIdType id1 = line->GetPointIds()->GetId(1);
+			vtkIdType oid0 = borderEdges->GetOldIdFromCurrentID(id0);
+			vtkIdType oid1 = borderEdges->GetOldIdFromCurrentID(id1);
+			BorderPoints.insert(oid0);
+			BorderPoints.insert(oid1);		
 		}	
-	}	
-	
+		
+	*/
 	//analyze loops in bouundary edges
 
 	
@@ -1180,4 +1211,40 @@ vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()
 
 	*/
 	return output;
+}
+
+
+void GIMmodTruncate::RemoveOriginalBoundariesFromGraph()
+{
+	//find border points/edges
+	vtkSmartPointer<vtkFeatureEdgesEx> borderEdges = vtkSmartPointer<vtkFeatureEdgesEx>::New();
+	borderEdges->SetInputData(original_polydata);
+	borderEdges->FeatureEdgesOff();
+	borderEdges->BoundaryEdgesOn();
+	borderEdges->ManifoldEdgesOff();
+	borderEdges->NonManifoldEdgesOff();
+	borderEdges->Update();	
+	
+	vtkSmartPointer<vtkPolyData> borderPolydata = borderEdges->GetOutput();
+	vtkSmartPointer<vtkCellArray> lines= borderPolydata->GetLines();	
+	vtkSmartPointer<vtkPoints> points = borderPolydata->GetPoints();
+	int numBorderEdges = lines->GetNumberOfCells();
+	if (numBorderEdges == 0) //if no original boundary .... exit		
+		return;
+	for(vtkIdType i = 1; i < numBorderEdges; i++)
+	{			
+		vtkLine* line = vtkLine::SafeDownCast(borderEdges->GetOutput()->GetCell(i));		
+		int numID = line->GetPointIds()->GetNumberOfIds();
+		vtkIdType id0 = line->GetPointIds()->GetId(0);
+		vtkIdType id1 = line->GetPointIds()->GetId(1);
+		vtkIdType oid0 = borderEdges->GetOldIdFromCurrentID(id0);
+		vtkIdType oid1 = borderEdges->GetOldIdFromCurrentID(id1);
+
+		vtkIdType edgeID =  graph->GetEdgeId(oid0,oid1);
+		if (edgeID = 0 )
+		{
+			graph->RemoveEdge(edgeID);
+		}
+		
+	}
 }

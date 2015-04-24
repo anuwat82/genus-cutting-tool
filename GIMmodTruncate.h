@@ -79,6 +79,8 @@ protected:
 
 	void ShorthenRings(bool step);
 	void MergeWithOriginalBoundaries(bool step);
+	void RemoveOriginalBoundariesFromGraph();
+
 
 	void TagSurroundGraphFaceEdges(vtkSmartPointer<vtkMutableUndirectedGraph> collision_graph);// tag surrond edges of face that adjacent on an edge in graph
 	void TagSurroundGraphVertexEdges(vtkSmartPointer<vtkMutableUndirectedGraph> collision_graph,int level);  // tag surrond edges of face around a vertex in graph
