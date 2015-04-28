@@ -36,13 +36,13 @@ vtkStandardNewMacro(vtkFeatureEdgesEx);
 // manifold edges, are extracted and colored.
 vtkFeatureEdgesEx::vtkFeatureEdgesEx()
 {
-	this->oldIdList = NULL;
-	oldIdList = vtkIdList::New();
+	this->OldIdList = NULL;
+	OldIdList = vtkIdList::New();
 }
 
 vtkFeatureEdgesEx::~vtkFeatureEdgesEx()
 {
-	oldIdList->Delete();
+	OldIdList->Delete();
 }
 
 // Generate feature edges for mesh
@@ -322,13 +322,13 @@ int vtkFeatureEdgesEx::RequestData(
       if ( this->Locator->InsertUniquePoint(x1, lineIds[0]) )
         {
         outPD->CopyData (pd,p1,lineIds[0]);
-		oldIdList->InsertUniqueId (p1);
+		OldIdList->InsertUniqueId (p1);
         }
 
       if ( this->Locator->InsertUniquePoint(x2, lineIds[1]) )
         {
         outPD->CopyData (pd,p2,lineIds[1]);
-		oldIdList->InsertUniqueId (p2);
+		OldIdList->InsertUniqueId (p2);
         }
 
       newId = newLines->InsertNextCell(2,lineIds);
@@ -373,5 +373,5 @@ int vtkFeatureEdgesEx::RequestData(
 
 vtkIdType vtkFeatureEdgesEx::GetOldIdFromCurrentID(vtkIdType currentID)
 {
-	return oldIdList->GetId(currentID);
+	return OldIdList->GetId(currentID);
 }

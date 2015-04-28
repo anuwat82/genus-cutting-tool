@@ -47,13 +47,14 @@ public:
   // and colored.
   static vtkFeatureEdgesEx *New();
   vtkIdType GetOldIdFromCurrentID(vtkIdType currentID);
+  vtkGetMacro(OldIdList,vtkIdList *);
 protected:
   vtkFeatureEdgesEx();
   ~vtkFeatureEdgesEx();
   int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
   
 
-  vtkIdList *oldIdList;
+  vtkIdList *OldIdList;
 private:
   vtkFeatureEdgesEx(const vtkFeatureEdgesEx&);  // Not implemented.
   void operator=(const vtkFeatureEdgesEx&);  // Not implemented.
