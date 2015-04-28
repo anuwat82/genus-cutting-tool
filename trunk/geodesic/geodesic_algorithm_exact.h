@@ -44,6 +44,8 @@ public:
 	void trace_back_interval(	interval_pointer destination,		//trace back piecewise-linear edge path
 								std::vector<edge_pointer>& edge_path, int level = 0);
 
+	bool checkPseudoSourceFromSameEdge(edge_pointer destination, edge_pointer ps_edge);
+
 	unsigned best_source(SurfacePoint& point,			//quickly find what source this point belongs to and what is the distance to this source
 		double& best_source_distance); 
 

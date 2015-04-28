@@ -1434,6 +1434,32 @@ void GeodesicAlgorithmExact::trace_back_interval(	interval_pointer destination,	
 	}
 }
 
+bool GeodesicAlgorithmExact::checkPseudoSourceFromSameEdge(edge_pointer destination, edge_pointer ps_edge)
+{
+	list_pointer list = interval_list(destination);
+	interval_pointer p = list->first();
+	
+	
+	if (p->visible_from_source())
+		return false;
+	
+	std::vector<edge_pointer> path(2) ;
+	trace_back_interval(p,path,2);
+
+	if (path[1] != ps_edge)
+		return false;
+	
+	while (p->next() != NULL)
+	{
+		p = p->next();
+		trace_back_interval(p,path,2);
+		if (path[1] != ps_edge)
+			return false;
+	}
+	
+	return true;
+}
+
 
 void GeodesicAlgorithmExact::print_statistics()
 {
@@ -1672,43 +1698,44 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 		}
 		else
 		{
-		int id = _edge->id();
-		int edge_vid[2] = {_edge->adjacent_vertices()[0]->id(),_edge->adjacent_vertices()[1]->id()};
+#if 0
+			int id = _edge->id();
+			int edge_vid[2] = {_edge->adjacent_vertices()[0]->id(),_edge->adjacent_vertices()[1]->id()};
 
-		list_pointer list = interval_list(_edge);
-		interval_pointer p = list->first();
+			list_pointer list = interval_list(_edge);
+			interval_pointer p = list->first();
 
 		
-		double d = 0;
-		geodesic::Interval::DirectionType _dir =  p->direction();
-		//dirArray[eid] = _dir;
-		assert(p->d() < GEODESIC_INF);
-		if (_dir == geodesic::Interval::FROM_FACE_0 || _dir == geodesic::Interval::FROM_FACE_1)
-		{
-			while(p->next())
+			double d = 0;
+			geodesic::Interval::DirectionType _dir =  p->direction();
+			//dirArray[eid] = _dir;
+			assert(p->d() < GEODESIC_INF);
+			if (_dir == geodesic::Interval::FROM_FACE_0 || _dir == geodesic::Interval::FROM_FACE_1)
 			{
-				
-				assert(p->stop() == p->next()->start());
-							
-				p = p->next();
-				assert(p->d() < GEODESIC_INF);
-				if (p->direction() != _dir /*&& dirArray[eid] != geodesic::Interval::FROM_BOTHFACE*/) 
+				while(p->next())
 				{
-					//m_collisionTwoPathEdges.push_back(_edge);
-					//p->edge()->source_collision() = 2;
-					_dir = geodesic::Interval::FROM_BOTHFACE;		
-					break;
-				}				
+				
+					assert(p->stop() == p->next()->start());
+							
+					p = p->next();
+					assert(p->d() < GEODESIC_INF);
+					if (p->direction() != _dir /*&& dirArray[eid] != geodesic::Interval::FROM_BOTHFACE*/) 
+					{
+						//m_collisionTwoPathEdges.push_back(_edge);
+						//p->edge()->source_collision() = 2;
+						_dir = geodesic::Interval::FROM_BOTHFACE;		
+						break;
+					}				
+				}
 			}
-		}
-		
-		geodesic::Interval::DirectionType test_dir = get_edge_source_direction(_edge);
-		
-		bool falseDir = false;
-		if (test_dir != _dir)
-			falseDir = true;
-			
-		dirArray[eid] = test_dir;
+#endif		
+			geodesic::Interval::DirectionType test_dir = get_edge_source_direction(_edge);
+			/*
+			bool falseDir = false;
+			if (test_dir != _dir)
+				falseDir = true;
+			*/
+			dirArray[eid] = test_dir;
 		}
 		if (dirArray[eid] == geodesic::Interval::FROM_BOTHFACE)
 		{
