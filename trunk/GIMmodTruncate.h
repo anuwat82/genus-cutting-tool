@@ -58,6 +58,7 @@ protected:
 	bool seedRemoved;
 	bool allFaceRemoved;
 	bool firstTruncateDone;
+	bool removePathsBetweenBoundariesFromGraph;
 	bool shortenRingsDone;
 	bool largestGraphDone;
 	double timeConsumed;

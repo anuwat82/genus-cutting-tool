@@ -8,6 +8,7 @@ GIMmodTruncate::GIMmodTruncate(void)
 	allFaceRemoved =false;
 	firstTruncateDone = false;
 	shortenRingsDone = false;
+	removePathsBetweenBoundariesFromGraph = false;
 	timeConsumed = 0;
 }
 
@@ -191,6 +192,7 @@ void GIMmodTruncate::Process()
 		firstTruncateDone = true;
 
 		RemoveOriginalBoundariesFromGraph();
+		removePathsBetweenBoundariesFromGraph = true;
 
 		ShorthenRings(false);
 		shortenRingsDone = true;
@@ -227,10 +229,13 @@ void GIMmodTruncate::Step()
 		if (candidate_nonTagEdges.size() > 0 || candidate_TagEdges.size() > 0)
 			throw;
 		
-		TruncateGraph(true);
-		//RemoveOriginalBoundariesFromGraph();
-		//TruncateGraph(true);
+		TruncateGraph(true);		
 		firstTruncateDone = true;
+	}
+	else if (!removePathsBetweenBoundariesFromGraph)
+	{
+		RemoveOriginalBoundariesFromGraph();
+		removePathsBetweenBoundariesFromGraph = true;
 	}
 	else if (!shortenRingsDone)
 	{
@@ -965,7 +970,7 @@ void GIMmodTruncate::ShorthenRings(bool step)
 
 	for (int v = 0; v < graph->GetNumberOfVertices(); v++)
 	{
-		if (graph->GetDegree(v) == 2)
+		if (graph->GetDegree(v) == 2 && boundaryPoints->IsId(v) ==-1 )
 		{				
 			vtkSmartPointer<vtkAdjacentVertexIterator> adjacent =vtkSmartPointer<vtkAdjacentVertexIterator>::New();
 			graph->GetAdjacentVertices(v,adjacent);
