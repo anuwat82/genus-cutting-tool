@@ -98,7 +98,7 @@ private:
 	interval_pointer best_max_interval_ofEdge(edge_pointer edge, 
 											  double& best_total_distance);
 	bool check_stop_conditions(unsigned& index);
-	void compute_collision_edges();
+	//void compute_collision_edges();
 	void compute_collision_edges2();
 	void clear()
 	{

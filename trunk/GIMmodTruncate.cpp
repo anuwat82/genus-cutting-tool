@@ -190,12 +190,12 @@ void GIMmodTruncate::Process()
 		TruncateGraph(false);
 		firstTruncateDone = true;
 
-		
+		RemoveOriginalBoundariesFromGraph();
 
 		ShorthenRings(false);
 		shortenRingsDone = true;
 
-		MergeWithOriginalBoundaries(false);
+		//MergeWithOriginalBoundaries(false);
 		
 		clock_t stop = clock();
 		timeConsumed += (static_cast<double>(stop)-static_cast<double>(start))/CLOCKS_PER_SEC;
@@ -878,6 +878,11 @@ void GIMmodTruncate::ShorthenRings(bool step)
 
 		if (graph->GetDegree(vid[0]) == 2 && graph->GetDegree(vid[1]) == 2 ) 
 		{
+			if (boundaryPoints->IsId(vid[0]) >= 0 && boundaryPoints->IsId(vid[1]) >= 0)
+			{
+				
+				continue;
+			}
 			//find start and end vertices of this edges 
 			vtkIdType endofpathvid[2] ;
 			vtkIdType prev_endofpathvid[2];
@@ -907,8 +912,7 @@ void GIMmodTruncate::ShorthenRings(bool step)
 		}
 	}
 
-	vtkSmartPointer<vtkMutableUndirectedGraph> orignal_graph = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
-	orignal_graph->DeepCopy(graph);
+	
 
 	for (int i = 0; i < edgepaths.size(); i++)
 	{
@@ -1228,23 +1232,116 @@ void GIMmodTruncate::RemoveOriginalBoundariesFromGraph()
 	vtkSmartPointer<vtkPolyData> borderPolydata = borderEdges->GetOutput();
 	vtkSmartPointer<vtkCellArray> lines= borderPolydata->GetLines();	
 	vtkSmartPointer<vtkPoints> points = borderPolydata->GetPoints();
+	vtkIdList *borderPointID = borderEdges->GetOldIdList();
+	boundaryPoints = vtkSmartPointer<vtkIdList>::New();
+	boundaryPoints->DeepCopy(borderPointID);
 	int numBorderEdges = lines->GetNumberOfCells();
+	int numBorderVertices = points->GetNumberOfPoints();
 	if (numBorderEdges == 0) //if no original boundary .... exit		
 		return;
-	for(vtkIdType i = 1; i < numBorderEdges; i++)
+	for(vtkIdType i = 0; i < numBorderVertices; i++)
 	{			
-		vtkLine* line = vtkLine::SafeDownCast(borderEdges->GetOutput()->GetCell(i));		
-		int numID = line->GetPointIds()->GetNumberOfIds();
-		vtkIdType id0 = line->GetPointIds()->GetId(0);
-		vtkIdType id1 = line->GetPointIds()->GetId(1);
-		vtkIdType oid0 = borderEdges->GetOldIdFromCurrentID(id0);
-		vtkIdType oid1 = borderEdges->GetOldIdFromCurrentID(id1);
-
-		vtkIdType edgeID =  graph->GetEdgeId(oid0,oid1);
-		if (edgeID = 0 )
+		vtkIdType old_id = borderEdges->GetOldIdFromCurrentID(i);
+		int inDegree =  graph->GetInDegree(old_id) ;
+		if (inDegree >= 3)
 		{
-			graph->RemoveEdge(edgeID);
+			//search for end point is not boundary points
+			for (int iter_i = 0; iter_i < inDegree ; iter_i++)
+			{
+				vtkInEdgeType in_e = graph->GetInEdge(old_id, iter_i);
+				if (borderPointID->IsId(in_e.Source) == -1)
+				{
+					//end point is not boundary point
+
+					//temp remove that edge
+					int numGraphPoint = graph->GetNumberOfVertices();
+					graph->RemoveEdge(in_e.Id);
+					
+
+					vtkSmartPointer<vtkBoostBreadthFirstSearch> bfs = vtkSmartPointer<vtkBoostBreadthFirstSearch>::New();
+					bfs->SetInputData(graph);				
+					bfs->SetOriginVertex(old_id);
+					bfs->Update();
+					vtkIntArray *bfsArray = vtkIntArray::SafeDownCast(bfs->GetOutput()->GetVertexData()->GetArray("BFS"));
+					
+					int value = bfsArray->GetValue(in_e.Source);
+					if (value == VTK_INT_MAX)
+					{
+						/*
+						//unconnected , safe to remove
+						//remove a boundary edge around this point
+						int _inDegree =  graph->GetInDegree(old_id);
+						for (int _iter_i = 0; _iter_i < _inDegree ; _iter_i++)
+						{
+							vtkInEdgeType _in_e = graph->GetInEdge(old_id, _iter_i);
+							if (borderPointID->IsId(_in_e.Source) >= 0)
+							{
+								graph->RemoveEdge(_in_e.Id);
+								break;
+							}
+						}
+						*/
+						break;
+					}
+					else
+					{
+						//not safe to remove 
+						//restore edge
+						graph->AddEdge(old_id,in_e.Source);
+					}
+					
+					
+
+
+				}
+				else if (graph->GetInDegree(in_e.Source) >= 3)
+				{
+					//if end point is boundary point  that have valence 3
+					//test for remove
+
+
+					//temp remove that edge
+					int numGraphPoint = graph->GetNumberOfVertices();
+					graph->RemoveEdge(in_e.Id);
+					
+
+					vtkSmartPointer<vtkBoostBreadthFirstSearch> bfs = vtkSmartPointer<vtkBoostBreadthFirstSearch>::New();
+					bfs->SetInputData(graph);				
+					bfs->SetOriginVertex(old_id);
+					bfs->Update();
+					vtkIntArray *bfsArray = vtkIntArray::SafeDownCast(bfs->GetOutput()->GetVertexData()->GetArray("BFS"));
+					
+					int value = bfsArray->GetValue(in_e.Source);
+					if (value == VTK_INT_MAX)
+					{
+						//unconnected , safe to remove
+						//remove a boundary edge around this point
+						/*
+						int _inDegree =  graph->GetInDegree(old_id);
+						for (int _iter_i = 0; _iter_i < _inDegree ; _iter_i++)
+						{
+							vtkInEdgeType _in_e = graph->GetInEdge(old_id, _iter_i);
+							if (borderPointID->IsId(_in_e.Source) >= 0)
+							{
+								graph->RemoveEdge(_in_e.Id);
+								break;
+							}
+						}
+						*/
+						break;
+					}
+					else
+					{
+						//not safe to remove 
+						//restore edge
+						graph->AddEdge(old_id,in_e.Source);
+					}
+
+				}
+
+			}
 		}
-		
 	}
+
+	TruncateGraph(false);
 }

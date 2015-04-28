@@ -50,6 +50,7 @@ public:
 protected:
 	vtkWeakPointer<vtkPolyData> polydata;
 	vtkSmartPointer<vtkPolyData> original_polydata;
+	vtkSmartPointer<vtkIdList> boundaryPoints;
 	geodesic::GeodesicAlgorithmExact *geodesicExact;
 	OmMesh mesh;
 	vtkSmartPointer<vtkMutableUndirectedGraph> graph;

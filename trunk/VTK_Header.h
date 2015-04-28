@@ -64,3 +64,6 @@
 #include <vtkPNGWriter.h>
 #include <vtkOBBTree.h>
 #include <vtkPolyDataConnectivityFilter.h>
+#include <vtkPoints.h>
+#include <vtkTree.h>
+#include <vtkTreeBFSIterator.h>

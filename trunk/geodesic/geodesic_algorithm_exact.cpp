@@ -1443,21 +1443,21 @@ bool GeodesicAlgorithmExact::checkPseudoSourceFromSameEdge(edge_pointer destinat
 	if (p->visible_from_source())
 		return false;
 	
-	std::vector<edge_pointer> path(2) ;
+	std::vector<edge_pointer> path ;
 	trace_back_interval(p,path,2);
 
-	if (path[1] != ps_edge)
-		return false;
+	if (path[1] == ps_edge)
+		return true;
 	
 	while (p->next() != NULL)
 	{
 		p = p->next();
 		trace_back_interval(p,path,2);
-		if (path[1] != ps_edge)
-			return false;
+		if (path[1] == ps_edge)
+			return true;
 	}
 	
-	return true;
+	return false;
 }
 
 
@@ -1482,7 +1482,7 @@ void GeodesicAlgorithmExact::print_statistics()
 	std::cout << "maximum interval queue size is " << m_queue_max_size << std::endl;
 	std::cout << "number of interval propagations is " << m_iterations << std::endl;
 }
-
+#if 0
 void GeodesicAlgorithmExact::compute_collision_edges()
 {
 	//anuwat
@@ -1678,6 +1678,8 @@ void GeodesicAlgorithmExact::compute_collision_edges()
 #endif
 }
 
+#endif
+
 
 
 void GeodesicAlgorithmExact::compute_collision_edges2()
@@ -1698,43 +1700,7 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 		}
 		else
 		{
-#if 0
-			int id = _edge->id();
-			int edge_vid[2] = {_edge->adjacent_vertices()[0]->id(),_edge->adjacent_vertices()[1]->id()};
-
-			list_pointer list = interval_list(_edge);
-			interval_pointer p = list->first();
-
-		
-			double d = 0;
-			geodesic::Interval::DirectionType _dir =  p->direction();
-			//dirArray[eid] = _dir;
-			assert(p->d() < GEODESIC_INF);
-			if (_dir == geodesic::Interval::FROM_FACE_0 || _dir == geodesic::Interval::FROM_FACE_1)
-			{
-				while(p->next())
-				{
-				
-					assert(p->stop() == p->next()->start());
-							
-					p = p->next();
-					assert(p->d() < GEODESIC_INF);
-					if (p->direction() != _dir /*&& dirArray[eid] != geodesic::Interval::FROM_BOTHFACE*/) 
-					{
-						//m_collisionTwoPathEdges.push_back(_edge);
-						//p->edge()->source_collision() = 2;
-						_dir = geodesic::Interval::FROM_BOTHFACE;		
-						break;
-					}				
-				}
-			}
-#endif		
-			geodesic::Interval::DirectionType test_dir = get_edge_source_direction(_edge);
-			/*
-			bool falseDir = false;
-			if (test_dir != _dir)
-				falseDir = true;
-			*/
+			geodesic::Interval::DirectionType test_dir = get_edge_source_direction(_edge);		
 			dirArray[eid] = test_dir;
 		}
 		if (dirArray[eid] == geodesic::Interval::FROM_BOTHFACE)
@@ -1744,49 +1710,11 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 				m_collisionTwoPathEdges.push_back(_edge);
 				_edge->source_collision() = 2;
 			}			
-		}
-		/*
-		//test ... 
-		if (dirArray[eid]  == geodesic::Interval::FROM_FACE_0 || dirArray[eid]  == geodesic::Interval::FROM_FACE_1)
-		{
-			int fromFaceID = -1 ;
-			geodesic::Interval::DirectionType thisDir =  dirArray[eid];
-			if (dirArray[eid]  == geodesic::Interval::FROM_FACE_0 )
-				fromFaceID = _edge->adjacent_faces()[0]->id();
-			else
-				fromFaceID = _edge->adjacent_faces()[1]->id();
-
-			std::vector<edge_pointer> edges_path ;
-			trace_back_edge(_edge,edges_path,2);
-			int id_edge0[2] = {edges_path[0]->v0()->id(),edges_path[0]->v1()->id()};
-			if (edges_path[0] == _edge)
-			{
-				bool found = false;
-				int id_edge1[2] = {edges_path[1]->v0()->id(),edges_path[1]->v1()->id()};
-				int faceSize = edges_path[1]->adjacent_faces().size();
-				for (int i = 0 ; i < edges_path[1]->adjacent_faces().size() ; i++)
-				{
-					if (edges_path[1]->adjacent_faces()[i]->id() == fromFaceID)
-					{
-						found = true;
-					}
-				}
-
-				if (!found)
-				{
-					list_pointer list = interval_list(_edge);
-					interval_pointer p = list->first();
-					int aaa = 0;
-				}
-				
-			}
-			
-		}
-		*/
+		}		
 	}
 
 	//each edge check for edge collision
-#if 1	
+	
 	std::vector<Face>& faceArray = m_mesh->faces();
 #pragma omp parallel for
 	for(int eid=0; eid< num_edge; ++eid)
@@ -1814,13 +1742,14 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 				int id_adjOF_edge[2] = {adjOF_edge->v0()->id(),adjOF_edge->v1()->id()};
 				if (adjOF_edge != _edge && dirArray[adjOF_edge->id()] != geodesic::Interval::FROM_BOTHFACE)
 				{
+					
 					std::vector<edge_pointer> adjedges_path ;
-					trace_back_edge(adjOF_edge,adjedges_path,3);
-					if (adjedges_path.size() == 3)
+					trace_back_edge(adjOF_edge,adjedges_path,2);
+					if (adjedges_path.size() == 2)
 					{
 						if (adjedges_path[0] == adjOF_edge)
 						{
-							int id_edge1[2] = {adjedges_path[1]->v0()->id(),adjedges_path[1]->v1()->id()};
+							//int id_edge1[2] = {adjedges_path[1]->v0()->id(),adjedges_path[1]->v1()->id()};
 							if (adjedges_path[1] != _edge)
 							{
 								cost++;
@@ -1831,7 +1760,8 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 					else
 					{
 						//throw;
-					}
+					}					
+				
 				}
 				else
 				{
@@ -1846,197 +1776,12 @@ void GeodesicAlgorithmExact::compute_collision_edges2()
 					_edge->source_collision() = 1;
 				}
 			}
-#if 0
-			//adjust triangle collision in face
-			for (unsigned int adjF = 0 ; adjF < _edge->adjacent_faces().size(); adjF++)
-			{
-				face_pointer Face = _edge->adjacent_faces()[adjF];
-
-				if (Face->adjacent_edges()[0]->source_collision() &&
-					Face->adjacent_edges()[1]->source_collision() &&
-					Face->adjacent_edges()[2]->source_collision())
-				{
-					//remove one of them
-					//remove minimum distance but keep FROM_BOTHFACE tag
 	
-					double D = -GEODESIC_INF ;
-					double Dsub = -GEODESIC_INF;//in case of has two FROM_BOTHFACE tag
-					edge_pointer remove_edge = NULL;
-					edge_pointer remove_edge_substitute = NULL; //in case of has two FROM_BOTHFACE tag
-					for(unsigned int adj_eid=0; adj_eid< 3; ++adj_eid)
-					{
-						edge_pointer adj_edge = Face->adjacent_edges()[adj_eid];
-						geodesic::Interval::DirectionType dir = dirArray[adj_edge->id()];
-						int id = adj_edge->id();
-						int id_adj_edge[2] = {adj_edge->v0()->id(),adj_edge->v1()->id()};
-						if (dir != geodesic::Interval::FROM_BOTHFACE)
-						{
-							int fromFaceID = (dir == geodesic::Interval::FROM_FACE_0) ? adj_edge->adjacent_faces()[0]->id(): adj_edge->adjacent_faces()[1]->id();
-							// we skip edge that face source is same as considering face
-							// if direction source is not from this consider face
-							if (fromFaceID != Face->id())
-							{
-								double best_total_distance ;
-								interval_pointer interval = NULL;
-								interval = best_max_interval_ofEdge(adj_edge,best_total_distance);
-								
-								/*
-								SurfacePoint  EdgePoint(adjOF_edge);//from middle
-								double best_total_distance;
-								double best_interval_position;
-								unsigned int best_source_index;
-								best_first_interval(EdgePoint, best_total_distance, 
-															   best_interval_position, 
-															   best_source_index);
-								*/
-								if (best_total_distance > D && best_total_distance < GEODESIC_INF )
-								{
-									D = best_total_distance;
-									remove_edge = adj_edge;
-								}
-							}
-							else
-							{
-								double best_total_distance ;
-								interval_pointer interval = NULL;
-								interval = best_max_interval_ofEdge(adj_edge,best_total_distance);
-								/*
-								SurfacePoint  EdgePoint(adj_edge);//from middle
-								double best_total_distance;
-								double best_interval_position;
-								unsigned int best_source_index;
-								best_first_interval(EdgePoint, best_total_distance, 
-															   best_interval_position, 
-															   best_source_index);
-								*/
-								if (best_total_distance > Dsub && best_total_distance < GEODESIC_INF )
-								{
-									Dsub= best_total_distance;
-									remove_edge_substitute = adj_edge;
-								}
-							}
-						}
-					}
-
-					if (remove_edge == NULL )
-						remove_edge = remove_edge_substitute; //use substitute
-					if (remove_edge)
-					{
-						std::vector<edge_pointer>::iterator it = std::find(m_collisionTwoPathEdges.begin(), m_collisionTwoPathEdges.end(), remove_edge);
-						if (it != m_collisionTwoPathEdges.end())
-						{
-							m_collisionTwoPathEdges.erase(it);
-							remove_edge->source_collision() = 0;
-						}
-						else
-						{
-							//should not happen.
-							//not found remove_edge in record?
-							throw;
-
-						}
-					}
-					else
-					{					
-						
-						//should not happen.
-						//all 3 edges are FROM_BOTHFACE tags ?
-						//throw;						
-					}				 
-				}
-			}	//End adjust triangle tag
-
-#endif	
 		}
 	} //End - for(int eid=0; eid< num_edge; ++eid)
-#endif
 
-#if 0
-	//check for two FROM_BOTHFACE tag triangle face edges
-	//check from m_collisionTwoPathEdges because we only consider edge with collision tag only. (to speed up)
-	std::vector<edge_pointer> removeEdges ;
-	for (std::vector<edge_pointer>::iterator it = m_collisionTwoPathEdges.begin(); it != m_collisionTwoPathEdges.end(); it++)
-	{
-		for (int adjF = 0 ; adjF < (*it)->adjacent_faces().size() ; adjF++)
-		{
-			face_pointer Face =(*it)->adjacent_faces()[adjF];
-			int numFROM_BOTHFACEtag = 0;
-			for (int adjE = 0 ; adjE < Face->adjacent_edges().size() ; adjE++)
-			{
-				if (Face->adjacent_edges()[adjE]->source_collision() == 2 ) //or check from dir[] tag  
-				{
-					numFROM_BOTHFACEtag++;
-				}
-			}
 
-			if (numFROM_BOTHFACEtag>=3)
-			{
-				//impossible 
-				throw;
-			}
 
-			if (numFROM_BOTHFACEtag == 2)
-			{
-				//we remove one of edge from FROM_BOTHFACE tag
-				double minDistance = GEODESIC_INF;
-				edge_pointer remove_edge = NULL;
-				for (int adjE = 0 ; adjE < Face->adjacent_edges().size() ; adjE++)
-				{
-					if (Face->adjacent_edges()[adjE]->source_collision() == 2 ) //or check from dir[] tag
-					{
-						//remove min distance edge
-						double best_distance;
-						best_min_interval_ofEdge(Face->adjacent_edges()[adjE],best_distance);
-						if (best_distance < minDistance)
-						{
-							minDistance = best_distance;
-							remove_edge = Face->adjacent_edges()[adjE];
-						}
-					}
-				}
-
-				if (remove_edge)
-				{
-					remove_edge->source_collision() = -1; //to prevent redundant check 
-					//store first
-					removeEdges.push_back(remove_edge);					
-				}
-				else
-				{
-					//should not happen.
-					throw;
-				}
-			}
-		} //End - for (int adjF = 0 ; adjF < (*it)->adjacent_faces()
-	} // End -for (std::vector<edge_pointer>::iterator it ...
-	
-	//remove edges 
-	// For debug purpose .... we create special source_collision() value -1 as former FROM_BOTHFACE that have been removed 
-	// we move these edge to end of vector
-	
-	for (std::vector<edge_pointer>::iterator remove_edge_it = removeEdges.begin() ; remove_edge_it != removeEdges.end(); remove_edge_it++)
-	{
-		
-			std::vector<edge_pointer>::iterator it = std::find(m_collisionTwoPathEdges.begin(), m_collisionTwoPathEdges.end(), *remove_edge_it);
-			if (it != m_collisionTwoPathEdges.end())
-			{
-				//move to end
-				m_collisionTwoPathEdges.erase(it);  // to remove 
-				m_collisionTwoPathEdges.push_back(*remove_edge_it);				
-				(*remove_edge_it)->source_collision() = -1;
-			}
-			else
-			{
-				//should not happen.
-				//not found remove_edge in record?
-				throw;
-
-			}
-		
-	}
-	
-	
-#endif 
 }
 
 
