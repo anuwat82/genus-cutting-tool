@@ -29,24 +29,28 @@
 #include "vtkPolyData.h"
 
 
-vtkStandardNewMacro(vtkDijkstraGraphGeodesicPathMultiEndPoints);
+vtkStandardNewMacro(vtkDijkstraGraphGeodesicPathMultiStartEndPoints);
 
 // Construct object with feature angle = 30; all types of edges, except
 // manifold edges, are extracted and colored.
-vtkDijkstraGraphGeodesicPathMultiEndPoints::vtkDijkstraGraphGeodesicPathMultiEndPoints()
+vtkDijkstraGraphGeodesicPathMultiStartEndPoints::vtkDijkstraGraphGeodesicPathMultiStartEndPoints()
 {
 	this->EndPointsIdList = NULL;
 	EndPointsIdList = vtkIdList::New();
+
+	this->StartPointsIdList = NULL;
+	StartPointsIdList = vtkIdList::New();
 }
 
-vtkDijkstraGraphGeodesicPathMultiEndPoints::~vtkDijkstraGraphGeodesicPathMultiEndPoints()
+vtkDijkstraGraphGeodesicPathMultiStartEndPoints::~vtkDijkstraGraphGeodesicPathMultiStartEndPoints()
 {
 	EndPointsIdList->Delete();
+	StartPointsIdList->Delete();
 }
 
 
 //----------------------------------------------------------------------------
-int vtkDijkstraGraphGeodesicPathMultiEndPoints::RequestData(
+int vtkDijkstraGraphGeodesicPathMultiStartEndPoints::RequestData(
   vtkInformation *           vtkNotUsed( request ),
   vtkInformationVector **    inputVector,
   vtkInformationVector *     outputVector)
@@ -82,14 +86,14 @@ int vtkDijkstraGraphGeodesicPathMultiEndPoints::RequestData(
     return 0;
     }
 
-  this->ShortestPath( input, this->StartVertex, this->EndPointsIdList );
-  this->TraceShortestPath( input, output, this->StartVertex, this->EndVertex );
+  this->ShortestPath( input, this->StartPointsIdList, this->EndPointsIdList );
+  this->TraceShortestPath( input, output, this->StartPointsIdList, this->EndVertex );
   return 1;
 }
 
 
-void vtkDijkstraGraphGeodesicPathMultiEndPoints::ShortestPath( vtkDataSet *inData,
-                                                int startv, vtkIdList *EndPointsIdList )
+void vtkDijkstraGraphGeodesicPathMultiStartEndPoints::ShortestPath( vtkDataSet *inData,
+                                                 vtkIdList * _startPointsIdList, vtkIdList *_endPointsIdList )
 {
   int u, v;
 
@@ -101,19 +105,21 @@ void vtkDijkstraGraphGeodesicPathMultiEndPoints::ShortestPath( vtkDataSet *inDat
       {
         double* pt = this->RepelVertices->GetPoint( i );
         u = inData->FindPoint( pt );
-		if ( u < 0 || u == startv || EndPointsIdList->IsId(u) >= 0 )
+		if ( u < 0 || _startPointsIdList->IsId(u) >=0  || _endPointsIdList->IsId(u) >= 0 )
           {
           continue;
           }
         this->Internals->BlockedVertices[u] = true;
       }
     }
+  for (int i = 0 ; i < _startPointsIdList->GetNumberOfIds() ; i++)
+  {
+	  int  _startV = _startPointsIdList->GetId(i);
+	  this->Internals->CumulativeWeights[_startV] = 0;
 
-  this->Internals->CumulativeWeights[startv] = 0;
-
-  this->Internals->HeapInsert(startv);
-  this->Internals->OpenVertices[startv] = true;
-
+	  this->Internals->HeapInsert(_startV);
+	  this->Internals->OpenVertices[_startV] = true;
+  }
   bool stop = false;
   while ((u = this->Internals->HeapExtractMin()) >= 0 && !stop)
     {
@@ -122,7 +128,7 @@ void vtkDijkstraGraphGeodesicPathMultiEndPoints::ShortestPath( vtkDataSet *inDat
     // remove u from OpenVertices
     this->Internals->OpenVertices[u] = false;
 
-    if ( EndPointsIdList->IsId(u) >= 0  && this->StopWhenEndReached)
+    if ( _endPointsIdList->IsId(u) >= 0  && this->StopWhenEndReached)
       {
       stop = true;
 	  this->EndVertex = u; //store endpoint id to EndVertex
@@ -170,3 +176,41 @@ void vtkDijkstraGraphGeodesicPathMultiEndPoints::ShortestPath( vtkDataSet *inDat
     }
 }
 
+void vtkDijkstraGraphGeodesicPathMultiStartEndPoints::TraceShortestPath( vtkDataSet* inData, vtkPolyData* outPoly,
+                vtkIdList * _startPointsIdList, vtkIdType endv)
+{
+	{
+  vtkPoints   *points = vtkPoints::New();
+  vtkCellArray *lines = vtkCellArray::New();
+
+  // n is far to many. Adjusted later
+  lines->InsertNextCell(this->NumberOfVertices);
+
+  // trace backward
+  int v = endv;
+  double pt[3];
+  vtkIdType id;
+  while ( _startPointsIdList->IsId(v) == -1)
+    {
+    IdList->InsertNextId(v);
+
+    inData->GetPoint(v,pt);
+    id = points->InsertNextPoint(pt);
+    lines->InsertCellPoint(id);
+
+    v = this->Internals->Predecessors[v];
+    }
+
+  this->IdList->InsertNextId(v);
+
+  inData->GetPoint(v,pt);
+  id = points->InsertNextPoint(pt);
+  lines->InsertCellPoint(id);
+
+  lines->UpdateCellCount( points->GetNumberOfPoints() );
+  outPoly->SetPoints(points);
+  points->Delete();
+  outPoly->SetLines(lines);
+  lines->Delete();
+}
+}

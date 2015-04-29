@@ -32,20 +32,20 @@
 // www.imm.dtu.dk/~rrp/VTK . Also thanks to Alexandre Gouaillard and Shoaib
 // Ghias for bug fixes and enhancements.
 
-#ifndef vtkDijkstraGraphGeodesicPathMultiEndPoints_h
-#define vtkDijkstraGraphGeodesicPathMultiEndPoints_h
+#ifndef __vtkDijkstraGraphGeodesicPathMultiStartEndPoints_h
+#define __vtkDijkstraGraphGeodesicPathMultiStartEndPoints_h
 
 #include "vtkFiltersModelingModule.h" // For export macro
 #include "vtkDijkstraGraphGeodesicPath.h"
 
-class VTKFILTERSMODELING_NO_EXPORT vtkDijkstraGraphGeodesicPathMultiEndPoints :
+class VTKFILTERSMODELING_NO_EXPORT vtkDijkstraGraphGeodesicPathMultiStartEndPoints :
                            public vtkDijkstraGraphGeodesicPath
 {
 public:
-    vtkTypeMacro(vtkDijkstraGraphGeodesicPathMultiEndPoints,vtkDijkstraGraphGeodesicPath);
+    vtkTypeMacro(vtkDijkstraGraphGeodesicPathMultiStartEndPoints,vtkDijkstraGraphGeodesicPath);
   // Description:
   // Instantiate the class
-  static vtkDijkstraGraphGeodesicPathMultiEndPoints *New();
+  static vtkDijkstraGraphGeodesicPathMultiStartEndPoints *New();
 
   // Description:
   // Standard methods for printing and determining type information.
@@ -53,20 +53,26 @@ public:
   
   vtkGetMacro(EndPointsIdList,vtkIdList *);
   vtkSetMacro(EndPointsIdList,vtkIdList *);
+  vtkGetMacro(StartPointsIdList,vtkIdList *);
+  vtkSetMacro(StartPointsIdList,vtkIdList *);
 protected:
-  vtkDijkstraGraphGeodesicPathMultiEndPoints();
-  ~vtkDijkstraGraphGeodesicPathMultiEndPoints(); 
+  vtkDijkstraGraphGeodesicPathMultiStartEndPoints();
+  ~vtkDijkstraGraphGeodesicPathMultiStartEndPoints(); 
 
   virtual int RequestData(vtkInformation *, vtkInformationVector **,
                           vtkInformationVector *);
 
   // Calculate shortest path from vertex startv to vertex endv.
-  virtual void ShortestPath( vtkDataSet *inData, int startv, vtkIdList *EndPointsIdList );
+  virtual void ShortestPath( vtkDataSet *inData, vtkIdList * _startPointsIdList, vtkIdList *_endPointsIdList );
 
+  virtual void TraceShortestPath( vtkDataSet* inData, vtkPolyData* outPoly,
+                vtkIdList * _startPointsIdList, vtkIdType endv);
+  
   vtkIdList *EndPointsIdList;
+  vtkIdList *StartPointsIdList;
 private:
-  vtkDijkstraGraphGeodesicPathMultiEndPoints(const vtkDijkstraGraphGeodesicPathMultiEndPoints&);  // Not implemented.
-  void operator=(const vtkDijkstraGraphGeodesicPathMultiEndPoints&);  // Not implemented.
+  vtkDijkstraGraphGeodesicPathMultiStartEndPoints(const vtkDijkstraGraphGeodesicPathMultiStartEndPoints&);  // Not implemented.
+  void operator=(const vtkDijkstraGraphGeodesicPathMultiStartEndPoints&);  // Not implemented.
 
 };
 
