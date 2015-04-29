@@ -12,7 +12,7 @@
 
   This class is not mature enough to enter the official VTK release.
 =========================================================================*/
-#include "vtkDijkstraGraphGeodesicPathMultiEndPoints.h"
+#include "vtkDijkstraGraphGeodesicPathMultiStartEndPoints.h"
 
 #include "vtkCellArray.h"
 #include "vtkDijkstraGraphInternals.h"

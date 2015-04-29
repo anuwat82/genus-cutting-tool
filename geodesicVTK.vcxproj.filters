@@ -84,10 +84,10 @@
     <ClInclude Include="customVTK\vtkFeatureEdgesEx.h">
       <Filter>customVTK</Filter>
     </ClInclude>
-    <ClInclude Include="customVTK\vtkDijkstraGraphGeodesicPathMultiEndPoints.h">
+    <ClInclude Include="customVTK\vtkDijkstraGraphInternals.h">
       <Filter>customVTK</Filter>
     </ClInclude>
-    <ClInclude Include="customVTK\vtkDijkstraGraphInternals.h">
+    <ClInclude Include="customVTK\vtkDijkstraGraphGeodesicPathMultiStartEndPoints.h">
       <Filter>customVTK</Filter>
     </ClInclude>
   </ItemGroup>
@@ -119,7 +119,7 @@
     <ClCompile Include="customVTK\vtkFeatureEdgesEx.cxx">
       <Filter>customVTK</Filter>
     </ClCompile>
-    <ClCompile Include="customVTK\vtkDijkstraGraphGeodesicPathMultiEndPoints.cxx">
+    <ClCompile Include="customVTK\vtkDijkstraGraphGeodesicPathMultiStartEndPoints.cxx">
       <Filter>customVTK</Filter>
     </ClCompile>
   </ItemGroup>

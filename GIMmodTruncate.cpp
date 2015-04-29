@@ -1,5 +1,6 @@
 #include "GIMmodTruncate.h"
 #include "customVTK\vtkFeatureEdgesEx.h"
+#include "customVTK\vtkDijkstraGraphGeodesicPathMultiStartEndPoints.h"
 #include "utils.h"
 
 GIMmodTruncate::GIMmodTruncate(void)
@@ -35,7 +36,7 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::Init( vtkSmartPointer
 	allFaceRemoved =false;
 	firstTruncateDone = false;
 	shortenRingsDone = false;
-	
+	removePathsBetweenBoundariesFromGraph = false;
 	mesh.clear();
 	vtkPolydata2OpenMesh(_polydata,&mesh );	
 
@@ -113,7 +114,7 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::InitOriginal( vtkSmar
 	allFaceRemoved =false;
 	firstTruncateDone = false;
 	shortenRingsDone = false;
-	
+	removePathsBetweenBoundariesFromGraph = false;
 	mesh.clear();
 	vtkPolydata2OpenMesh(_polydata,&mesh );	
 	this->geodesicExact = _geo;	
@@ -197,7 +198,7 @@ void GIMmodTruncate::Process()
 		ShorthenRings(false);
 		shortenRingsDone = true;
 
-		//MergeWithOriginalBoundaries(false);
+		MergeWithOriginalBoundaries(false);
 		
 		clock_t stop = clock();
 		timeConsumed += (static_cast<double>(stop)-static_cast<double>(start))/CLOCKS_PER_SEC;
@@ -1025,29 +1026,31 @@ void GIMmodTruncate::ShorthenRings(bool step)
 
 
 void GIMmodTruncate::MergeWithOriginalBoundaries(bool step)
-{	
-	//find border points/edges
-	vtkSmartPointer<vtkFeatureEdgesEx> borderEdges = vtkSmartPointer<vtkFeatureEdgesEx>::New();
-	borderEdges->SetInputData(original_polydata);
-	borderEdges->FeatureEdgesOff();
-	borderEdges->BoundaryEdgesOn();
-	borderEdges->ManifoldEdgesOff();
-	borderEdges->NonManifoldEdgesOff();
-	borderEdges->Update();	
+{
+	// Convert the graph to a polydata
+	vtkSmartPointer<vtkGraphToPolyData> graphToPolyData = vtkSmartPointer<vtkGraphToPolyData>::New();
+	graphToPolyData->SetInputData(graph);
+	graphToPolyData->Update();
 	
-	vtkSmartPointer<vtkPolyData> borderPolydata = borderEdges->GetOutput();
-	vtkSmartPointer<vtkCellArray> lines= borderPolydata->GetLines();	
-	vtkSmartPointer<vtkPoints> points = borderPolydata->GetPoints();
-	int numBorderEdges = lines->GetNumberOfCells();
-	if (numBorderEdges == 0) //if no original boundary .... exit		
-		return;
 	
 	vtkSmartPointer<vtkPolyDataConnectivityFilter> connectivityFilter =  vtkSmartPointer<vtkPolyDataConnectivityFilter>::New();
-	connectivityFilter->SetInputData(borderPolydata);
+	connectivityFilter->SetInputData(graphToPolyData->GetOutput());
 	connectivityFilter->SetExtractionModeToAllRegions();
 	connectivityFilter->Update();
 
 	int numRegions =  connectivityFilter->GetNumberOfExtractedRegions();
+
+
+	if (numRegions>1)
+	{
+		//find biggest connectivity.... as main cut path
+		connectivityFilter->SetExtractionModeToLargestRegion();
+		connectivityFilter->Update();
+		vtkSmartPointer<vtkPolyData> mainCutGraph = connectivityFilter->GetOutput();
+		
+		vtkSmartPointer<vtkDijkstraGraphGeodesicPathMultiStartEndPoints> shortestPath = vtkSmartPointer<vtkDijkstraGraphGeodesicPathMultiStartEndPoints>::New();
+
+	}
 	return;
 	/*
 
