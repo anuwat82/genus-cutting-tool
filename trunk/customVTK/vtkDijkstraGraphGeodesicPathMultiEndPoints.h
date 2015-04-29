@@ -42,20 +42,28 @@ class VTKFILTERSMODELING_NO_EXPORT vtkDijkstraGraphGeodesicPathMultiEndPoints :
                            public vtkDijkstraGraphGeodesicPath
 {
 public:
-
+    vtkTypeMacro(vtkDijkstraGraphGeodesicPathMultiEndPoints,vtkDijkstraGraphGeodesicPath);
   // Description:
   // Instantiate the class
   static vtkDijkstraGraphGeodesicPathMultiEndPoints *New();
 
   // Description:
   // Standard methods for printing and determining type information.
-  vtkTypeMacro(vtkDijkstraGraphGeodesicPathMultiEndPoints,vtkDijkstraGraphGeodesicPath);
-  
 
+  
+  vtkGetMacro(EndPointsIdList,vtkIdList *);
+  vtkSetMacro(EndPointsIdList,vtkIdList *);
 protected:
   vtkDijkstraGraphGeodesicPathMultiEndPoints();
   ~vtkDijkstraGraphGeodesicPathMultiEndPoints(); 
 
+  virtual int RequestData(vtkInformation *, vtkInformationVector **,
+                          vtkInformationVector *);
+
+  // Calculate shortest path from vertex startv to vertex endv.
+  virtual void ShortestPath( vtkDataSet *inData, int startv, vtkIdList *EndPointsIdList );
+
+  vtkIdList *EndPointsIdList;
 private:
   vtkDijkstraGraphGeodesicPathMultiEndPoints(const vtkDijkstraGraphGeodesicPathMultiEndPoints&);  // Not implemented.
   void operator=(const vtkDijkstraGraphGeodesicPathMultiEndPoints&);  // Not implemented.

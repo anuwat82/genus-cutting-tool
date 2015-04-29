@@ -105,7 +105,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_USE_MATH_DEFINES;OM_STATIC_BUILD;WIN32;NOMINMAX;VTK_IN_VTK;vtkRenderingCore_INCLUDE="$(VTK_DIR)/build/CMakeFiles/vtkRenderingCore_AUTOINIT_vtkInteractionStyle_vtkRenderingOpenGL2.h";_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_USE_MATH_DEFINES;OM_STATIC_BUILD;WIN32;NOMINMAX;VTK_USE_BOOST;VTK_IN_VTK;vtkRenderingCore_INCLUDE="$(VTK_DIR)\build\CMakeFiles\vtkRenderingCore_AUTOINIT_vtkInteractionStyle_vtkRenderingOpenGL2.h";_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <OpenMPSupport>true</OpenMPSupport>
       <OpenMP>GenerateParallelCode</OpenMP>
@@ -143,7 +143,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_USE_MATH_DEFINES;OM_STATIC_BUILD;WIN32;NOMINMAX;VTK_IN_VTK;vtkRenderingCore_INCLUDE="$(VTK_DIR)/build/CMakeFiles/vtkRenderingCore_AUTOINIT_vtkInteractionStyle_vtkRenderingOpenGL2.h";NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_USE_MATH_DEFINES;OM_STATIC_BUILD;WIN32;NOMINMAX;VTK_USE_BOOST;VTK_IN_VTK;vtkRenderingCore_INCLUDE="$(VTK_DIR)\build\CMakeFiles\vtkRenderingCore_AUTOINIT_vtkInteractionStyle_vtkRenderingOpenGL2.h";NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <OpenMPSupport>true</OpenMPSupport>
       <OpenMP>GenerateParallelCode</OpenMP>
@@ -158,6 +158,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="customVTK\vtkDijkstraGraphGeodesicPathMultiEndPoints.h" />
+    <ClInclude Include="customVTK\vtkDijkstraGraphInternals.h" />
     <ClInclude Include="customVTK\vtkFeatureEdgesEx.h" />
     <ClInclude Include="geodesic\geodesic_algorithm_base.h" />
     <ClInclude Include="geodesic\geodesic_algorithm_dijkstra.h" />
