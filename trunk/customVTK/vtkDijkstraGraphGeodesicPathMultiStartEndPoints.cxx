@@ -35,17 +35,17 @@ vtkStandardNewMacro(vtkDijkstraGraphGeodesicPathMultiStartEndPoints);
 // manifold edges, are extracted and colored.
 vtkDijkstraGraphGeodesicPathMultiStartEndPoints::vtkDijkstraGraphGeodesicPathMultiStartEndPoints()
 {
-	this->EndPointsIdList = NULL;
-	EndPointsIdList = vtkIdList::New();
+	//this->EndPointsIdList = NULL;
+	//EndPointsIdList = vtkIdList::New();
 
-	this->StartPointsIdList = NULL;
-	StartPointsIdList = vtkIdList::New();
+	//this->StartPointsIdList = NULL;
+	//StartPointsIdList = vtkIdList::New();
 }
 
 vtkDijkstraGraphGeodesicPathMultiStartEndPoints::~vtkDijkstraGraphGeodesicPathMultiStartEndPoints()
 {
-	EndPointsIdList->Delete();
-	StartPointsIdList->Delete();
+	//EndPointsIdList->Delete();
+	//StartPointsIdList->Delete();
 }
 
 

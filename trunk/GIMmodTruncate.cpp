@@ -1,6 +1,7 @@
 #include "GIMmodTruncate.h"
 #include "customVTK\vtkFeatureEdgesEx.h"
 #include "customVTK\vtkDijkstraGraphGeodesicPathMultiStartEndPoints.h"
+#include "customVTK\vtkBoostExtractLargestComponentEx.h"
 #include "utils.h"
 
 GIMmodTruncate::GIMmodTruncate(void)
@@ -1028,6 +1029,29 @@ void GIMmodTruncate::ShorthenRings(bool step)
 void GIMmodTruncate::MergeWithOriginalBoundaries(bool step)
 {
 	// Convert the graph to a polydata
+	/*
+	vtkSmartPointer<vtkBoostConnectedComponents> conn = vtkSmartPointer<vtkBoostConnectedComponents>::New();
+	conn->SetInputData(graph);
+	conn->Update();
+	vtkGraph* outputGraph = conn->GetOutput();
+ 
+  vtkIntArray* components = vtkIntArray::SafeDownCast(
+    outputGraph->GetVertexData()->GetArray("component"));
+ 
+  for(vtkIdType i = 0; i < components->GetNumberOfTuples(); i++)
+    {
+    int val = components->GetValue(i);
+    std::cout << val << std::endl;
+    }
+	*/
+
+	
+	
+
+	vtkSmartPointer<vtkIdList> EndPoint = vtkSmartPointer<vtkIdList>::New();
+	EndPoint->DeepCopy(boundaryPoints);
+
+	/*
 	vtkSmartPointer<vtkGraphToPolyData> graphToPolyData = vtkSmartPointer<vtkGraphToPolyData>::New();
 	graphToPolyData->SetInputData(graph);
 	graphToPolyData->Update();
@@ -1039,50 +1063,52 @@ void GIMmodTruncate::MergeWithOriginalBoundaries(bool step)
 	connectivityFilter->Update();
 
 	int numRegions =  connectivityFilter->GetNumberOfExtractedRegions();
-
-
-	if (numRegions>1)
-	{
-		//find biggest connectivity.... as main cut path
-		connectivityFilter->SetExtractionModeToLargestRegion();
-		connectivityFilter->Update();
-		vtkSmartPointer<vtkPolyData> mainCutGraph = connectivityFilter->GetOutput();
-		
-		vtkSmartPointer<vtkDijkstraGraphGeodesicPathMultiStartEndPoints> shortestPath = vtkSmartPointer<vtkDijkstraGraphGeodesicPathMultiStartEndPoints>::New();
-
-	}
-	return;
-	/*
-
-	vtkSmartPointer<vtkPolyData> process_borderPolydata = vtkSmartPointer<vtkPolyData>::New();
-	process_borderPolydata->DeepCopy(borderPolydata);
-
-	vtkLine* _edge = vtkLine::SafeDownCast(process_borderPolydata->GetCell(0));
-
-	
-	std::set<int> BorderPoints;	
-	std::vector<int> 
-	vtkLine* _edge = vtkLine::SafeDownCast(borderEdges->GetOutput()->GetCell(0));
-	
-	
-		for(vtkIdType i = 1; i < numBorderEdges; i++)
-		{			
-			vtkLine* line = vtkLine::SafeDownCast(borderEdges->GetOutput()->GetCell(i));		
-			int numID = line->GetPointIds()->GetNumberOfIds();
-			vtkIdType id0 = line->GetPointIds()->GetId(0);
-			vtkIdType id1 = line->GetPointIds()->GetId(1);
-			vtkIdType oid0 = borderEdges->GetOldIdFromCurrentID(id0);
-			vtkIdType oid1 = borderEdges->GetOldIdFromCurrentID(id1);
-			BorderPoints.insert(oid0);
-			BorderPoints.insert(oid1);		
-		}	
-		
 	*/
-	//analyze loops in bouundary edges
 
 	
-	//connect each loop to either graph or another loop, if its shortest path is connecting to graph then merge to graph.
+	int numRegions = 0;	
+	do 
+	{
+		
+		vtkSmartPointer<vtkBoostExtractLargestComponentEx> largestComp = vtkSmartPointer<vtkBoostExtractLargestComponentEx>::New();		
+		largestComp->SetInputData(graph);
+		largestComp->Update();
+		numRegions =  largestComp->GetNumberOfNonIsoComponents();
+		if (numRegions <= 1)
+			break;
 
+			
+		vtkGraph *outputGraph  =  largestComp->GetOutput();
+		vtkIdTypeArray *oldIDs  = largestComp->GetOldIdsArray();		
+		int numPoints =  outputGraph->GetNumberOfVertices();	
+
+		vtkSmartPointer<vtkIdList> startIDs = vtkSmartPointer<vtkIdList>::New();
+		startIDs->SetNumberOfIds(numPoints);
+		for (int i = 0; i < numPoints; i++)
+		{
+			startIDs->SetId(i,oldIDs->GetValue(i));
+			EndPoint->DeleteId(oldIDs->GetValue(i));
+		}
+			
+
+		vtkSmartPointer<vtkDijkstraGraphGeodesicPathMultiStartEndPoints> shortestPath = vtkSmartPointer<vtkDijkstraGraphGeodesicPathMultiStartEndPoints>::New();
+		shortestPath->SetInputData(original_polydata);
+		shortestPath->SetEndPointsIdList(EndPoint);
+		shortestPath->SetStartPointsIdList(startIDs);
+		shortestPath->SetRepelVertices( outputGraph->GetPoints());
+		shortestPath->RepelPathFromVerticesOn();
+		shortestPath->StopWhenEndReachedOn();
+		shortestPath->Update();
+
+		vtkIdList*idlist = shortestPath->GetIdList();
+
+		for (int j = 0 ; j < idlist->GetNumberOfIds() - 1; j++)
+		{			
+			graph->AddEdge( idlist->GetId(j),idlist->GetId(j+1));
+		}			
+	}
+	while (numRegions > 1);
+	
 }
 
 
