@@ -90,6 +90,9 @@
     <ClInclude Include="customVTK\vtkDijkstraGraphGeodesicPathMultiStartEndPoints.h">
       <Filter>customVTK</Filter>
     </ClInclude>
+    <ClInclude Include="customVTK\vtkBoostExtractLargestComponentEx.h">
+      <Filter>customVTK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -120,6 +123,9 @@
       <Filter>customVTK</Filter>
     </ClCompile>
     <ClCompile Include="customVTK\vtkDijkstraGraphGeodesicPathMultiStartEndPoints.cxx">
+      <Filter>customVTK</Filter>
+    </ClCompile>
+    <ClCompile Include="customVTK\vtkBoostExtractLargestComponentEx.cxx">
       <Filter>customVTK</Filter>
     </ClCompile>
   </ItemGroup>

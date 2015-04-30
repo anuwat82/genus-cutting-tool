@@ -157,6 +157,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="customVTK\vtkBoostExtractLargestComponentEx.h" />
     <ClInclude Include="customVTK\vtkDijkstraGraphGeodesicPathMultiStartEndPoints.h" />
     <ClInclude Include="customVTK\vtkDijkstraGraphInternals.h" />
     <ClInclude Include="customVTK\vtkFeatureEdgesEx.h" />
@@ -182,6 +183,7 @@
     <ClInclude Include="VTK_Header.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="customVTK\vtkBoostExtractLargestComponentEx.cxx" />
     <ClCompile Include="customVTK\vtkDijkstraGraphGeodesicPathMultiStartEndPoints.cxx" />
     <ClCompile Include="customVTK\vtkFeatureEdgesEx.cxx" />
     <ClCompile Include="geodesic\geodesic_algorithm_exact.cpp" />

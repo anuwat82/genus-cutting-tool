@@ -67,3 +67,5 @@
 #include <vtkPoints.h>
 #include <vtkTree.h>
 #include <vtkTreeBFSIterator.h>
+#include <vtkBoostBrandesCentrality.h>
+#include <vtkExtractSelectedGraph.h>
