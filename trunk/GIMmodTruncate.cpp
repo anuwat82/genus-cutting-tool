@@ -875,7 +875,11 @@ void GIMmodTruncate::ShorthenRings(bool step)
 	graph->GetEdges(eit);
 	bool *pointCheck = new bool[graph->GetNumberOfVertices()];
 	memset(pointCheck,0,sizeof(bool)*graph->GetNumberOfVertices());
-	std::vector<edges_path> edgepaths;
+	//std::vector<edges_path> edgepaths;
+	std::vector<edges_path> edgepaths2;
+	vtkSmartPointer<vtkMutableUndirectedGraph> modgraph = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
+	modgraph->DeepCopy(graph);
+	
 	while (eit->HasNext())
 	{
 		vtkEdgeType e = eit->Next();
@@ -883,6 +887,69 @@ void GIMmodTruncate::ShorthenRings(bool step)
 		if (pointCheck[vid[0]] && pointCheck[vid[1]])
 			continue;
 
+		{	
+			//experiment
+			if (graph->GetDegree(vid[0]) == 2 && graph->GetDegree(vid[1]) == 2 ) 
+			{
+				if (boundaryPoints->IsId(vid[0]) >= 0 && boundaryPoints->IsId(vid[1]) >= 0)
+				{				
+					continue;
+				}
+				modgraph->RemoveEdge(e.Id);
+				vtkIdType endofpathvid[2] ;
+				vtkIdType prev_endofpathvid[2];
+				std::vector<vtkEdgeType> remEdges;
+				for (int i = 0 ; i < 2 ; i++)
+				{
+
+					vtkSmartPointer<vtkBoostBreadthFirstSearchTree> bfsTree = vtkSmartPointer<vtkBoostBreadthFirstSearchTree>::New();
+					bfsTree->SetOriginVertex(vid[i]);
+					bfsTree->CreateGraphVertexIdArrayOn();
+					bfsTree->SetInputData(modgraph);
+					bfsTree->Update();
+					vtkIdTypeArray* gid = vtkIdTypeArray::SafeDownCast (bfsTree->GetOutput()->GetVertexData()->GetArray("GraphVertexId"));
+			
+					vtkSmartPointer<vtkTree> tree = vtkSmartPointer<vtkTree>::New();
+					bool ret = tree->CheckedShallowCopy(bfsTree->GetOutput());
+					vtkSmartPointer<vtkTreeBFSIterator> bfsIterator =  vtkSmartPointer<vtkTreeBFSIterator>::New();
+					bfsIterator->SetStartVertex(0);
+					bfsIterator->SetTree(tree);
+
+					
+	
+					while(bfsIterator->HasNext())
+					{
+						vtkIdType nextVertex = bfsIterator->Next();
+						vtkIdType graphVertex = gid->GetValue(nextVertex);
+						if (graph->GetDegree(graphVertex) > 2)
+						{
+							vtkIdType prev_vid = gid->GetValue(tree->GetParent(nextVertex));
+							if (boundaryPoints->IsId(prev_vid) == -1)
+							{
+								vtkEdgeType remEdge(prev_vid,graphVertex,-1); //do not care about ID value, just store start and end vertex id
+								remEdges.push_back(remEdge);
+							}
+							if (boundaryPoints->IsId(graphVertex) == -1)
+							{
+								//end of path
+								endofpathvid[i] = graphVertex;
+								prev_endofpathvid[i] = prev_vid;
+								break;
+							}
+							
+						}
+						else
+						{
+							pointCheck[graphVertex] = true;
+						}
+					}
+				}
+				edgepaths2.push_back(edges_path(endofpathvid,prev_endofpathvid,remEdges));  
+				
+			}
+
+		}
+		/*
 		if (graph->GetDegree(vid[0]) == 2 && graph->GetDegree(vid[1]) == 2 ) 
 		{
 			if (boundaryPoints->IsId(vid[0]) >= 0 && boundaryPoints->IsId(vid[1]) >= 0)
@@ -917,19 +984,24 @@ void GIMmodTruncate::ShorthenRings(bool step)
 			}
 			edgepaths.push_back(edges_path(endofpathvid,prev_endofpathvid));
 		}
+		*/
 	}
 
 	
 
-	for (int i = 0; i < edgepaths.size(); i++)
+	for (int i = 0; i < edgepaths2.size(); i++)
 	{
-		edges_path &path = edgepaths[i];
-		vtkIdType remEdgeID =  graph->GetEdgeId(path.endPointID[0],path.pairEdgeEndPointID[0]);
-		if (remEdgeID < 0)
-			throw;
-		else
-			graph->RemoveEdge(remEdgeID);
-
+		edges_path &path = edgepaths2[i];
+		for (int remi = 0 ; remi < path.removeEdges.size(); remi++)
+		{
+			vtkIdType remEdgeID =  graph->GetEdgeId(
+				path.removeEdges[remi].Source,
+				path.removeEdges[remi].Target);
+			if (remEdgeID < 0)
+				throw;
+			else
+				graph->RemoveEdge(remEdgeID);
+		}
 		TruncateGraph(step);
 		//return;
 		vtkSmartPointer<vtkDijkstraGraphGeodesicPath> dijkstra = vtkSmartPointer<vtkDijkstraGraphGeodesicPath>::New();
@@ -1028,42 +1100,14 @@ void GIMmodTruncate::ShorthenRings(bool step)
 
 void GIMmodTruncate::MergeWithOriginalBoundaries(bool step)
 {
-	// Convert the graph to a polydata
-	/*
-	vtkSmartPointer<vtkBoostConnectedComponents> conn = vtkSmartPointer<vtkBoostConnectedComponents>::New();
-	conn->SetInputData(graph);
-	conn->Update();
-	vtkGraph* outputGraph = conn->GetOutput();
- 
-  vtkIntArray* components = vtkIntArray::SafeDownCast(
-    outputGraph->GetVertexData()->GetArray("component"));
- 
-  for(vtkIdType i = 0; i < components->GetNumberOfTuples(); i++)
-    {
-    int val = components->GetValue(i);
-    std::cout << val << std::endl;
-    }
-	*/
-
+	
 	
 	
 
 	vtkSmartPointer<vtkIdList> EndPoint = vtkSmartPointer<vtkIdList>::New();
 	EndPoint->DeepCopy(boundaryPoints);
 
-	/*
-	vtkSmartPointer<vtkGraphToPolyData> graphToPolyData = vtkSmartPointer<vtkGraphToPolyData>::New();
-	graphToPolyData->SetInputData(graph);
-	graphToPolyData->Update();
 	
-	
-	vtkSmartPointer<vtkPolyDataConnectivityFilter> connectivityFilter =  vtkSmartPointer<vtkPolyDataConnectivityFilter>::New();
-	connectivityFilter->SetInputData(graphToPolyData->GetOutput());
-	connectivityFilter->SetExtractionModeToAllRegions();
-	connectivityFilter->Update();
-
-	int numRegions =  connectivityFilter->GetNumberOfExtractedRegions();
-	*/
 
 	
 	int numRegions = 0;	
