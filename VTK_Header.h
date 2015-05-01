@@ -69,3 +69,4 @@
 #include <vtkTreeBFSIterator.h>
 #include <vtkBoostBrandesCentrality.h>
 #include <vtkExtractSelectedGraph.h>
+#include <vtkBoostBreadthFirstSearchTree.h>

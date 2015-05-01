@@ -23,6 +23,7 @@ public:
 	{	
 		vtkIdType endPointID[2];
 		vtkIdType pairEdgeEndPointID[2]; //
+		std::vector<vtkEdgeType> removeEdges;
 		edges_path(){}
 		edges_path( vtkIdType epid[2], vtkIdType peepid[2])
 		{
@@ -30,6 +31,14 @@ public:
 			endPointID[1] = epid[1];
 			pairEdgeEndPointID[0] = peepid[0];
 			pairEdgeEndPointID[1] = peepid[1];
+		}
+		edges_path( vtkIdType epid[2], vtkIdType peepid[2],std::vector<vtkEdgeType> &_removeEdges)
+		{
+			endPointID[0] = epid[0];
+			endPointID[1] = epid[1];
+			pairEdgeEndPointID[0] = peepid[0];
+			pairEdgeEndPointID[1] = peepid[1];
+			removeEdges = _removeEdges;
 		}
 		
 	};
