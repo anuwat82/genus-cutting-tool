@@ -1215,6 +1215,9 @@ vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()
 		OmMesh::FaceHandle     nextFH = mesh.face_handle(nextHE);
 		fromId = mesh.from_vertex_handle(thisHE).idx();
 		toId = mesh.to_vertex_handle(thisHE).idx();
+
+		if (graph->GetDegree(toId) == 2 && boundaryPoints->IsId(toId) >= 0)
+			continue;
 	
 		vtkSmartPointer<vtkIdList> cellIDlist = vtkSmartPointer<vtkIdList>::New();
 		output->GetCellEdgeNeighbors(	nextFH.idx(), 
@@ -1237,11 +1240,20 @@ vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()
 		vtkIdType newVertexID = output->GetPoints()->InsertNextPoint( output->GetPoint(oldVertexID));
 
 		
-		OmMesh::HalfedgeHandle start_heh = mesh.next_halfedge_handle(thisHE);
+		OmMesh::HalfedgeHandle start_heh = mesh.next_halfedge_handle(thisHE); //next of thisHE   
+		//To Do: check thisHE is boundary or not
+
 		OmMesh::HalfedgeHandle next_heh = start_heh;
 		bool found = false;
 		do
 		{			
+			int _fromId = mesh.from_vertex_handle(next_heh).idx();
+			int _toId = mesh.to_vertex_handle(next_heh).idx();
+			if (mesh.is_boundary(next_heh))
+			{
+				next_heh = mesh.opposite_halfedge_handle(next_heh);
+				int aaa = 0;
+			}
 			int faceId = mesh.face_handle(next_heh).idx();				
 			output->ReplaceCellPoint( faceId,oldVertexID, newVertexID);		
 			
