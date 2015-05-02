@@ -944,6 +944,13 @@ void GIMmodTruncate::ShorthenRings(bool step)
 						}
 					}
 				}
+#ifdef _DEBUG
+				if (graph->GetEdgeId(endofpathvid[0],prev_endofpathvid[0]) == graph->GetEdgeId(endofpathvid[1],prev_endofpathvid[1]))
+				{
+					throw;
+				}
+
+#endif
 				edgepaths2.push_back(edges_path(endofpathvid,prev_endofpathvid,remEdges));  
 				
 			}
@@ -1174,8 +1181,18 @@ vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()
 	//create cut path list
 	vtkSmartPointer<vtkEdgeListIterator> eit =vtkSmartPointer<vtkEdgeListIterator>::New();
 	graph->GetEdges(eit);
-	vtkEdgeType e =  eit->Next();
-	OmMesh::HalfedgeHandle first_heh =  mesh.find_halfedge(mesh.vertex_handle(e.Source),mesh.vertex_handle(e.Target));
+	vtkEdgeType e;
+	OmMesh::HalfedgeHandle first_heh;
+	while (eit->HasNext())
+	{
+		e = eit->Next();
+		first_heh =  mesh.find_halfedge(mesh.vertex_handle(e.Source),mesh.vertex_handle(e.Target));		
+		if ( !mesh.is_boundary(mesh.edge_handle(first_heh)) )
+			break;
+	}
+	 
+	
+	//OmMesh::HalfedgeHandle first_heh =  mesh.find_halfedge(mesh.vertex_handle(e.Source),mesh.vertex_handle(e.Target));
 	OmMesh::HalfedgeHandle heh = first_heh;	
 	int fromId = mesh.from_vertex_handle(heh).idx();
 	int toId = mesh.to_vertex_handle(heh).idx();
@@ -1215,6 +1232,10 @@ vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()
 		OmMesh::FaceHandle     nextFH = mesh.face_handle(nextHE);
 		fromId = mesh.from_vertex_handle(thisHE).idx();
 		toId = mesh.to_vertex_handle(thisHE).idx();
+#ifdef _DEBUG
+		int next_fromId = mesh.from_vertex_handle(nextHE).idx();
+		int next_toId =  mesh.to_vertex_handle(nextHE).idx();
+#endif
 
 		if (graph->GetDegree(toId) == 2 && boundaryPoints->IsId(toId) >= 0)
 			continue;
@@ -1242,18 +1263,27 @@ vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()
 		
 		OmMesh::HalfedgeHandle start_heh = mesh.next_halfedge_handle(thisHE); //next of thisHE   
 		//To Do: check thisHE is boundary or not
+		/*
+		if (mesh.is_boundary(thisHE))
+		{
+			if (mesh.face_handle(thisHE).idx() == -1)
+			{
+				start_heh = mesh.opposite_halfedge_handle(mesh.prev_halfedge_handle(mesh.opposite_halfedge_handle(thisHE)));
+#ifdef _DEBUG
+				int _fromId = mesh.from_vertex_handle(start_heh).idx();
+				int _toId = mesh.to_vertex_handle(start_heh).idx();
+#endif
+			}
+			
 
+		}
+		*/
 		OmMesh::HalfedgeHandle next_heh = start_heh;
 		bool found = false;
 		do
 		{			
 			int _fromId = mesh.from_vertex_handle(next_heh).idx();
 			int _toId = mesh.to_vertex_handle(next_heh).idx();
-			if (mesh.is_boundary(next_heh))
-			{
-				next_heh = mesh.opposite_halfedge_handle(next_heh);
-				int aaa = 0;
-			}
 			int faceId = mesh.face_handle(next_heh).idx();				
 			output->ReplaceCellPoint( faceId,oldVertexID, newVertexID);		
 			
