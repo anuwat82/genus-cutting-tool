@@ -345,7 +345,7 @@ int main(int argc, char* argv[])
 	actorMainPoly = actor;
 	actor->GetProperty()->SetEdgeVisibility(0);
 	actor->GetProperty()->SetLineWidth(0.1);
-	actor->GetProperty()->SetOpacity(0.65);
+	actor->GetProperty()->SetOpacity(0.75); //0.65
 	// Visualize
 	vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
 	vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();

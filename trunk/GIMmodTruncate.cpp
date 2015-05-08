@@ -200,7 +200,7 @@ void GIMmodTruncate::Process()
 		shortenRingsDone = true;
 
 		MergeWithOriginalBoundaries(false);
-		
+		CheckValidCutGraph(false);
 		clock_t stop = clock();
 		timeConsumed += (static_cast<double>(stop)-static_cast<double>(start))/CLOCKS_PER_SEC;
 		graph->Modified();
@@ -247,6 +247,7 @@ void GIMmodTruncate::Step()
 	else
 	{
 		MergeWithOriginalBoundaries(false);
+		CheckValidCutGraph(false);
 	}
 
 
@@ -1464,4 +1465,46 @@ void GIMmodTruncate::RemoveOriginalBoundariesFromGraph()
 	}
 
 	TruncateGraph(false);
+}
+
+
+void GIMmodTruncate::CheckValidCutGraph(bool step)
+{
+	if (graph->GetNumberOfEdges() == 0 && boundaryPoints->GetNumberOfIds() == 0)
+	{
+		//closed mesh genus 0 case
+		//include two edges to graph
+
+
+		//detect high curvature vertex.
+		vtkSmartPointer<vtkCurvatures> curv  = vtkSmartPointer<vtkCurvatures>::New();
+		curv->SetInputData(original_polydata);
+		//curv->SetCurvatureTypeToMaximum();
+		curv->SetCurvatureTypeToGaussian();
+		//curv->SetCurvatureTypeToMean();
+		curv->Update();
+		//vtkSmartPointer<vtkDoubleArray> maxCur =  vtkDoubleArray::SafeDownCast(curv->GetOutput()->GetPointData()->GetArray("Maximum_Curvature"));
+		vtkSmartPointer<vtkDoubleArray> gauCur =  vtkDoubleArray::SafeDownCast(curv->GetOutput()->GetPointData()->GetArray("Gauss_Curvature"));
+		//vtkSmartPointer<vtkDoubleArray> meanCur =  vtkDoubleArray::SafeDownCast(curv->GetOutput()->GetPointData()->GetArray("Mean_Curvature"));
+
+		vtkSmartPointer<vtkDoubleArray> useValue = gauCur;
+		int maxID = 0;
+		double maxCurValue = fabs(useValue->GetValue(0));
+		for (int i = 1; i < useValue->GetMaxId(); i++)
+		{
+			double val = fabs( useValue->GetValue(i));
+			if (val >  maxCurValue)
+			{
+				maxCurValue = val;
+				maxID = i;
+			}
+		}
+
+		//find two edges around this vertex
+		  // circulate around the current vertex
+		vtkSmartPointer<vtkIdList> idlist =  GetConnectedVertices(original_polydata,maxID);		
+		int skip = idlist->GetNumberOfIds()/2;
+		graph->AddEdge(maxID, idlist->GetId(0));
+		graph->AddEdge(maxID, idlist->GetId(skip));		
+	}
 }

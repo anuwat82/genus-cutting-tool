@@ -90,6 +90,7 @@ protected:
 
 	void ShorthenRings(bool step);
 	void MergeWithOriginalBoundaries(bool step);
+	void CheckValidCutGraph(bool step);
 	void RemoveOriginalBoundariesFromGraph();
 
 

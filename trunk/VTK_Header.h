@@ -70,3 +70,4 @@
 #include <vtkBoostBrandesCentrality.h>
 #include <vtkExtractSelectedGraph.h>
 #include <vtkBoostBreadthFirstSearchTree.h>
+#include <vtkCurvatures.h>
