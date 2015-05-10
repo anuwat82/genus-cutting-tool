@@ -1059,12 +1059,18 @@ void setAreaMap3D(){
   int i,j;
   IDList *now=NULL;
   sumarea3D = 0.0;
-  for(i=0;i<numberF;i++){
-    PT->makeVector(bc[0],point[Face[i][0]],point[Face[i][1]]);
-    PT->makeVector(bc[1],point[Face[i][0]],point[Face[i][2]]);
-    PT->CrossVector(bc[2],bc[1],bc[0]);
-    areaMap3D[i] = PT->Point3dSize(bc[2])/2.0;
+#pragma omp parallel for
+  for(i=0;i<numberF;i++)
+  {
+	  Point3d _bc[3];
+    PT->makeVector(&_bc[0],point[Face[i][0]],point[Face[i][1]]);
+    PT->makeVector(&_bc[1],point[Face[i][0]],point[Face[i][2]]);
+    PT->CrossVector(&_bc[2],&_bc[1],&_bc[0]);
+    areaMap3D[i] = PT->Point3dSize(&_bc[2])/2.0;
+#pragma omp critical
+	{
     sumarea3D += areaMap3D[i];
+	}
   }
   
   if(boundarytype==0||boundarytype==2){

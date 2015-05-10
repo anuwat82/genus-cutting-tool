@@ -637,7 +637,7 @@ void	MyParameterization::AddCutBorder(
 
 void	MyParameterization::CalculateEdgeLength()
 {
-	
+#pragma omp parallel for
 	for (int i=0;i<numberV;i++)
 	{
 		IDList *now = IHead[i];
