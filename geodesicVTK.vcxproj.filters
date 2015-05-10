@@ -19,6 +19,9 @@
     <Filter Include="customVTK">
       <UniqueIdentifier>{ed5bb65a-3c7b-4f8c-bae0-466648fc9f8d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Parameterization">
+      <UniqueIdentifier>{cc1875bd-3568-40f7-8af2-411cfb785bf7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -93,6 +96,51 @@
     <ClInclude Include="customVTK\vtkBoostExtractLargestComponentEx.h">
       <Filter>customVTK</Filter>
     </ClInclude>
+    <ClInclude Include="Parameterization\IDCutHedge.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\IDList.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\IDSet.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\MeshStructure.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\MyParameterization.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\PCBCGSolver.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\Point2d.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\Point3d.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\PointTool.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\PolarList.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\PolygonsData.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\Polyhedron.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\stretch-minimizing.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\Util.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
+    <ClInclude Include="Parameterization\VList.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -128,5 +176,40 @@
     <ClCompile Include="customVTK\vtkBoostExtractLargestComponentEx.cxx">
       <Filter>customVTK</Filter>
     </ClCompile>
+    <ClCompile Include="Parameterization\IDList.cpp">
+      <Filter>Parameterization</Filter>
+    </ClCompile>
+    <ClCompile Include="Parameterization\IDSet.cxx">
+      <Filter>Parameterization</Filter>
+    </ClCompile>
+    <ClCompile Include="Parameterization\MyParameterization.cpp">
+      <Filter>Parameterization</Filter>
+    </ClCompile>
+    <ClCompile Include="Parameterization\PCBCGSolver.cxx">
+      <Filter>Parameterization</Filter>
+    </ClCompile>
+    <ClCompile Include="Parameterization\PointTool.cxx">
+      <Filter>Parameterization</Filter>
+    </ClCompile>
+    <ClCompile Include="Parameterization\PolygonsData.cpp">
+      <Filter>Parameterization</Filter>
+    </ClCompile>
+    <ClCompile Include="Parameterization\Util.cpp">
+      <Filter>Parameterization</Filter>
+    </ClCompile>
+    <ClCompile Include="Parameterization\VList.cpp">
+      <Filter>Parameterization</Filter>
+    </ClCompile>
+    <ClCompile Include="Parameterization\IDCutHedge.cpp">
+      <Filter>Parameterization</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Parameterization\GPUSolver.cu">
+      <Filter>Parameterization</Filter>
+    </None>
+    <None Include="Parameterization\GPUSolver.cuh">
+      <Filter>Parameterization</Filter>
+    </None>
   </ItemGroup>
 </Project>

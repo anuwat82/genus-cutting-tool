@@ -73,8 +73,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VTK_DIR)\include\vtk-6.2;.\OpenMesh\include;.\customVTK;$(IncludePath)</IncludePath>
-    <LibraryPath>.\OpenMesh\lib;$(VTK_DIR)\lib\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VTK_DIR)\include\vtk-6.2;.\OpenMesh\include;.\customVTK;$(BOOST_INCLUDEDIR);$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_LIBRARYDIR);.\OpenMesh\lib;$(VTK_DIR)\lib\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -83,8 +83,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VTK_DIR)\include\vtk-6.2;.\OpenMesh\include;.\customVTK;$(IncludePath)</IncludePath>
-    <LibraryPath>.\OpenMesh\lib;$(VTK_DIR)\lib\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VTK_DIR)\include\vtk-6.2;.\OpenMesh\include;.\customVTK;$(BOOST_INCLUDEDIR);$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_LIBRARYDIR);.\OpenMesh\lib;$(VTK_DIR)\lib\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -109,6 +109,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <OpenMPSupport>true</OpenMPSupport>
       <OpenMP>GenerateParallelCode</OpenMP>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,6 +148,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <OpenMPSupport>true</OpenMPSupport>
       <OpenMP>GenerateParallelCode</OpenMP>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -176,6 +178,21 @@
     <ClInclude Include="MouseInteractorStylePP.h" />
     <ClInclude Include="MyTruncate.h" />
     <ClInclude Include="OpenMesh_Header.h" />
+    <ClInclude Include="Parameterization\IDCutHedge.h" />
+    <ClInclude Include="Parameterization\IDList.h" />
+    <ClInclude Include="Parameterization\IDSet.h" />
+    <ClInclude Include="Parameterization\MeshStructure.h" />
+    <ClInclude Include="Parameterization\MyParameterization.h" />
+    <ClInclude Include="Parameterization\PCBCGSolver.h" />
+    <ClInclude Include="Parameterization\Point2d.h" />
+    <ClInclude Include="Parameterization\Point3d.h" />
+    <ClInclude Include="Parameterization\PointTool.h" />
+    <ClInclude Include="Parameterization\PolarList.h" />
+    <ClInclude Include="Parameterization\PolygonsData.h" />
+    <ClInclude Include="Parameterization\Polyhedron.h" />
+    <ClInclude Include="Parameterization\stretch-minimizing.h" />
+    <ClInclude Include="Parameterization\Util.h" />
+    <ClInclude Include="Parameterization\VList.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="utils.h" />
@@ -190,10 +207,29 @@
     <ClCompile Include="GIMmodTruncate.cpp" />
     <ClCompile Include="MouseInteractorStylePP.cpp" />
     <ClCompile Include="MyTruncate.cpp" />
+    <ClCompile Include="Parameterization\IDCutHedge.cpp" />
+    <ClCompile Include="Parameterization\IDList.cpp" />
+    <ClCompile Include="Parameterization\IDSet.cxx" />
+    <ClCompile Include="Parameterization\MyParameterization.cpp" />
+    <ClCompile Include="Parameterization\PCBCGSolver.cxx" />
+    <ClCompile Include="Parameterization\PointTool.cxx" />
+    <ClCompile Include="Parameterization\PolygonsData.cpp" />
+    <ClCompile Include="Parameterization\Util.cpp" />
+    <ClCompile Include="Parameterization\VList.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="geodesicVTK.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="vtkOFFReader.cxx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Parameterization\GPUSolver.cu">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="Parameterization\GPUSolver.cuh">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
