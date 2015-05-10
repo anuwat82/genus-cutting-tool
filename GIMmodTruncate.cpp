@@ -12,6 +12,7 @@ GIMmodTruncate::GIMmodTruncate(void)
 	firstTruncateDone = false;
 	shortenRingsDone = false;
 	removePathsBetweenBoundariesFromGraph = false;
+	mergeBoundariesGraphDone = false;
 	timeConsumed = 0;
 }
 
@@ -26,12 +27,25 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::GetGraph()
 
 bool GIMmodTruncate::isReadyToCut()
 {
-	return (firstTruncateDone ||shortenRingsDone);
+	if (mergeBoundariesGraphDone)
+		return true;
+	if (originalMethod)
+		return (firstTruncateDone ||shortenRingsDone);	
+	else
+	{
+		if (firstTruncateDone && !removePathsBetweenBoundariesFromGraph)
+			return true;
+		else
+			return mergeBoundariesGraphDone;
+		
+		
+	}
 }
 vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::Init( vtkSmartPointer<vtkPolyData> _polydata, 
 																 vtkSmartPointer<vtkMutableUndirectedGraph> _collision_graph,
 																 geodesic::GeodesicAlgorithmExact *_geo, int geoSourceVertexID)
 {
+	originalMethod = false;
 	timeConsumed = 0;
 	clock_t start = clock();
 	seedRemoved = false;
@@ -39,6 +53,7 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::Init( vtkSmartPointer
 	firstTruncateDone = false;
 	shortenRingsDone = false;
 	removePathsBetweenBoundariesFromGraph = false;
+	mergeBoundariesGraphDone = false;
 	mesh.clear();
 	vtkPolydata2OpenMesh(_polydata,&mesh );	
 
@@ -110,6 +125,7 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::Init( vtkSmartPointer
 vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::InitOriginal( vtkSmartPointer<vtkPolyData> _polydata, 															
 																		 geodesic::GeodesicAlgorithmExact *_geo , int geoSourceVertexID)
 {
+	originalMethod = true;
 	timeConsumed = 0;
 	clock_t start = clock();
 	seedRemoved = false;
@@ -117,6 +133,7 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::InitOriginal( vtkSmar
 	firstTruncateDone = false;
 	shortenRingsDone = false;
 	removePathsBetweenBoundariesFromGraph = false;
+	mergeBoundariesGraphDone = false;
 	mesh.clear();
 	vtkPolydata2OpenMesh(_polydata,&mesh );	
 	this->geodesicExact = _geo;	
@@ -180,6 +197,21 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMmodTruncate::InitOriginal( vtkSmar
 	return _graph;
 }
 
+void GIMmodTruncate::FindBoundaryPoints()
+{
+	vtkSmartPointer<vtkFeatureEdgesEx> borderEdges = vtkSmartPointer<vtkFeatureEdgesEx>::New();
+	borderEdges->SetInputData(original_polydata);
+	borderEdges->FeatureEdgesOff();
+	borderEdges->BoundaryEdgesOn();
+	borderEdges->ManifoldEdgesOff();
+	borderEdges->NonManifoldEdgesOff();
+	borderEdges->Update();	
+	
+
+	vtkIdList *borderPointID = borderEdges->GetOldIdList();
+	boundaryPoints = vtkSmartPointer<vtkIdList>::New();
+	boundaryPoints->DeepCopy(borderPointID);
+}
 void GIMmodTruncate::Process()
 {
 	if (!seedRemoved)
@@ -194,13 +226,23 @@ void GIMmodTruncate::Process()
 		TruncateGraph(false);
 		firstTruncateDone = true;
 
-		RemoveOriginalBoundariesFromGraph();
+		if (!originalMethod)
+		{
+			RemoveOriginalBoundariesFromGraph();
+		}
+		else 
+		{
+			FindBoundaryPoints();
+		}
 		removePathsBetweenBoundariesFromGraph = true;
 
 		ShorthenRings(false);
 		shortenRingsDone = true;
-
-		MergeWithOriginalBoundaries(false);
+		if (!originalMethod)
+		{
+			MergeWithOriginalBoundaries(false);
+			mergeBoundariesGraphDone = true;
+		}
 		CheckValidCutGraph(false);
 		clock_t stop = clock();
 		timeConsumed += (static_cast<double>(stop)-static_cast<double>(start))/CLOCKS_PER_SEC;
@@ -237,7 +279,14 @@ void GIMmodTruncate::Step()
 	}
 	else if (!removePathsBetweenBoundariesFromGraph)
 	{
-		RemoveOriginalBoundariesFromGraph();
+		if (!originalMethod)
+		{
+			RemoveOriginalBoundariesFromGraph();
+		}
+		else
+		{
+			FindBoundaryPoints();
+		}
 		removePathsBetweenBoundariesFromGraph = true;
 	}
 	else if (!shortenRingsDone)
@@ -247,7 +296,11 @@ void GIMmodTruncate::Step()
 	}
 	else
 	{
-		MergeWithOriginalBoundaries(false);
+		if (!originalMethod)
+		{
+			MergeWithOriginalBoundaries(false);
+			mergeBoundariesGraphDone = true;
+		}
 		CheckValidCutGraph(false);
 	}
 
