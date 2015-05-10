@@ -11,6 +11,7 @@
 #include "geodesic\geodesic_algorithm_exact.h"
 #include "MyTruncate.h"
 #include "GIMmodTruncate.h"
+#include "Parameterization\PolygonsData.h"
 MyTruncate gimTruncate;
 GIMmodTruncate modTruncate;
 GIMmodTruncate originalTruncate;
@@ -588,29 +589,39 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			else
 				cout << "not ready to export disk topoly mesh." << endl;
 			break;
-		}
+		case 'p':
+			{
+				if (modTruncate.isReadyToCut())
+				{
+					vtkSmartPointer<vtkPolyData> outputPropose = modTruncate.GetDiskTopologyPolydata();
+					CPolygonsData polygon ;
+					polygon.InitailDiskTopology(outputPropose);
+				}
+			}
+			break;
+	}
 		
-		std::string key(ch);
-		if (key == "F10")
-		{
-			ScreenShot(iren->GetRenderWindow());
-		}
-		else if (key == "plus")
-		{
-			double opac = actorMainPoly->GetProperty()->GetOpacity();
-			opac = std::min(opac + 0.05, 1.0);
-			actorMainPoly->GetProperty()->SetOpacity(opac);
-			renderer->Modified();
-			iren->GetRenderWindow()->Render();
-		}
-		else if (key == "minus")
-		{
-			double opac = actorMainPoly->GetProperty()->GetOpacity();
-			opac = std::max(opac - 0.05, 0.05);
-			actorMainPoly->GetProperty()->SetOpacity(opac);
-			renderer->Modified();
-			iren->GetRenderWindow()->Render();
-		}
+	std::string key(ch);
+	if (key == "F10")
+	{
+		ScreenShot(iren->GetRenderWindow());
+	}
+	else if (key == "plus")
+	{
+		double opac = actorMainPoly->GetProperty()->GetOpacity();
+		opac = std::min(opac + 0.05, 1.0);
+		actorMainPoly->GetProperty()->SetOpacity(opac);
+		renderer->Modified();
+		iren->GetRenderWindow()->Render();
+	}
+	else if (key == "minus")
+	{
+		double opac = actorMainPoly->GetProperty()->GetOpacity();
+		opac = std::max(opac - 0.05, 0.05);
+		actorMainPoly->GetProperty()->SetOpacity(opac);
+		renderer->Modified();
+		iren->GetRenderWindow()->Render();
+	}
 	//std::cout << "Pressed: " << iren->GetKeySym() << endl;
 }
 void pickCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata, void *calldata)
