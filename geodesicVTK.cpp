@@ -426,6 +426,17 @@ int main(int argc, char* argv[])
 	ColoredPoint( renderer,modelReader->GetOutput()->GetPoint(sourceVertex), 1.0,0.5,0.0);
 
 	renderWindow->Render(); 	
+
+	cout << "===============================" << endl <<
+		"Function Key:" << endl <<
+		"F6 = homotopy cutting" << endl <<
+		"F7 = iterative augmented cutting" << endl <<
+		"F8 = square parameterization" << endl << endl <<
+		
+		"F10 = save screenshot" << endl << 
+		"===============================" << endl;
+
+
 	renderWindowInteractor->Start();
 	
 	return 0;

@@ -1050,6 +1050,8 @@ void GIMmodTruncate::ShorthenRings(bool step)
 	}
 
 	
+	if (edgepaths2.size() <= 1)
+		return;  //closed genus 0 mesh or  disk topology mesh already
 
 	for (int i = 0; i < edgepaths2.size(); i++)
 	{
@@ -1162,16 +1164,8 @@ void GIMmodTruncate::ShorthenRings(bool step)
 
 void GIMmodTruncate::MergeWithOriginalBoundaries(bool step)
 {
-	
-	
-	
-
 	vtkSmartPointer<vtkIdList> EndPoint = vtkSmartPointer<vtkIdList>::New();
-	EndPoint->DeepCopy(boundaryPoints);
-
-	
-
-	
+	EndPoint->DeepCopy(boundaryPoints);	
 	int numRegions = 0;	
 	do 
 	{
@@ -1414,6 +1408,8 @@ void GIMmodTruncate::RemoveOriginalBoundariesFromGraph()
 	int numBorderVertices = points->GetNumberOfPoints();
 	if (numBorderEdges == 0) //if no original boundary .... exit		
 		return;
+
+	bool needTruncate = false;
 	for(vtkIdType i = 0; i < numBorderVertices; i++)
 	{			
 		vtkIdType old_id = borderEdges->GetOldIdFromCurrentID(i);
@@ -1456,6 +1452,7 @@ void GIMmodTruncate::RemoveOriginalBoundariesFromGraph()
 							}
 						}
 						*/
+						needTruncate = true;
 						break;
 					}
 					else
@@ -1503,6 +1500,7 @@ void GIMmodTruncate::RemoveOriginalBoundariesFromGraph()
 							}
 						}
 						*/
+						needTruncate = true;
 						break;
 					}
 					else
@@ -1517,8 +1515,8 @@ void GIMmodTruncate::RemoveOriginalBoundariesFromGraph()
 			}
 		}
 	}
-
-	TruncateGraph(false);
+	if (needTruncate)
+		TruncateGraph(false);
 }
 
 
