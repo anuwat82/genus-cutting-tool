@@ -634,7 +634,33 @@ int CPolygonsData::ParameterizeOriginal()
 	
 	return 0;
 }
+int CPolygonsData::GetHighestCurvatureFace()
+{
+	if (this->numVertex == 0 || this->numFace== 0)
+		return -2; //please call initial function first;
 
+	int *p_boundarySurfaceFaceInfo = m_boundarySurfaceFaceInfo;
+	int *p_num_boundarySurfaceFaceInfo = &m_num_boundarySurfaceFace;
+	PolarVertex* p_boundarySurfacePolarVertexInfo = m_boundarySurfacePolarVertexInfo;
+	int *p_num_boundarySurfacePolarVertexInfo = &m_num_boundarySurfacePolarVertex;
+
+	int num_validPolarVertex =numVertex;	
+	MyParameterization paramTool;
+	paramTool.SetPolarVertexAndFaceAndBorder(	p_boundarySurfacePolarVertexInfo,
+												p_num_boundarySurfacePolarVertexInfo,
+												num_validPolarVertex,
+												p_boundarySurfaceFaceInfo,
+												p_num_boundarySurfaceFaceInfo,
+												CutHedgeH,
+												CutHedgeT,
+												m_numValen2BoundaryPoint
+											);	
+	m_numValen2BoundaryPoint = 0;
+	int max1st = -1;
+	bool boundaryFace = false;
+	double circle_stretch = paramTool.GetExtremaTriangle(&max1st,&boundaryFace,1);
+	return max1st;
+}
 int CPolygonsData::Parameterize()
 {	
 
@@ -1374,8 +1400,8 @@ void	CPolygonsData::InitailDiskTopology(vtkSmartPointer<vtkPolyData> diskTopoPol
 	}
 
 	//store vlist and flist
-	int numV = diskTopoPolydata->GetNumberOfPoints();
-	int numF = diskTopoPolydata->GetNumberOfPolys();
+	int numV = numVertex = diskTopoPolydata->GetNumberOfPoints();
+	int numF = numFace = diskTopoPolydata->GetNumberOfPolys();
 	
 	vlist = (Vertex *) new Vertex[numV];
 	for (int i = 0 ; i < numV ; i++)
@@ -1416,8 +1442,29 @@ void	CPolygonsData::InitailDiskTopology(vtkSmartPointer<vtkPolyData> diskTopoPol
 	pCutHedgeT->ID = pCutHedgeH->next->ID;// last id is start point id
 
 
-	flist = (Face *) new Face[numF]; 
-
-
+	m_boundarySurfaceFaceInfo = new int[(numFace+(m_numValen2BoundaryPoint*2))*3 ];
+	m_num_boundarySurfaceFace = numFace;
 	
+	m_boundarySurfacePolarVertexInfo = new PolarVertex[m_num_boundarySurfacePolarVertex + m_numValen2BoundaryPoint];	
+	for (int i = 0 ; i < numVertex; i++)
+	{
+		m_boundarySurfacePolarVertexInfo[i].p_vertex = &vlist[i];
+	}
+
+	diskTopoPolydata->GetPolys()->InitTraversal();
+	vtkIdType npts;
+	vtkIdType *pointID;
+	int *storeFace = m_boundarySurfaceFaceInfo;
+	while(diskTopoPolydata->GetPolys()->GetNextCell(npts,pointID) != 0)
+	{
+		if (npts != 3)
+			throw;
+		storeFace[0] = pointID[0];
+		storeFace[1] = pointID[1];
+		storeFace[2] = pointID[2];
+		storeFace += 3;
+	}
+
+
+	return;
 }

@@ -3,6 +3,7 @@
 #include "customVTK\vtkDijkstraGraphGeodesicPathMultiStartEndPoints.h"
 #include "customVTK\vtkBoostExtractLargestComponentEx.h"
 #include "utils.h"
+#include "Parameterization\PolygonsData.h"
 
 GIMmodTruncate::GIMmodTruncate(void)
 {
@@ -1488,23 +1489,47 @@ void GIMmodTruncate::CheckValidCutGraph(bool step)
 		//vtkSmartPointer<vtkDoubleArray> meanCur =  vtkDoubleArray::SafeDownCast(curv->GetOutput()->GetPointData()->GetArray("Mean_Curvature"));
 
 		vtkSmartPointer<vtkDoubleArray> useValue = gauCur;
-		int maxID = 0;
-		double maxCurValue = fabs(useValue->GetValue(0));
+		int minID = 0;
+		double minCurValue = fabs(useValue->GetValue(0));
 		for (int i = 1; i < useValue->GetMaxId(); i++)
 		{
 			double val = fabs( useValue->GetValue(i));
-			if (val >  maxCurValue)
+			if (val <  minCurValue)
 			{
-				maxCurValue = val;
-				maxID = i;
+				minCurValue = val;
+				minID = i;
 			}
 		}
 
 		//find two edges around this vertex
 		  // circulate around the current vertex
-		vtkSmartPointer<vtkIdList> idlist =  GetConnectedVertices(original_polydata,maxID);		
+
+		vtkSmartPointer<vtkIdList> idlist =  GetConnectedVertices(original_polydata,minID);		
 		int skip = idlist->GetNumberOfIds()/2;
-		graph->AddEdge(maxID, idlist->GetId(0));
-		graph->AddEdge(maxID, idlist->GetId(skip));		
+		vtkEdgeType addEdge[4];
+		 addEdge[0] = graph->AddEdge(minID, idlist->GetId(0));
+		 addEdge[1] =graph->AddEdge(minID, idlist->GetId(skip));		
+
+		vtkSmartPointer<vtkPolyData> tmp_output = this->GetDiskTopologyPolydata();
+		CPolygonsData polygon ;
+		polygon.InitailDiskTopology(tmp_output);
+		int maxCurFace = polygon.GetHighestCurvatureFace();
+
+		vtkIdType npts;
+		vtkIdType *pts;
+
+		original_polydata->GetCellPoints(maxCurFace, npts,pts);
+		vtkSmartPointer<vtkIdList> idlist2 =  GetConnectedVertices(original_polydata,pts[1]);		
+		skip = idlist2->GetNumberOfIds()/2;
+		graph->RemoveEdge(addEdge[1].Id);
+		graph->RemoveEdge(addEdge[0].Id);
+		addEdge[2] = graph->AddEdge(pts[1], idlist2->GetId(0));
+		addEdge[3] = graph->AddEdge(pts[1], idlist2->GetId(skip));
+
+		
+
+		
+
+
 	}
 }

@@ -596,6 +596,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 					vtkSmartPointer<vtkPolyData> outputPropose = modTruncate.GetDiskTopologyPolydata();
 					CPolygonsData polygon ;
 					polygon.InitailDiskTopology(outputPropose);
+					polygon.Parameterize();
 				}
 			}
 			break;

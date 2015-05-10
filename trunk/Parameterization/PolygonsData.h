@@ -40,6 +40,8 @@ public:
 
 	//GLuint GetGIImageTextureID();
 	int Sampling(int degree,int resW, int resH, double *data_out);
+	int Parameterize();
+	int GetHighestCurvatureFace();
 private:
 	
 protected:
@@ -67,7 +69,7 @@ protected:
 	//for GIs functions
 	//int CreateGImeshes();
 	int InitialCut();
-	int Parameterize();
+	//int Parameterize();
 	int ParameterizeOriginal();
 	
 	int CreateGIoutput();
@@ -80,6 +82,7 @@ protected:
 
 	double m_objectRadius;
 	double m_objectCenter[3];
+	
 public:	
 	int nelems;
 	char **elist;
