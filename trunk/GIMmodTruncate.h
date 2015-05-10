@@ -64,12 +64,13 @@ protected:
 	OmMesh mesh;
 	vtkSmartPointer<vtkMutableUndirectedGraph> graph;
 	int geodesicSourceVertexID;
+	bool originalMethod;
 	bool seedRemoved;
 	bool allFaceRemoved;
 	bool firstTruncateDone;
 	bool removePathsBetweenBoundariesFromGraph;
 	bool shortenRingsDone;
-	bool largestGraphDone;
+	bool mergeBoundariesGraphDone;
 	double timeConsumed;
 	std::multimap<double,hedge_data> candidate_nonTagEdges;
 	std::multimap<double,hedge_data> candidate_TagEdges;
@@ -93,7 +94,7 @@ protected:
 	void CheckValidCutGraph(bool step);
 	void RemoveOriginalBoundariesFromGraph();
 
-
+	void FindBoundaryPoints();
 	void TagSurroundGraphFaceEdges(vtkSmartPointer<vtkMutableUndirectedGraph> collision_graph);// tag surrond edges of face that adjacent on an edge in graph
 	void TagSurroundGraphVertexEdges(vtkSmartPointer<vtkMutableUndirectedGraph> collision_graph,int level);  // tag surrond edges of face around a vertex in graph
 	void GetNeighborCell(vtkPolyData* source_polydata, vtkIdType vid , int level, std::vector<vtkIdType> &storeIDs);

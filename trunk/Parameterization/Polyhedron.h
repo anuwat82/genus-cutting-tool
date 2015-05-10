@@ -767,6 +767,7 @@ void SetBoundaryLines()
 	int i=0;numboundary=0;
 	if(neighborI!=NULL && neighborF!=NULL && boundary!=NULL)
 	{
+		#pragma omp parallel for
 		for(i=0;i<numberV;i++)
 		{
 			if(	(neighborF[i] ==0) &&  (neighborI[i] ==0))
@@ -781,10 +782,12 @@ void SetBoundaryLines()
 				boundary[i] = 0;
 			}
 			else
-			{
-				
+			{				
 				boundary[i] = 1;
-				numboundary++;
+				#pragma omp critical 
+				{
+					numboundary++;
+				}
 			}
 		}
 	}
@@ -978,19 +981,20 @@ void SetBoundaryLines()
 void setPolarMap()
 {
   
-	int i,j,k;
 
-	IDList *now=NULL;
-	IDList *now2=NULL;
-	double dx,dy;
-	PolarList *nowp=NULL;
-	PolarList *nowp2=NULL;
-	int nowID,nextID;
-	double angle = 0.0;
-	double theta = 0.0;
-	int cn0=0;
+
+	//IDList *now=NULL;
+	//IDList *now2=NULL;
+	//double dx,dy;
+	//PolarList *nowp=NULL;
+	//PolarList *nowp2=NULL;
+	//int nowID,nextID;
+	//double angle = 0.0;
+	//double theta = 0.0;
+	//int cn0=0;
 	// make Geodesic Polar Map 
-	for(i=0;i<numberV;i++)
+	#pragma omp parallel for
+	for(int i=0;i<numberV;i++)
 	{
 		IDtool->CleanNeighborPolar(PHead[i],PTail[i]);
       
@@ -1001,16 +1005,15 @@ void setPolarMap()
 
 		if(boundary[i]==0)
 		{
-      
-			dy = 0.0;
-			theta = 0.0;
-			now = VHead[i];
+			Point3d _bc[2];
+			double theta = 0.0;
+			IDList *now = VHead[i];
 			while(nextN(now)!=VTail[i])
 			{
 				now = nextN(now);
-				PT->makeVector(bc[0],point[i],point[now->ID]);
-				PT->makeVector(bc[1],point[i],point[next(now)->ID]);
-				angle = acos((PT->InnerProduct(bc[0],bc[1])/(PT->Point3dSize(bc[0])*PT->Point3dSize(bc[1]))));
+				PT->makeVector(&_bc[0],point[i],point[now->ID]);
+				PT->makeVector(&_bc[1],point[i],point[next(now)->ID]);
+				double angle = acos((PT->InnerProduct(&_bc[0],&_bc[1])/(PT->Point3dSize(&_bc[0])*PT->Point3dSize(&_bc[1]))));
 				theta += angle;
 				now = nextN(now);
 			}
@@ -1018,11 +1021,12 @@ void setPolarMap()
       
 			now = IHead[i];
 			now = nextN(now);
-			nowID = now->ID;
-			dx = PT->Distance(point[i],point[now->ID]);
-			dy = 0.0;
+			int nowID = now->ID;
+			int nextID;
+			double dx = PT->Distance(point[i],point[now->ID]);
+			double dy = 0.0;
 			IDtool->AppendPolarI(nowID,PTail[i],dx,dy);
-			cn0 = 1;
+			int cn0 = 1;
 			while(cn0<neighborI[i])
 			{
 				now = VHead[i];
@@ -1037,10 +1041,10 @@ void setPolarMap()
 					
 					now = nextN(now);
 				}			
-				PT->makeVector(bc[0],point[i],point[nowID]);
-				PT->makeVector(bc[1],point[i],point[nextID]);
-				dx = PT->Point3dSize(bc[1]);
-				angle = acos((PT->InnerProduct(bc[0],bc[1])/(PT->Point3dSize(bc[0])*PT->Point3dSize(bc[1]))));
+				PT->makeVector(&_bc[0],point[i],point[nowID]);
+				PT->makeVector(&_bc[1],point[i],point[nextID]);
+				dx = PT->Point3dSize(&_bc[1]);
+				double angle = acos((PT->InnerProduct(&_bc[0],&_bc[1])/(PT->Point3dSize(&_bc[0])*PT->Point3dSize(&_bc[1]))));
 				dy += (2.0*PI*angle)/theta;
 				IDtool->AppendPolarI(nextID,PTail[i],dx,dy);
 				nowID = nextID;
@@ -2591,6 +2595,7 @@ void setSigmaZero(){
 }
 
 double getCurrentE(){
+	/*
   int i,j;
   IDList *now=NULL;
   double varphi,ddv,dsize1,sumarea;
@@ -2606,63 +2611,75 @@ double getCurrentE(){
   dG = 0.0;
 
   double max_strect = 0.0;
-  if(boundarysigma==0){
-  for(i=0;i<numberF;i++)
-  {
-    if(boundary[Face[i][0]]!=1&&boundary[Face[i][1]]!=1&&boundary[Face[i][2]]!=1)
+  */
+	double dsum=0.0;
+	if(boundarysigma==0)
 	{
-    pV1 = pV[Face[i][0]];
-    pV2 = pV[Face[i][1]];
-    pV3 = pV[Face[i][2]];
-    pU1 = pU[Face[i][0]];
-    pU2 = pU[Face[i][1]];
-    pU3 = pU[Face[i][2]];
+		#pragma omp parallel for
+		for(int i=0;i<numberF;i++)
+		{
+			if(boundary[Face[i][0]]!=1&&boundary[Face[i][1]]!=1&&boundary[Face[i][2]]!=1)
+			{
+				double pV1 = pV[Face[i][0]];
+				double pV2 = pV[Face[i][1]];
+				double pV3 = pV[Face[i][2]];
+				double pU1 = pU[Face[i][0]];
+				double pU2 = pU[Face[i][1]];
+				double pU3 = pU[Face[i][2]];
 
     
-    dsize1 = PT->getParametricA(pV1,pV2,pV3,pU1,pU2,pU3);
-    
+				double dsize1 = PT->getParametricA(pV1,pV2,pV3,pU1,pU2,pU3);
+				Point3d _bc[2];
    
       
-    PT->setParametricDs(bc[0],point[Face[i][0]],
-			point[Face[i][1]],point[Face[i][2]],
-			pV1,pV2,pV3,dsize1);
-    PT->setParametricDt(bc[1],point[Face[i][0]],
-			point[Face[i][1]],point[Face[i][2]],
-			pU1,pU2,pU3,dsize1);
-    dE = PT->InnerProduct(bc[0],bc[0]);
+				PT->setParametricDs(&_bc[0],point[Face[i][0]],
+						point[Face[i][1]],point[Face[i][2]],
+						pV1,pV2,pV3,dsize1);
+				PT->setParametricDt(&_bc[1],point[Face[i][0]],
+						point[Face[i][1]],point[Face[i][2]],
+						pU1,pU2,pU3,dsize1);
+				double dE = PT->InnerProduct(&_bc[0],&_bc[0]);
     
-    dG = PT->InnerProduct(bc[1],bc[1]);
-    dsum +=  areaMap3D[i]*0.5*(dE+dG);
-    }
-  }
-  }else{
-    for(i=0;i<numberF;i++){
+				double dG = PT->InnerProduct(&_bc[1],&_bc[1]);
+				#pragma omp critical
+				{
+					dsum +=  areaMap3D[i]*0.5*(dE+dG);
+				}
+			}
+		}
+	}
+	else
+	{
+		#pragma omp parallel for
+		for(int i=0;i<numberF;i++){
       
-    pV1 = pV[Face[i][0]];
-    pV2 = pV[Face[i][1]];
-    pV3 = pV[Face[i][2]];
-    pU1 = pU[Face[i][0]];
-    pU2 = pU[Face[i][1]];
-    pU3 = pU[Face[i][2]];
+		double pV1 = pV[Face[i][0]];
+		double pV2 = pV[Face[i][1]];
+		double pV3 = pV[Face[i][2]];
+		double pU1 = pU[Face[i][0]];
+		double pU2 = pU[Face[i][1]];
+		double pU3 = pU[Face[i][2]];
 
 
     
-    dsize1 = PT->getParametricA(pV1,pV2,pV3,pU1,pU2,pU3);
+		double dsize1 = PT->getParametricA(pV1,pV2,pV3,pU1,pU2,pU3);
     
    
-      
-    PT->setParametricDs(bc[0],point[Face[i][0]],
-			point[Face[i][1]],point[Face[i][2]],
-			pV1,pV2,pV3,dsize1);
-    PT->setParametricDt(bc[1],point[Face[i][0]],
-			point[Face[i][1]],point[Face[i][2]],
-			pU1,pU2,pU3,dsize1);
-    dE = PT->InnerProduct(bc[0],bc[0]);
+		Point3d _bc[2];  
+		PT->setParametricDs(&_bc[0],point[Face[i][0]],
+				point[Face[i][1]],point[Face[i][2]],
+				pV1,pV2,pV3,dsize1);
+		PT->setParametricDt(&_bc[1],point[Face[i][0]],
+				point[Face[i][1]],point[Face[i][2]],
+				pU1,pU2,pU3,dsize1);
+		double dE = PT->InnerProduct(&_bc[0],&_bc[0]);
     
-    dG = PT->InnerProduct(bc[1],bc[1]);
-    dsum +=  areaMap3D[i]*0.5*(dE+dG);
-   
-  }
+		double dG = PT->InnerProduct(&_bc[1],&_bc[1]);
+		#pragma omp critical
+		{
+			dsum +=  areaMap3D[i]*0.5*(dE+dG);
+		}
+	}
   
   
   }

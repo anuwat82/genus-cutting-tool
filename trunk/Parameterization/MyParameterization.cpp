@@ -115,13 +115,13 @@ void    MyParameterization::SetPolarVertexAndFaceAndBorder(	PolarVertex *pIPV,
 	numberV = (*pIOnum_PV);
 	numberF = (*pIOnum_Face);
 
-
+#pragma omp parallel for
 	for(int i=0;i<num_originalVertex;i++)
 	{		
 		setPoint(i,pIPV[i].p_vertex->x,pIPV[i].p_vertex->y,pIPV[i].p_vertex->z);
 	}
 	
-	
+//#pragma omp parallel for	
 	for(int i=0;i<numberF;i++)
 	{		
 		setFace(i,pIOFace[(i*3)+0],pIOFace[(i*3)+1],pIOFace[(i*3)+2]);
@@ -319,6 +319,7 @@ bool	MyParameterization::HandleValence2Boundary(
 
 void	MyParameterization::SortV()
 {
+#pragma omp parallel for
 	for(int i=0;i<numberV;i++)
 	{
 		if (boundary[i] == 0 )
@@ -399,7 +400,7 @@ void	MyParameterization::SortV()
 				}
 			}
 			if (startID < 0)
-				return; //should not happen
+				throw; //should not happen
 
 			//move boundary VNode to head node
 			now = VHead[i];			
@@ -477,29 +478,7 @@ void	MyParameterization::SortV()
 
 			now =now;
 		}
-		/*
-		VList *nowv = VHead[i];
-		double point_normal[3] = {0};
-		int numSurroundFace = neighborF[i];
-		Point3d *faceNormal = new Point3d[numSurroundFace];
-		Point3d pointNormal;
-		Point3d v1,v2,N;				
-		PointTool pt;
-		while (next(nowv) != VTail[i])
-		{
-			nowv = next(nowv);
-			pt.makeVector(&v1,point[i],point[nowv->ID]);
-			pt.makeVector(&v2,point[i],point[nowv->next->ID]);
-			pt.CrossVector(&N,&v1,&v2);
-			pt.Normalize3D(&N);
-			pt.Copy(&N,&(nowv->normal));					
-			nowv = next(nowv);
-			pt.Copy(&N,&(nowv->normal));
-			pointNormal.x += N.x;pointNormal.y += N.y;pointNormal.z += N.z;
-		}
-		pt.Normalize3D(&pointNormal);
-		pt.Copy(&pointNormal,&VHead[i]->normal);
-		*/
+		
 	}
 }
 
@@ -1624,20 +1603,22 @@ void MyParameterization::MyBoundaryMap()
 	BedgeH->next = BedgeT;
 	BedgeT->back = BedgeH;
 	int cnt=0;
-    
+ #pragma omp parallel for			   
 	for(i=0;i<numberF;i++)
 	{
 		if(	boundary[Face[i][0]]==1&&
 			boundary[Face[i][1]]==1&&
 			boundary[Face[i][2]]==1)
 		{
-	
-			IDtool->AppendVF(Face[i][0],BedgeT);
-			IDtool->AppendVF(Face[i][1],BedgeT);
-			IDtool->AppendVF(Face[i][1],BedgeT);
-			IDtool->AppendVF(Face[i][2],BedgeT);
-			IDtool->AppendVF(Face[i][2],BedgeT);
-			IDtool->AppendVF(Face[i][0],BedgeT);
+			#pragma omp critical
+			{
+				IDtool->AppendVF(Face[i][0],BedgeT);
+				IDtool->AppendVF(Face[i][1],BedgeT);
+				IDtool->AppendVF(Face[i][1],BedgeT);
+				IDtool->AppendVF(Face[i][2],BedgeT);
+				IDtool->AppendVF(Face[i][2],BedgeT);
+				IDtool->AppendVF(Face[i][0],BedgeT);
+			}
 		}
 		else
 		{
@@ -1645,21 +1626,34 @@ void MyParameterization::MyBoundaryMap()
 				(boundary[Face[i][1]]==1&&boundary[Face[i][2]]==1)||
 				(boundary[Face[i][2]]==1&&boundary[Face[i][0]]==1))
 			{
+				
+				
 				if(boundary[Face[i][0]]==1&&boundary[Face[i][1]]==1)
 				{
-					IDtool->AppendVF(Face[i][0],BedgeT);
-					IDtool->AppendVF(Face[i][1],BedgeT);	    
+					#pragma omp critical
+					{
+
+						IDtool->AppendVF(Face[i][0],BedgeT);
+						IDtool->AppendVF(Face[i][1],BedgeT);	    
+					}
 				}
 				else if(boundary[Face[i][1]]==1&&boundary[Face[i][2]]==1)
 				{
+					#pragma omp critical
+					{
 					IDtool->AppendVF(Face[i][1],BedgeT);
 					IDtool->AppendVF(Face[i][2],BedgeT);	    
+					}
 				}
 				else if(boundary[Face[i][2]]==1&&boundary[Face[i][0]]==1)
 				{
+					#pragma omp critical
+					{
 					IDtool->AppendVF(Face[i][2],BedgeT);
-					IDtool->AppendVF(Face[i][0],BedgeT);	    
+					IDtool->AppendVF(Face[i][0],BedgeT);
+					}
 				}
+				
 			}
 		}
 	}
@@ -2022,7 +2016,7 @@ void MyParameterization::MyBoundaryMap()
 		}		
 		
 	}
-  
+#pragma omp parallel for
 	for(i=0;i<numberV;i++)
 	{
 		if(boundary[i]==1)
