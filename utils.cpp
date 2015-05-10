@@ -159,17 +159,19 @@ vtkSmartPointer<vtkIdList> GetConnectedVertices(vtkSmartPointer<vtkPolyData> mes
         {
         if(pointIdList->GetId(0) == ptId)
           {
-          connectedVertices->InsertNextId(pointIdList->GetId(1));
+          connectedVertices->InsertUniqueId(pointIdList->GetId(1));
+		 
           }
         else
           {
-          connectedVertices->InsertNextId(pointIdList->GetId(0));
+          connectedVertices->InsertUniqueId(pointIdList->GetId(0));
           }
         }
       }
 
 
     }
+  
   return connectedVertices;
 
 } 

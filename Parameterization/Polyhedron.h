@@ -2298,47 +2298,50 @@ void setMVCC(){
 }
 void setFloaterC()
 {
-	int i;
-	double *coef = new double[4];
-	Point2d *v0 = new Point2d(0.0,0.0);
+	
+	//double *coef = new double[4];
+	/*Point2d *v0 = new Point2d(0.0,0.0);
 	Point2d *v1= new Point2d(0.0,0.0);
 	Point2d *v2= new Point2d(0.0,0.0);
-	Point2d *v3= new Point2d(0.0,0.0);
-	IDList *now=NULL;
-	PolarList *nowp=NULL;
-	PolarList *nowp2=NULL;
-	int checkintersect=0;
-	double angle = 0.0;
-	double theta = 0.0;
-	double interval=0.0;
-	double dweight=0.0;
-
-	for(i=0;i<numberV;i++)
+	Point2d *v3= new Point2d(0.0,0.0);*/
+	//IDList *now=NULL;
+	//PolarList *nowp=NULL;
+	//PolarList *nowp2=NULL;
+	//int checkintersect=0;
+	//double angle = 0.0;
+	//double theta = 0.0;
+	//double interval=0.0;
+	//double dweight=0.0;
+#pragma omp parallel for
+	for(int i=0;i<numberV;i++)
 	{
 		if(boundary[i]!=1)
 		{
-			dweight=0.0;
-			nowp = PHead[i];
+			double dweight=0.0;
+			PolarList *nowp = PHead[i];
 			while(nextN(nowp)!=PTail[i])
 			{
 				nowp = nextN(nowp);
-				nowp2 = PHead[i];
-				interval = nowp->theta+PI;
+				PolarList *nowp2 = PHead[i];
+				double interval = nowp->theta+PI;
 				if(interval>=(2.0*PI))
 					interval -= (2.0*PI);
-				checkintersect=0;
+				int checkintersect=0;
+				Point2d v0(0,0);
+				Point2d v1,v2,v3;
+				double coef[4];
 				while(nextN(nextN(nowp2))!=PTail[i])
 				{
 					nowp2 = nextN(nowp2);
 					if((interval>=nowp2->theta)&&(interval<=nextN(nowp2)->theta))
 					{
-						v1->x = nowp2->r*cos(nowp2->theta);
-						v1->y = nowp2->r*sin(nowp2->theta);
-						v2->x = nextN(nowp2)->r*cos(nextN(nowp2)->theta);
-						v2->y = nextN(nowp2)->r*sin(nextN(nowp2)->theta);
-						v3->x = nowp->r*cos(nowp->theta);
-						v3->y = nowp->r*sin(nowp->theta);
-						PT->setC(coef,v0,v1,v2,v3);
+						v1.x = nowp2->r*cos(nowp2->theta);
+						v1.y = nowp2->r*sin(nowp2->theta);
+						v2.x = nextN(nowp2)->r*cos(nextN(nowp2)->theta);
+						v2.y = nextN(nowp2)->r*sin(nextN(nowp2)->theta);
+						v3.x = nowp->r*cos(nowp->theta);
+						v3.y = nowp->r*sin(nowp->theta);
+						PT->setC(coef,&v0,&v1,&v2,&v3);
 						nowp->lambda += -coef[0]*coef[3];
 						nowp2->lambda += -coef[0]*coef[1];
 						nowp2->next->lambda += -coef[0]*coef[2];
@@ -2351,13 +2354,13 @@ void setFloaterC()
 				if(checkintersect==0)
 				{
 					nowp2 = nextN(nowp2);
-					v1->x = nowp2->r*cos(nowp2->theta);
-					v1->y = nowp2->r*sin(nowp2->theta);
-					v2->x = nextN(PHead[i])->r;
-					v2->y = 0.0;
-					v3->x = nowp->r*cos(nowp->theta);
-					v3->y = nowp->r*sin(nowp->theta);
-					PT->setC(coef,v0,v1,v2,v3);
+					v1.x = nowp2->r*cos(nowp2->theta);
+					v1.y = nowp2->r*sin(nowp2->theta);
+					v2.x = nextN(PHead[i])->r;
+					v2.y = 0.0;
+					v3.x = nowp->r*cos(nowp->theta);
+					v3.y = nowp->r*sin(nowp->theta);
+					PT->setC(coef,&v0,&v1,&v2,&v3);
 					nowp->lambda += -coef[0]*coef[3];
 					nowp2->lambda += -coef[0]*coef[1];
 					PHead[i]->next->lambda += -coef[0]*coef[2];
@@ -2375,11 +2378,13 @@ void setFloaterC()
 			}
 		}
 	}
+	/*
 	delete coef;
 	delete v0;
 	delete v1;
 	delete v2;
 	delete v3;
+	*/
 }
 
 double getMVCTerm(int i,int backID,int nowID,int nextID){

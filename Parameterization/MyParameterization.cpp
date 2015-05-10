@@ -919,8 +919,6 @@ void    MyParameterization::FindMinMaxStretchBoundaryFace(int *minID,int *maxID)
 }
 double   MyParameterization::GetExtremaTriangle(int *index , bool *borderFace,int SolverMode)
 {
-	//static double degree = 0.0;
-	//degree += 1.0;
 	
 	
 	int i = 0;
@@ -928,14 +926,7 @@ double   MyParameterization::GetExtremaTriangle(int *index , bool *borderFace,in
 
 	boundarytype=1;
 	MyBoundaryMap();
-	setPolarMap(); 
-	/*
-	double old_gamma = gammaP;
-	gammaP = 1.0;
-	ParametrizationSingle(iteNum,PCBCGerror,NULL);
-	gammaP = old_gamma;
-	*/
-	
+	setPolarMap(); 	
 	
 	//setTutteC();
 	setFloaterC();
@@ -970,23 +961,23 @@ double   MyParameterization::GetExtremaTriangle(int *index , bool *borderFace,in
 	}
 	*/
 
-	double pV1,pV2,pV3,pU1,pU2,pU3;
-	double dE,dG;
-	double dsize1;
-	dE = 0.0;
-	dG = 0.0;
+	
+	//double dE,dG;
+	//double dsize1;
+	//dE = 0.0;
+	//dG = 0.0;
 	double dsum = 0;
 	double max_stretch = 0.0;
 	int max_stretch_face = -1;
 
-	int sample = 63046;
+	
 
-
+#pragma omp parallel for
 	for(i=0;i<numberF;i++)
 	{
 		//if(boundary[Face[i][0]]!=1&&boundary[Face[i][1]]!=1&&boundary[Face[i][2]]!=1)
 		{
-      
+			double pV1,pV2,pV3,pU1,pU2,pU3;
 			pV1 = pV[Face[i][0]];
 			pV2 = pV[Face[i][1]];
 			pV3 = pV[Face[i][2]];
@@ -998,36 +989,39 @@ double   MyParameterization::GetExtremaTriangle(int *index , bool *borderFace,in
 			double centerV = (pV1+pV2+pV3)/3.0;
 			double distance = sqrt(centerU*centerU + centerV*centerV);
 			*/
-			dsize1 = PT->getParametricA(pV1,pV2,pV3,pU1,pU2,pU3);
+			double dsize1 = PT->getParametricA(pV1,pV2,pV3,pU1,pU2,pU3);
     
    
-      
-			PT->setParametricDs(bc[0],point[Face[i][0]],
+			Point3d _bc[2];
+			PT->setParametricDs(&_bc[0],point[Face[i][0]],
 					point[Face[i][1]],point[Face[i][2]],
 					pV1,pV2,pV3,dsize1);
-			PT->setParametricDt(bc[1],point[Face[i][0]],
+			PT->setParametricDt(&_bc[1],point[Face[i][0]],
 					point[Face[i][1]],point[Face[i][2]],
 					pU1,pU2,pU3,dsize1);
-			dE = PT->InnerProduct(bc[0],bc[0]);
-    
-			dG = PT->InnerProduct(bc[1],bc[1]);
+			double dE = PT->InnerProduct(&_bc[0],&_bc[0]);    
+			double dG = PT->InnerProduct(&_bc[1],&_bc[1]);
+			double stretch = (dE+dG);
 
-			double stretch = (dE+dG);		
-			dsum +=  areaMap3D[i]*0.5*(stretch);
-			if (stretch > max_stretch)
+			#pragma omp critical
 			{
-				max_stretch = stretch;
-				max_stretch_face = i;
+				dsum +=  areaMap3D[i]*0.5*(stretch);
+				if (stretch > max_stretch)
+				{
+					max_stretch = stretch;
+					max_stretch_face = i;
+				}
 			}
+
+			
 		}
 	}
+
 	if (max_stretch_face < 0)
 	{		
 		return -1;
 	}
-	*index = max_stretch_face;
-	
-	
+	*index = max_stretch_face;	
 	*borderFace = boundary[Face[max_stretch_face][0]] || boundary[Face[max_stretch_face][1]] || boundary[Face[max_stretch_face][2]];
 	//boundarysigma=0;
 	double E =constsumarea3D*sqrt(dsum/sumarea3D);
