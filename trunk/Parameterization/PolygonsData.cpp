@@ -715,8 +715,7 @@ int CPolygonsData::IteratedAugmentCut(double *op_calTime)
 		{
 			printf(	"STOP BECAUSE BOUNDARY FACE (%f/%f)\n",circle_stretch,stopConst);
 			//fprintf(logFile,	"STOP BECAUSE BOUNDARY FACE (%f/%f)\n",circle_stretch,stopConst);
-			calTime = clock() - calTime; 
-			m_calTime += calTime;
+			
 			stopLoop = true;			
 		}
 		
@@ -724,12 +723,9 @@ int CPolygonsData::IteratedAugmentCut(double *op_calTime)
 		{
 			printf(	"STOP BECAUSE LOWER THAN CONST (%f/%f)\n",circle_stretch,stopConst);
 			//fprintf(logFile,"STOP BECAUSE LOWER THAN CONST (%f/%f)\n",circle_stretch,stopConst);
-			if (!stopLoop)
-			{
-				calTime = clock() - calTime; 
-				m_calTime += calTime;
-				stopLoop = true;
-			}
+			
+			stopLoop = true;
+			
 		}
 		else
 		{
@@ -749,8 +745,7 @@ int CPolygonsData::IteratedAugmentCut(double *op_calTime)
 				tool.CleanNeighbor(newCutPathH,newCutPathT);
 				printf("STOP BECAUSE NUM NODE TO EXTREMA WAS %d (%f/%f)\n",numNode,circle_stretch,stopConst);
 				//fprintf(logFile,"STOP BECAUSE NUM NODE TO EXTREMA WAS %d (%f/%f)\n",numNode,circle_stretch,stopConst);
-				calTime = clock() - calTime; 
-				m_calTime += calTime;
+				
 				stopLoop = true;
 			}
 			else
@@ -764,6 +759,16 @@ int CPolygonsData::IteratedAugmentCut(double *op_calTime)
 		if (stopLoop)
 		{
 			cout << "Extened Cut-path " << degree_count <<"times" << endl;
+			calTime = clock() - calTime; 
+			m_calTime += calTime;
+
+			cout << "Actual time for iterated augment " << static_cast<double>(m_calTime)/CLOCKS_PER_SEC << " sec" << endl;
+			
+			//for fair with original method  we do stretch minimizing circular parameterization
+			calTime = clock();			
+			double current_stretch = paramTool.CircularParameterize(	p_boundarySurfacePolarVertexInfo,*p_num_boundarySurfacePolarVertexInfo,NULL);
+			calTime = clock() - calTime; 
+			m_calTime += calTime;
 			break;
 		}
 		
@@ -791,6 +796,7 @@ int CPolygonsData::IteratedAugmentCut(double *op_calTime)
 		m_calTime += calTime;
 	}
 
+	
 	if (op_calTime)
 		*op_calTime = static_cast<double>(m_calTime)/CLOCKS_PER_SEC;
 	return 0;
@@ -845,7 +851,7 @@ int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime)
 												);	
 		m_numValen2BoundaryPoint = 0;
 
-		double current_stretch = paramTool.Parameterize(	p_boundarySurfacePolarVertexInfo,*p_num_boundarySurfacePolarVertexInfo,NULL);
+		double current_stretch = paramTool.CircularParameterize(	p_boundarySurfacePolarVertexInfo,*p_num_boundarySurfacePolarVertexInfo,NULL);
 		if (current_stretch <= previousStretch)
 		{
 			//find high stretch face

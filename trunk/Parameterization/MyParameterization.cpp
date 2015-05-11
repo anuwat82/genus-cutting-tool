@@ -736,7 +736,29 @@ double	MyParameterization::Parameterize(
 }
 
 
+double	MyParameterization::CircularParameterize(PolarVertex *pIPV,
+												 int num_PV,
+												 FILE* logFile)
+{
+	iteNum = (pow((double)((numberV/20000) + 1),2)) *2000;	
+    boundarytype=1;	
 
+
+	//param(logFile);
+
+	MyBoundaryMap();
+	//BoundaryMap();
+	setPolarMap();
+	ParametrizationOptimal(iteNum,PCBCGerror,logFile);
+	//ParametrizationSmoothOptimal(iteNum,PCBCGerror,logFile);
+
+	for (int i=0;i<numberV;i++)
+	{
+		pIPV[i].u = pU[i];
+		pIPV[i].v = pV[i];		
+	}
+	return resultStretch;
+}
 
 
 void	MyParameterization::linbcg_Solve()
