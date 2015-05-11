@@ -979,17 +979,30 @@ void GIMmodTruncate::ShorthenRings(bool step)
 						if (graph->GetDegree(graphVertex) > 2)
 						{
 							vtkIdType prev_vid = gid->GetValue(tree->GetParent(nextVertex));
-							if (boundaryPoints->IsId(prev_vid) == -1)
+							if (originalMethod)
 							{
 								vtkEdgeType remEdge(prev_vid,graphVertex,-1); //do not care about ID value, just store start and end vertex id
 								remEdges.push_back(remEdge);
-							}
-							if (boundaryPoints->IsId(graphVertex) == -1)
-							{
-								//end of path
 								endofpathvid[i] = graphVertex;
 								prev_endofpathvid[i] = prev_vid;
 								break;
+							}
+							else
+							{
+							
+								if (boundaryPoints->IsId(prev_vid) == -1)
+								{
+									vtkEdgeType remEdge(prev_vid,graphVertex,-1); //do not care about ID value, just store start and end vertex id
+									remEdges.push_back(remEdge);
+								}
+								if (boundaryPoints->IsId(graphVertex) == -1)
+								{
+									//end of path
+									endofpathvid[i] = graphVertex;
+									prev_endofpathvid[i] = prev_vid;
+									break;
+								}
+							
 							}
 							
 						}

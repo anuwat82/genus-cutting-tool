@@ -661,6 +661,287 @@ int CPolygonsData::GetHighestCurvatureFace()
 	double circle_stretch = paramTool.GetExtremaTriangle(&max1st,&boundaryFace,1);
 	return max1st;
 }
+
+int CPolygonsData::IteratedAugmentCut(double *op_calTime)
+{
+
+	IDSet tool;	
+
+	clock_t calTime = 0;
+	calTime = clock();
+	m_calTime = 0;
+	// calculation
+	int num_validPolarVertex =0;
+	//double stopConst = 1500;
+	double stopConst = 2.0;
+	double previousStretch = DBL_MAX;
+	degree_count = 0;
+	while (1)
+	{
+		bool stopLoop = false;
+		calTime = clock();
+		
+		int *p_boundarySurfaceFaceInfo = m_boundarySurfaceFaceInfo;
+		int *p_num_boundarySurfaceFaceInfo = &m_num_boundarySurfaceFace;
+		PolarVertex* p_boundarySurfacePolarVertexInfo = m_boundarySurfacePolarVertexInfo;
+		int *p_num_boundarySurfacePolarVertexInfo = &m_num_boundarySurfacePolarVertex;
+
+		
+		if (degree_count == 0)
+			num_validPolarVertex = numVertex;
+		
+		
+		MyParameterization paramTool;
+		
+		paramTool.SetPolarVertexAndFaceAndBorder(	p_boundarySurfacePolarVertexInfo,
+													p_num_boundarySurfacePolarVertexInfo,
+													num_validPolarVertex,
+													p_boundarySurfaceFaceInfo,
+													p_num_boundarySurfaceFaceInfo,
+													CutHedgeH,
+													CutHedgeT,
+													m_numValen2BoundaryPoint
+												);	
+		m_numValen2BoundaryPoint = 0;
+		
+		int max1st = -1;
+		bool boundaryFace = false;
+		int solverMode = 0;
+		int numDupPoint = 0;
+		double circle_stretch = 0;
+		circle_stretch = paramTool.GetExtremaTriangle(&max1st,&boundaryFace,solverMode);
+
+		if (boundaryFace )
+		{
+			printf(	"STOP BECAUSE BOUNDARY FACE (%f/%f)\n",circle_stretch,stopConst);
+			//fprintf(logFile,	"STOP BECAUSE BOUNDARY FACE (%f/%f)\n",circle_stretch,stopConst);
+			calTime = clock() - calTime; 
+			m_calTime += calTime;
+			stopLoop = true;			
+		}
+		
+		if (circle_stretch < stopConst)
+		{
+			printf(	"STOP BECAUSE LOWER THAN CONST (%f/%f)\n",circle_stretch,stopConst);
+			//fprintf(logFile,"STOP BECAUSE LOWER THAN CONST (%f/%f)\n",circle_stretch,stopConst);
+			if (!stopLoop)
+			{
+				calTime = clock() - calTime; 
+				m_calTime += calTime;
+				stopLoop = true;
+			}
+		}
+		else
+		{
+			IDList *newCutPathH = NULL;
+			IDList *newCutPathT = NULL;		
+			int numNode = 0;			
+		
+			newCutPathH = new IDList();
+			newCutPathT = new IDList();
+			newCutPathH->next = newCutPathT;
+			newCutPathT->back = newCutPathH;
+			numNode = paramTool.FindShortestPathToBorderFromFace(max1st,newCutPathH,newCutPathT);		
+		
+		
+			if (numNode < 4 )
+			{			
+				tool.CleanNeighbor(newCutPathH,newCutPathT);
+				printf("STOP BECAUSE NUM NODE TO EXTREMA WAS %d (%f/%f)\n",numNode,circle_stretch,stopConst);
+				//fprintf(logFile,"STOP BECAUSE NUM NODE TO EXTREMA WAS %d (%f/%f)\n",numNode,circle_stretch,stopConst);
+				calTime = clock() - calTime; 
+				m_calTime += calTime;
+				stopLoop = true;
+			}
+			else
+			{			
+				paramTool.AddCutBorder(CutHedgeH,CutHedgeT,newCutPathH,newCutPathT,degree_count+1,&numDupPoint);
+				tool.CleanNeighbor(newCutPathH,newCutPathT);
+			
+			}
+		}
+		//stopLoop = true;
+		if (stopLoop)
+		{
+			cout << "Extened Cut-path " << degree_count <<"times" << endl;
+			break;
+		}
+		
+		int new_num_boundarySurfaceFaceInfo = (*p_num_boundarySurfaceFaceInfo);		
+		int new_num_boundarySurfacePolarVertexInfo = (*p_num_boundarySurfacePolarVertexInfo) + numDupPoint;
+
+		int *new_p_boundarySurfaceFaceInfo = new int [((*p_num_boundarySurfaceFaceInfo)+4)*3];
+		memcpy(new_p_boundarySurfaceFaceInfo,p_boundarySurfaceFaceInfo,sizeof(int)*(*p_num_boundarySurfaceFaceInfo)*3);
+
+		PolarVertex* new_p_boundarySurfacePolarVertexInfo =  new PolarVertex [(*p_num_boundarySurfacePolarVertexInfo) + numDupPoint + 2];
+		memcpy(new_p_boundarySurfacePolarVertexInfo,p_boundarySurfacePolarVertexInfo,sizeof(PolarVertex)*(*p_num_boundarySurfacePolarVertexInfo));
+
+		num_validPolarVertex = (*p_num_boundarySurfacePolarVertexInfo);
+		delete [] p_boundarySurfaceFaceInfo;
+		delete [] p_boundarySurfacePolarVertexInfo;
+		m_boundarySurfaceFaceInfo = new_p_boundarySurfaceFaceInfo;
+		m_num_boundarySurfaceFace = new_num_boundarySurfaceFaceInfo;
+		m_boundarySurfacePolarVertexInfo = new_p_boundarySurfacePolarVertexInfo;
+		m_num_boundarySurfacePolarVertex = new_num_boundarySurfacePolarVertexInfo;
+
+
+		//previousStretch = stretch[degree_count];
+		degree_count++;
+		calTime = clock() - calTime;
+		m_calTime += calTime;
+	}
+
+	if (op_calTime)
+		*op_calTime = static_cast<double>(m_calTime)/CLOCKS_PER_SEC;
+	return 0;
+}
+
+
+int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime)
+{
+	
+
+	IDSet tool;	
+
+	clock_t calTime = 0;
+	calTime = clock();
+	
+	// calculation
+	int num_validPolarVertex =0;
+	//double stopConst = 1500;
+	double stopConst = 2.5;
+	double previousStretch = DBL_MAX;
+
+	int *pPrev_boundarySurfaceFaceInfo = NULL;
+	int Prev_num_boundarySurfaceFaceInfo = 0;
+	PolarVertex* pPrev_boundarySurfacePolarVertexInfo = NULL;
+	int Prev_num_boundarySurfacePolarVertexInfo = 0;
+	degree_count = 0;
+	m_calTime = 0;
+	while (1)
+	{
+		bool stopLoop = false;
+		calTime = clock();
+		int *p_boundarySurfaceFaceInfo = m_boundarySurfaceFaceInfo;
+		int *p_num_boundarySurfaceFaceInfo = &m_num_boundarySurfaceFace;
+		PolarVertex* p_boundarySurfacePolarVertexInfo = m_boundarySurfacePolarVertexInfo;
+		int *p_num_boundarySurfacePolarVertexInfo = &m_num_boundarySurfacePolarVertex;
+
+		
+		if (degree_count == 0)
+			num_validPolarVertex = numVertex;
+		
+		
+		MyParameterization paramTool;
+		printf(	"DEGREE %d . . .\n",degree_count);
+		paramTool.SetPolarVertexAndFaceAndBorder(	p_boundarySurfacePolarVertexInfo,
+													p_num_boundarySurfacePolarVertexInfo,
+													num_validPolarVertex,
+													p_boundarySurfaceFaceInfo,
+													p_num_boundarySurfaceFaceInfo,
+													CutHedgeH,
+													CutHedgeT,
+													m_numValen2BoundaryPoint
+												);	
+		m_numValen2BoundaryPoint = 0;
+
+		double current_stretch = paramTool.Parameterize(	p_boundarySurfacePolarVertexInfo,*p_num_boundarySurfacePolarVertexInfo,NULL);
+		if (current_stretch <= previousStretch)
+		{
+			//find high stretch face
+			int max1st = -1;
+			bool boundaryFace = false;
+			int solverMode = 0;	
+			
+			double circle_stretch = paramTool.GetExtremaTriangle(&max1st,&boundaryFace,solverMode);
+
+			IDList *newCutPathH = NULL;
+			IDList *newCutPathT = NULL;		
+			int numNode = 0;			
+		
+			newCutPathH = new IDList();
+			newCutPathT = new IDList();
+			newCutPathH->next = newCutPathT;
+			newCutPathT->back = newCutPathH;
+			numNode = paramTool.FindShortestPathToBorderFromFace(max1st,newCutPathH,newCutPathT);
+			int numDupPoint = 0;
+			if (numNode < 2 )
+			{			
+				tool.CleanNeighbor(newCutPathH,newCutPathT);
+				printf("STOP BECAUSE NUM NODE TO EXTREMA WAS %d \n",numNode);
+				stopLoop = true;
+			}
+			else
+			{			
+				paramTool.AddCutBorder(CutHedgeH,CutHedgeT,newCutPathH,newCutPathT,degree_count+1,&numDupPoint);
+				tool.CleanNeighbor(newCutPathH,newCutPathT);
+				int new_num_boundarySurfaceFaceInfo = (*p_num_boundarySurfaceFaceInfo);		
+				int new_num_boundarySurfacePolarVertexInfo = (*p_num_boundarySurfacePolarVertexInfo) + numDupPoint;
+
+				int *new_p_boundarySurfaceFaceInfo = new int [((*p_num_boundarySurfaceFaceInfo)+4)*3];
+				memcpy(new_p_boundarySurfaceFaceInfo,p_boundarySurfaceFaceInfo,sizeof(int)*(*p_num_boundarySurfaceFaceInfo)*3);
+
+				PolarVertex* new_p_boundarySurfacePolarVertexInfo =  new PolarVertex [(*p_num_boundarySurfacePolarVertexInfo) + numDupPoint + 2];
+				memcpy(new_p_boundarySurfacePolarVertexInfo,p_boundarySurfacePolarVertexInfo,sizeof(PolarVertex)*(*p_num_boundarySurfacePolarVertexInfo));
+
+				num_validPolarVertex = (*p_num_boundarySurfacePolarVertexInfo);
+				
+				if (pPrev_boundarySurfaceFaceInfo)
+					delete [] pPrev_boundarySurfaceFaceInfo;
+				if (pPrev_boundarySurfacePolarVertexInfo)
+					delete [] pPrev_boundarySurfacePolarVertexInfo;
+				
+				pPrev_boundarySurfaceFaceInfo = m_boundarySurfaceFaceInfo;
+				Prev_num_boundarySurfaceFaceInfo = m_num_boundarySurfaceFace;
+				pPrev_boundarySurfacePolarVertexInfo = m_boundarySurfacePolarVertexInfo;
+				Prev_num_boundarySurfacePolarVertexInfo = m_num_boundarySurfacePolarVertex;
+
+				m_boundarySurfaceFaceInfo = new_p_boundarySurfaceFaceInfo;
+				m_num_boundarySurfaceFace = new_num_boundarySurfaceFaceInfo;
+				m_boundarySurfacePolarVertexInfo = new_p_boundarySurfacePolarVertexInfo;
+				m_num_boundarySurfacePolarVertex = new_num_boundarySurfacePolarVertexInfo;
+
+				if (current_stretch >= 1.0)
+					previousStretch = current_stretch;
+			}
+		}
+		else
+		{
+			stopLoop = true;
+		}
+		
+		if (stopLoop)
+		{
+			calTime = clock() - calTime; 
+			m_calTime += calTime;
+			if (pPrev_boundarySurfaceFaceInfo != NULL && pPrev_boundarySurfacePolarVertexInfo != NULL )
+			{
+				delete [] p_boundarySurfaceFaceInfo;
+				delete [] p_boundarySurfacePolarVertexInfo;
+				m_boundarySurfaceFaceInfo = pPrev_boundarySurfaceFaceInfo;
+				m_num_boundarySurfaceFace = Prev_num_boundarySurfaceFaceInfo;
+				m_boundarySurfacePolarVertexInfo = pPrev_boundarySurfacePolarVertexInfo;
+				m_num_boundarySurfacePolarVertex = Prev_num_boundarySurfacePolarVertexInfo;
+			}
+			//printf( "Calculate Time for seam boundary : %f sec\n", (double)m_calTime/CLOCKS_PER_SEC);
+			//fprintf(logFile,"Calculate Time for seam boundary : %f sec\n", (double)m_calTime/CLOCKS_PER_SEC);			
+			// = 0;
+			cout << "Extened Cut-path " << degree_count <<"times" << endl;
+			break;			
+		}
+
+		degree_count++;
+		calTime = clock() - calTime;
+		m_calTime += calTime;
+	}	
+
+	if (op_calTime)
+		*op_calTime = static_cast<double>(m_calTime)/CLOCKS_PER_SEC;
+	return 0;
+}
+
+
+
 int CPolygonsData::Parameterize()
 {	
 

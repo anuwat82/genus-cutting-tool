@@ -41,6 +41,8 @@ public:
 	//GLuint GetGIImageTextureID();
 	int Sampling(int degree,int resW, int resH, double *data_out);
 	int Parameterize();
+	int IteratedAugmentCut(double *calTime);
+	int IteratedAugmentCutOriginal(double *calTime);
 	int GetHighestCurvatureFace();
 private:
 	

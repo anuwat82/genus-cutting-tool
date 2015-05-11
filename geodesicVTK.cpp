@@ -600,16 +600,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			else
 				cout << "not ready to export disk topoly mesh." << endl;
 			break;
-		case 'p':
-			{
-				if (modTruncate.isReadyToCut())
-				{
-					vtkSmartPointer<vtkPolyData> outputPropose = modTruncate.GetDiskTopologyPolydata();
-					CPolygonsData polygon ;
-					polygon.InitailDiskTopology(outputPropose);
-					polygon.Parameterize();
-				}
-			}
+		
 			break;
 	}
 		
@@ -617,6 +608,78 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 	if (key == "F10")
 	{
 		ScreenShot(iren->GetRenderWindow());
+	}
+	else if (key == "F6")
+	{
+		//homotopy cutting		
+		modTruncate.Process();
+		originalTruncate.Process();
+		cout << "num original edge:" << originalTruncate.GetGraph()->GetNumberOfEdges() << endl;
+		vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(modTruncate.GetGraph());
+		if (actorEdge3)
+			actorEdge3->ShallowCopy(edge_actor3);
+		else
+			actorEdge3 = edge_actor3;
+		vtkSmartPointer<vtkActor> edge_actor4 = CreateStrightUpPipeline(originalTruncate.GetGraph());
+		if (actorEdge4)
+			actorEdge4->ShallowCopy(edge_actor4);
+		else
+			actorEdge4 = edge_actor4;
+		renderer->Modified();
+		iren->GetRenderWindow()->Render();
+		double time_original = exact_algorithm->GetConsumedTime() + originalTruncate.GetTimeConsumed();
+		double time_proposed = exact_algorithm->GetConsumedTime() + exact_algorithm->GetConsumedTime2() +  modTruncate.GetTimeConsumed();
+		cout << "Homotopy Cutting finished..."<< endl;
+		cout << "time consume original:" << time_original << "sec" << endl;
+		cout << "time consume proposed:" << time_proposed << "sec" << endl;
+		cout << "========================================" << endl;
+	}
+	else if (key == "F7")
+	{
+		//iterated augment cutting
+		double time_original = 0;
+		if (originalTruncate.isReadyToCut())
+		{
+			cout << "Original Iterated Augment Cutting Started..."<< endl;
+			vtkSmartPointer<vtkPolyData> outputOriginal = originalTruncate.GetDiskTopologyPolydata();
+			CPolygonsData polygon ;
+			polygon.InitailDiskTopology(outputOriginal);
+			polygon.IteratedAugmentCutOriginal(&time_original);
+			cout << "Original Iterated Augment Cutting Finished..."<< endl;
+		}
+
+
+		double time_proposed = 0;
+		if (modTruncate.isReadyToCut())
+		{
+			cout << "Proposed Iterated Augment Cutting Started..."<< endl;
+			vtkSmartPointer<vtkPolyData> outputPropose = modTruncate.GetDiskTopologyPolydata();
+			CPolygonsData polygon ;
+			polygon.InitailDiskTopology(outputPropose);
+			polygon.IteratedAugmentCut(&time_proposed);
+			cout << "Proposed Iterated Augment Cutting Finished..."<< endl;
+		}
+
+		
+
+		cout << "Iterated Augment Cuttings finished..."<< endl;
+		cout << "time consume original:" << time_original << "sec" << endl;
+		cout << "time consume proposed:" << time_proposed << "sec" << endl;
+		cout << "========================================" << endl;
+		
+	}
+	else if (key == "F8")
+	{
+		//Parameterization
+		
+		if (modTruncate.isReadyToCut())
+		{
+			vtkSmartPointer<vtkPolyData> outputPropose = modTruncate.GetDiskTopologyPolydata();
+			CPolygonsData polygon ;
+			polygon.InitailDiskTopology(outputPropose);
+			polygon.Parameterize();
+		}
+			
 	}
 	else if (key == "plus")
 	{
