@@ -5,6 +5,7 @@
 #include "IDCutHedge.h"
 #include "PolygonsData.h"
 #include <boost/numeric/ublas/matrix_sparse.hpp>
+#include <mkl.h>    //comment out this line if do not have intel mkl
 typedef boost::numeric::ublas::compressed_matrix<double>        cpuCompressedMatrixType;
 typedef struct MirrorFace 
 {
@@ -127,7 +128,9 @@ public:
 	//double ParametrizationOptimalGPU(double *ioU,double *ioV,double error, cpuCompressedMatrixType *initAMatrix,bool directsolver,FILE* logFile);
 	//double ParametrizationOptimalGPU_2timeSolves(double *ioU,double *ioV,double error, cpuCompressedMatrixType *initAMatrix,bool directsolver,FILE* logFile);
 	double ParametrizationOptimalCPU(double *ioU,double *ioV,double error,int non_zero_element,double *init_sa,unsigned long *init_ija,FILE* logFile);
-	
+	#ifdef INTEL_MKL_VERSION
+	double ParametrizationOptimalCPU_MKL(double *ioU,double *ioV,double error,int non_zero_element,double *init_sa,unsigned long *init_ija,FILE* logFile);
+	#endif
 	void SetSigma(double *ipU,double *ipV,double *opSigma ,double gamma = 1.0);
 	double GetStretchError(double *ipU,double *ipV);
 	void setSigma(double gamma);
