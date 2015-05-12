@@ -431,7 +431,7 @@ int main(int argc, char* argv[])
 		"Function Key:" << endl <<
 		"F6 = homotopy cutting" << endl <<
 		"F7 = iterative augmented cutting" << endl <<
-		"F8 = square parameterization" << endl << endl <<
+		"F8 = square parameterization (optimal)" << endl << endl <<
 		
 		"F10 = save screenshot" << endl << 
 		"===============================" << endl;
@@ -644,7 +644,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			vtkSmartPointer<vtkPolyData> outputOriginal = originalTruncate.GetDiskTopologyPolydata();
 			CPolygonsData polygon ;
 			polygon.InitailDiskTopology(outputOriginal);
-			polygon.IteratedAugmentCutOriginal(&time_original);
+			polygon.IteratedAugmentCutOriginal(&time_original,NULL);
 			cout << "Original Iterated Augment Cutting Finished..."<< endl;
 		}
 
@@ -655,9 +655,16 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			cout << "Proposed Iterated Augment Cutting Started..."<< endl;
 			vtkSmartPointer<vtkPolyData> outputPropose = modTruncate.GetDiskTopologyPolydata();
 			CPolygonsData polygon ;
+			vtkSmartPointer<vtkPolyData> output = vtkSmartPointer<vtkPolyData>::New();
 			polygon.InitailDiskTopology(outputPropose);
-			polygon.IteratedAugmentCut(&time_proposed);
+			polygon.IteratedAugmentCut(&time_proposed,output.GetPointer());
+
 			cout << "Proposed Iterated Augment Cutting Finished..."<< endl;
+			cout << "num cell :" << output->GetNumberOfPolys() << endl;
+
+
+			
+
 		}
 
 		
