@@ -662,7 +662,7 @@ int CPolygonsData::GetHighestCurvatureFace()
 	return max1st;
 }
 
-int CPolygonsData::IteratedAugmentCut(double *op_calTime)
+int CPolygonsData::IteratedAugmentCut(double *op_calTime, vtkPolyData* op_mesh)
 {
 
 	IDSet tool;	
@@ -799,11 +799,42 @@ int CPolygonsData::IteratedAugmentCut(double *op_calTime)
 	
 	if (op_calTime)
 		*op_calTime = static_cast<double>(m_calTime)/CLOCKS_PER_SEC;
+
+	if (op_mesh)
+	{
+		//store cutted mesh 
+		
+		vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+		points->SetNumberOfPoints(m_num_boundarySurfacePolarVertex);
+		for (vtkIdType i = 0; i < m_num_boundarySurfacePolarVertex ;i++)
+		{
+			points->SetPoint(i, m_boundarySurfacePolarVertexInfo->p_vertex->x,
+								m_boundarySurfacePolarVertexInfo->p_vertex->y,
+								m_boundarySurfacePolarVertexInfo->p_vertex->z);
+		}
+		
+		vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
+		triangles->InitTraversal();
+		
+		for (vtkIdType i = 0; i < m_num_boundarySurfaceFace ;i++)
+		{
+			
+			const vtkIdType pts[3] = {m_boundarySurfaceFaceInfo[i*3 +0],
+										 m_boundarySurfaceFaceInfo[i*3 +1],
+										 m_boundarySurfaceFaceInfo[i*3 +2]};
+			vtkIdType newID = triangles->InsertNextCell(3, pts);
+
+		
+		}
+		op_mesh->SetPoints(points);
+		op_mesh->SetPolys(triangles);
+		op_mesh->BuildLinks();
+	}
 	return 0;
 }
 
 
-int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime)
+int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime, vtkPolyData* op_mesh)
 {
 	
 
@@ -815,7 +846,7 @@ int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime)
 	// calculation
 	int num_validPolarVertex =0;
 	//double stopConst = 1500;
-	double stopConst = 2.5;
+	//double stopConst = 2.5;
 	double previousStretch = DBL_MAX;
 
 	int *pPrev_boundarySurfaceFaceInfo = NULL;
@@ -943,6 +974,37 @@ int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime)
 
 	if (op_calTime)
 		*op_calTime = static_cast<double>(m_calTime)/CLOCKS_PER_SEC;
+
+	if (op_mesh)
+	{
+		//store cutted mesh 
+		
+		vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+		points->SetNumberOfPoints(m_num_boundarySurfacePolarVertex);
+		for (vtkIdType i = 0; i < m_num_boundarySurfacePolarVertex ;i++)
+		{
+			points->SetPoint(i, m_boundarySurfacePolarVertexInfo->p_vertex->x,
+								m_boundarySurfacePolarVertexInfo->p_vertex->y,
+								m_boundarySurfacePolarVertexInfo->p_vertex->z);
+		}
+		
+		vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
+		triangles->SetNumberOfCells(m_num_boundarySurfaceFace);
+		triangles->InitTraversal();
+
+		for (vtkIdType i = 0; i < m_num_boundarySurfaceFace ;i++)
+		{
+			const vtkIdType pts[3] = {m_boundarySurfaceFaceInfo[i*3 +0],
+										 m_boundarySurfaceFaceInfo[i*3 +1],
+										 m_boundarySurfaceFaceInfo[i*3 +2]};
+			vtkIdType newID = triangles->InsertNextCell(3, pts);
+
+			int aaa = 0;
+		}
+		op_mesh->SetPoints(points);
+		op_mesh->SetPolys(triangles);
+		op_mesh->BuildLinks();
+	}
 	return 0;
 }
 

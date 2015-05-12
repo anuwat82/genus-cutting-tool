@@ -151,4 +151,7 @@ public:
 
 	//void CircleParametrizationGPU(IDList *borderH,IDList *borderT,double total_length_edges,cpuCompressedMatrixType *initA,  double *& resultU,double *& resultV,double &resultStretchErr,bool directsolver = false,bool reportlog = true);
 	void CircleParametrizationCPU(IDList *borderH,IDList *borderT,double total_length_edges,int non_zero_element, double *init_sa,unsigned long *init_ija , double *& resultU,double *& resultV,double &resultStretchErr,bool reportlog = true);
+
+
+	
 };

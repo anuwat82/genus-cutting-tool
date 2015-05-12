@@ -5714,20 +5714,20 @@ double  MyParameterization::PARAM_PARALLEL_CPU(	PolarVertex *pIPV,
 	std::vector<double>_resultError(bottomLeftVertexIDList.size(),0.0);
 	
 	unsigned int n = bottomLeftVertexIDList.size(); 
-#if 1
+#if 0
 	concurrency::SchedulerPolicy oldpolicy = concurrency::CurrentScheduler::GetPolicy();	
 	concurrency::SchedulerPolicy policy(oldpolicy);
 	if (policy.GetPolicyValue(concurrency::MaxConcurrency) > 10)
 		policy.SetConcurrencyLimits(1,10);	
 	
 	concurrency::CurrentScheduler::Create(policy);	
-	concurrency::parallel_for(0u, n, [&_resultU,&_resultV,&_resultError,nonzero,&init_sa,&init_ija,bottomLeftVertexIDList,BpointH,BpointT,tlength,this](unsigned int i)  
+	concurrency::parallel_for(0u, n, [&_resultU,&_resultV,&_resultError,m_nonzero,&init_sa,&init_ija,bottomLeftVertexIDList,BpointH,BpointT,tlength,this](unsigned int i)  
 	{
 		SquareParametrizationCPU(bottomLeftVertexIDList[i], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[i],_resultV[i],_resultError[i],false);		
 	});
 	concurrency::CurrentScheduler::Detach();
 #else
-	
+#pragma omp parallel for
 	for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
 	{		
 		SquareParametrizationCPU(bottomLeftVertexIDList[i], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[i],_resultV[i],_resultError[i],false);	
