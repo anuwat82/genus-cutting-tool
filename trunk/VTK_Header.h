@@ -71,3 +71,4 @@
 #include <vtkExtractSelectedGraph.h>
 #include <vtkBoostBreadthFirstSearchTree.h>
 #include <vtkCurvatures.h>
+#include <vtkTriangle.h>
