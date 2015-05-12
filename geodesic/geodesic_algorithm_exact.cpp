@@ -1809,8 +1809,13 @@ Interval::DirectionType  GeodesicAlgorithmExact::get_edge_source_direction(edge_
 	{
 		p = p->next();
 		trace_back_interval(p,path,2);
+
+		if (path.size() < 2)
+		{
+			continue;
+		}
 		face_pointer face = belongToFace(path[0],path[1]);
-		if (face)
+		if (face != NULL)
 		{
 			if (face != commonFace)
 			{				

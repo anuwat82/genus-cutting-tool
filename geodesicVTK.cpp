@@ -637,34 +637,32 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 	else if (key == "F7")
 	{
 		//iterated augment cutting
+		vtkSmartPointer<vtkPolyData> outputOptimumOriginal = vtkSmartPointer<vtkPolyData>::New();
 		double time_original = 0;
 		if (originalTruncate.isReadyToCut())
 		{
 			cout << "Original Iterated Augment Cutting Started..."<< endl;
-			vtkSmartPointer<vtkPolyData> outputOriginal = originalTruncate.GetDiskTopologyPolydata();
+			vtkSmartPointer<vtkPolyData> diskOriginal = originalTruncate.GetDiskTopologyPolydata();
 			CPolygonsData polygon ;
-			polygon.InitailDiskTopology(outputOriginal);
-			polygon.IteratedAugmentCutOriginal(&time_original,NULL);
+			polygon.InitailDiskTopology(diskOriginal);
+			polygon.IteratedAugmentCutOriginal(&time_original,outputOptimumOriginal.GetPointer());
 			cout << "Original Iterated Augment Cutting Finished..."<< endl;
 		}
 
 
 		double time_proposed = 0;
+		vtkSmartPointer<vtkPolyData> outputOptimumPropose = vtkSmartPointer<vtkPolyData>::New();
 		if (modTruncate.isReadyToCut())
 		{
 			cout << "Proposed Iterated Augment Cutting Started..."<< endl;
-			vtkSmartPointer<vtkPolyData> outputPropose = modTruncate.GetDiskTopologyPolydata();
+			vtkSmartPointer<vtkPolyData> diskPropose = modTruncate.GetDiskTopologyPolydata();
 			CPolygonsData polygon ;
-			vtkSmartPointer<vtkPolyData> output = vtkSmartPointer<vtkPolyData>::New();
-			polygon.InitailDiskTopology(outputPropose);
-			polygon.IteratedAugmentCut(&time_proposed,output.GetPointer());
+			
+			polygon.InitailDiskTopology(diskPropose);
+			polygon.IteratedAugmentCut(&time_proposed,outputOptimumPropose.GetPointer());
 
 			cout << "Proposed Iterated Augment Cutting Finished..."<< endl;
-			cout << "num cell :" << output->GetNumberOfPolys() << endl;
-
-
 			
-
 		}
 
 		
@@ -673,11 +671,44 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		cout << "time consume original:" << time_original << "sec" << endl;
 		cout << "time consume proposed:" << time_proposed << "sec" << endl;
 		cout << "========================================" << endl;
+
+		char answer;
+		cout << "Do you want to save optimum disk topology meshes? (y/n):";
+		cin >> answer;
+
+		if (answer == 'y' ||answer == 'Y')
+		{
+			std::string filename;
+			if (GetFileName(filename,"PLY File\0*.ply\0All Files\0*.*\0",true))
+			{
+				
+				vtkSmartPointer<vtkPLYWriter> plyWriter = vtkSmartPointer<vtkPLYWriter>::New();
+					
+				std::string propose_filename = filename + std::string("_propose.ply");
+					std::string original_filename = filename +  std::string("_original.ply");
+					
+				plyWriter->SetInputData(outputOptimumPropose);
+				plyWriter->SetFileName(propose_filename.c_str());
+				plyWriter->Update();
+				cout << "Disk topology mesh export :" << propose_filename.c_str() << endl;
+
+				plyWriter->SetInputData(outputOptimumOriginal);
+				plyWriter->SetFileName(original_filename.c_str());
+				plyWriter->Update();					
+				cout << "Disk topology mesh export :" << original_filename.c_str() << endl;
+				
+			}
+		}
+		else
+		{
+			cout << "No save" << endl;
+		}
+
 		
 	}
 	else if (key == "F8")
 	{
-		//Parameterization
+		//Sqaure Parameterization
 		
 		if (modTruncate.isReadyToCut())
 		{

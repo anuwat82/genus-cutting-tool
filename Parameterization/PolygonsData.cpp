@@ -804,31 +804,42 @@ int CPolygonsData::IteratedAugmentCut(double *op_calTime, vtkPolyData* op_mesh)
 	{
 		//store cutted mesh 
 		
+		vtkSmartPointer<vtkPolyData> output = vtkSmartPointer<vtkPolyData>::New();
 		vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 		points->SetNumberOfPoints(m_num_boundarySurfacePolarVertex);
 		for (vtkIdType i = 0; i < m_num_boundarySurfacePolarVertex ;i++)
 		{
-			points->SetPoint(i, m_boundarySurfacePolarVertexInfo->p_vertex->x,
-								m_boundarySurfacePolarVertexInfo->p_vertex->y,
-								m_boundarySurfacePolarVertexInfo->p_vertex->z);
+			points->SetPoint(i, m_boundarySurfacePolarVertexInfo[i].p_vertex->x,
+								m_boundarySurfacePolarVertexInfo[i].p_vertex->y,
+								m_boundarySurfacePolarVertexInfo[i].p_vertex->z);
 		}
 		
-		vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
-		triangles->InitTraversal();
+		vtkSmartPointer<vtkCellArray> polygons = vtkSmartPointer<vtkCellArray>::New();
 		
+
 		for (vtkIdType i = 0; i < m_num_boundarySurfaceFace ;i++)
 		{
-			
-			const vtkIdType pts[3] = {m_boundarySurfaceFaceInfo[i*3 +0],
-										 m_boundarySurfaceFaceInfo[i*3 +1],
-										 m_boundarySurfaceFaceInfo[i*3 +2]};
-			vtkIdType newID = triangles->InsertNextCell(3, pts);
+			vtkSmartPointer<vtkTriangle> triangle = vtkSmartPointer<vtkTriangle>::New();
+			triangle->GetPointIds()->SetId(0, m_boundarySurfaceFaceInfo[i*3 +0]);
+			triangle->GetPointIds()->SetId(1, m_boundarySurfaceFaceInfo[i*3 +1]);
+			triangle->GetPointIds()->SetId(2, m_boundarySurfaceFaceInfo[i*3 +2]);
+			vtkIdType newID = polygons->InsertNextCell(triangle);
 
-		
 		}
-		op_mesh->SetPoints(points);
-		op_mesh->SetPolys(triangles);
-		op_mesh->BuildLinks();
+		
+		output->SetPoints(points);
+		output->SetPolys(polygons);
+		output->BuildLinks();
+		vtkSmartPointer<vtkPolyDataNormals> normal = vtkSmartPointer<vtkPolyDataNormals>::New();
+		normal->SetInputData(output);
+		normal->SetComputeCellNormals(1);
+		normal->SetComputePointNormals(0);
+		normal->SetSplitting(0);
+		normal->SetAutoOrientNormals(1);
+		normal->SetFlipNormals(0);
+		normal->Update();
+
+		op_mesh->ShallowCopy(normal->GetOutput());
 	}
 	return 0;
 }
@@ -978,32 +989,43 @@ int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime, vtkPolyData* o
 	if (op_mesh)
 	{
 		//store cutted mesh 
-		
+		vtkSmartPointer<vtkPolyData> output = vtkSmartPointer<vtkPolyData>::New();
 		vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 		points->SetNumberOfPoints(m_num_boundarySurfacePolarVertex);
 		for (vtkIdType i = 0; i < m_num_boundarySurfacePolarVertex ;i++)
 		{
-			points->SetPoint(i, m_boundarySurfacePolarVertexInfo->p_vertex->x,
-								m_boundarySurfacePolarVertexInfo->p_vertex->y,
-								m_boundarySurfacePolarVertexInfo->p_vertex->z);
+			points->SetPoint(i, m_boundarySurfacePolarVertexInfo[i].p_vertex->x,
+								m_boundarySurfacePolarVertexInfo[i].p_vertex->y,
+								m_boundarySurfacePolarVertexInfo[i].p_vertex->z);
 		}
 		
-		vtkSmartPointer<vtkCellArray> triangles = vtkSmartPointer<vtkCellArray>::New();
-		triangles->SetNumberOfCells(m_num_boundarySurfaceFace);
-		triangles->InitTraversal();
+		vtkSmartPointer<vtkCellArray> polygons = vtkSmartPointer<vtkCellArray>::New();
+		
 
 		for (vtkIdType i = 0; i < m_num_boundarySurfaceFace ;i++)
 		{
-			const vtkIdType pts[3] = {m_boundarySurfaceFaceInfo[i*3 +0],
-										 m_boundarySurfaceFaceInfo[i*3 +1],
-										 m_boundarySurfaceFaceInfo[i*3 +2]};
-			vtkIdType newID = triangles->InsertNextCell(3, pts);
+			vtkSmartPointer<vtkTriangle> triangle = vtkSmartPointer<vtkTriangle>::New();
+			triangle->GetPointIds()->SetId(0, m_boundarySurfaceFaceInfo[i*3 +0]);
+			triangle->GetPointIds()->SetId(1, m_boundarySurfaceFaceInfo[i*3 +1]);
+			triangle->GetPointIds()->SetId(2, m_boundarySurfaceFaceInfo[i*3 +2]);
+			vtkIdType newID = polygons->InsertNextCell(triangle);
 
-			int aaa = 0;
 		}
-		op_mesh->SetPoints(points);
-		op_mesh->SetPolys(triangles);
-		op_mesh->BuildLinks();
+		
+		output->SetPoints(points);
+		output->SetPolys(polygons);
+		output->BuildLinks();
+		vtkSmartPointer<vtkPolyDataNormals> normal = vtkSmartPointer<vtkPolyDataNormals>::New();
+		normal->SetInputData(output);
+		normal->SetComputeCellNormals(1);
+		normal->SetComputePointNormals(0);
+		normal->SetSplitting(0);
+		normal->SetAutoOrientNormals(1);
+		normal->SetFlipNormals(0);
+		normal->Update();
+
+		op_mesh->ShallowCopy(normal->GetOutput());
+		
 	}
 	return 0;
 }
