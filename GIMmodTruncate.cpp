@@ -1012,13 +1012,14 @@ void GIMmodTruncate::ShorthenRings(bool step)
 						}
 					}
 				}
-#ifdef _DEBUG
+//#ifdef _DEBUG
 				if (graph->GetEdgeId(endofpathvid[0],prev_endofpathvid[0]) == graph->GetEdgeId(endofpathvid[1],prev_endofpathvid[1]))
 				{
-					throw;
+					//same edge?
+					continue;
 				}
 
-#endif
+//#endif
 				edgepaths2.push_back(edges_path(endofpathvid,prev_endofpathvid,remEdges));  
 				
 			}
