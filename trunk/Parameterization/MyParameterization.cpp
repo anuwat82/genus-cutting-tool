@@ -740,17 +740,18 @@ double	MyParameterization::CircularParameterize(PolarVertex *pIPV,
 												 int num_PV,
 												 FILE* logFile)
 {
+	weighttype = 0;
 	iteNum = (pow((double)((numberV/20000) + 1),2)) *2000;	
     boundarytype=1;	
 
 
 	//param(logFile);
 
-	MyBoundaryMap();
-	//BoundaryMap();
+	MyBoundaryMap();	
 	setPolarMap();
+
 	ParametrizationOptimal(iteNum,PCBCGerror,logFile);
-	//ParametrizationSmoothOptimal(iteNum,PCBCGerror,logFile);
+	
 
 	for (int i=0;i<numberV;i++)
 	{
@@ -759,6 +760,43 @@ double	MyParameterization::CircularParameterize(PolarVertex *pIPV,
 	}
 	return resultStretch;
 }
+
+
+double	MyParameterization::CircularParameterizeOptimalEx(PolarVertex *pIPV,
+										int num_PV,
+										FILE* logFile)
+{
+	weighttype = 0;
+	iteNum = (pow((double)((numberV/20000) + 1),2)) *2000;	
+    boundarytype=1;	
+
+
+	//param(logFile);
+
+	MyBoundaryMap();
+	setPolarMap();
+	
+	
+	
+	gammaP = 0.75;
+	ParametrizationOptimal(iteNum,PCBCGerror,NULL);
+	gammaP = 1.0;
+	
+	
+
+	ParametrizationSmoothOptimal_EX(0.5,0.1,iteNum,PCBCGerror,logFile);
+
+			
+	
+
+	for (int i=0;i<numberV;i++)
+	{
+		pIPV[i].u = pU[i];
+		pIPV[i].v = pV[i];		
+	}
+	return resultStretch;
+}
+
 
 
 void	MyParameterization::linbcg_Solve()
@@ -2040,7 +2078,21 @@ void MyParameterization::MyBoundaryMap()
 		}		
 		
 	}
-#pragma omp parallel for
+double init_uncontraintsU;
+double init_uncontraintsV;
+
+if(boundarytype==1)
+{
+	init_uncontraintsU = 0.5;
+	init_uncontraintsV = 0.5;
+}
+else
+{
+	init_uncontraintsU = 0.0;
+	init_uncontraintsV = 0.0;
+}
+
+//#pragma omp parallel for
 	for(i=0;i<numberV;i++)
 	{
 		if(boundary[i]==1)
@@ -2049,13 +2101,20 @@ void MyParameterization::MyBoundaryMap()
 		}
 		else
 		{
-			pU[i] *= 0.5;
-			pV[i] *= 0.5;
+			pU[i] = init_uncontraintsU;
+			pV[i] = init_uncontraintsV;
 		}
 	}
   
 	IDtool->CleanNeighbor(BpointH,BpointT);
 	delete [] checkbin;  
+
+	if(boundarytype==0||boundarytype==2){
+    constsumarea3D = sqrt(1.0/sumarea3D);
+  }else if(boundarytype==1){
+    constsumarea3D = sqrt(((0.5*0.5*PI)/sumarea3D));
+  }
+
 }
 
 double	MyParameterization::ParamWithFaceNormalStretch(	PolarVertex *pIPV,
@@ -5163,8 +5222,16 @@ void MyParameterization::ParametrizationSmoothOptimal_EX(double startGamma, doub
 		}    
 		for(i=0;i<numberV;i++)
 		{
-			UaXY[i+1] = pU[i];
-			UaXY[i+numberV+1] = pV[i];
+			if(boundary[i]==1)
+			{
+				UaXY[i+1] = pU[i];
+				UaXY[i+numberV+1] = pV[i];
+			}
+			else
+			{
+				UaXY[i+1] = 0.5;
+				UaXY[i+numberV+1] = 0.5;
+			}
 		}
 		mybcg->linbcg(((unsigned long)(2*(numberV))),vecb,UaXY,1,error,itenum,&iter,&linerr);
 		for(i=0;i<numberV;i++)
@@ -5299,36 +5366,38 @@ void MyParameterization::SetSigma(double *ipU,double *ipV,double *opSigma,double
 void MyParameterization::setSigma(double gamma)
 {
   int i,j;
-  IDList *now=NULL;
-  double varphi,ddv,dsize1,sumarea;
-  double dddhval=0.0;
-  double localsum=0.0;
+
+
+
+#pragma omp parallel for
   for(i=0;i<numberF;i++){
-    
-    dsize1 = PT->getParametricA(pV[Face[i][0]],
+    Point3d _bc[2];
+    double dsize1 = PT->getParametricA(pV[Face[i][0]],
 				pV[Face[i][1]],
 				pV[Face[i][2]],
 				pU[Face[i][0]],
 				pU[Face[i][1]],
 				pU[Face[i][2]]);
-    PT->setParametricDs(bc[0],point[Face[i][0]],
+    PT->setParametricDs(&_bc[0],point[Face[i][0]],
 			point[Face[i][1]],point[Face[i][2]],
 			pV[Face[i][0]],pV[Face[i][1]],
 			pV[Face[i][2]],dsize1);
-    PT->setParametricDt(bc[1],point[Face[i][0]],
+    PT->setParametricDt(&_bc[1],point[Face[i][0]],
 			point[Face[i][1]],point[Face[i][2]],
 			pU[Face[i][0]],pU[Face[i][1]],
 			pU[Face[i][2]],dsize1);
     
-    E[i] = PT->InnerProduct(bc[0],bc[0]);
-    G[i] = PT->InnerProduct(bc[1],bc[1]);
+    E[i] = PT->InnerProduct(&_bc[0],&_bc[0]);
+    G[i] = PT->InnerProduct(&_bc[1],&_bc[1]);
   }
+
+#pragma omp parallel for
   for(i=0;i<numberV;i++){
          
     sigma[i]=0.0;
-    now = FHead[i];
-    varphi=0.0;
-    localsum=0.0;   
+    IDList * now = FHead[i];
+    double varphi=0.0;
+    double localsum=0.0;   
     
     while(next(now)!=FTail[i]){
       now = next(now);
