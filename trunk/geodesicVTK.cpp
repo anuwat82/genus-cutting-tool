@@ -744,6 +744,44 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			//use polydata as input (load disk topolopy file directly)
 			inputPolydata = polydata;			
 		}
+
+		unsigned int step_value = 0;  // 0 means using formula
+		char answer;
+		cout << "Do you want to manual set step value? (y/n):";
+		cin >> answer;
+
+		if (answer == 'y' ||answer == 'Y')
+		{
+			vtkSmartPointer<vtkFeatureEdges> borderEdges = vtkSmartPointer<vtkFeatureEdges>::New();
+			borderEdges->SetInputData(inputPolydata);
+			borderEdges->SetBoundaryEdges(1);
+			borderEdges->SetFeatureEdges(0);
+			borderEdges->SetNonManifoldEdges(0);
+			borderEdges->Update();
+			int numBedge = borderEdges->GetOutput()->GetNumberOfLines();
+			unsigned int limit = (unsigned int )(numBedge*0.25*0.5);
+			do
+			{
+				
+				cout << endl << "Enter step value (2 ~ " << limit << "):";
+				while(!(cin >> step_value)){
+					cout << "Bad value!" << endl;
+					cout << "Re enter the value:";
+					cin.clear();
+					cin.ignore(numeric_limits<streamsize>::max(), '\n');
+				}
+			}
+			while (step_value < 2 || step_value > limit);
+			
+			cout << "Use step value " << step_value << endl;
+		}
+		else
+		{
+			cout << "Use formula step value" << endl;
+		}
+
+
+
 		CPolygonsData polygon ;
 		polygon.InitailDiskTopology(inputPolydata);
 			
