@@ -17,6 +17,7 @@ GIMmodTruncate modTruncate;
 GIMmodTruncate originalTruncate;
 vtkWeakPointer<vtkPolyData> polydata;
 vtkWeakPointer<vtkPoints> source_point;
+vtkSmartPointer<vtkPolyData> disk_polydata;
 
 vtkWeakPointer<vtkActor> actorMainPoly;
 vtkWeakPointer<vtkActor> actorEdge1;
@@ -431,7 +432,8 @@ int main(int argc, char* argv[])
 		"Function Key:" << endl <<
 		"F6 = homotopy cutting" << endl <<
 		"F7 = iterative augmented cutting" << endl <<
-		"F8 = square parameterization (optimal)" << endl << endl <<
+		"F8 = square parameterizations (25% brute force)" << endl <<
+		"F9 = square parameterizations (step sampling)" << endl << endl <<
 		
 		"F10 = save screenshot" << endl << 
 		"===============================" << endl;
@@ -663,7 +665,8 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			polygon.IteratedAugmentCut(&time_proposed,outputOptimumPropose.GetPointer());
 
 			cout << "Proposed Iterated Augment Cutting Finished..."<< endl;
-			
+			disk_polydata = vtkSmartPointer<vtkPolyData>::New();
+			disk_polydata->ShallowCopy(outputOptimumPropose);
 		}
 
 		
@@ -709,15 +712,40 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 	}
 	else if (key == "F8")
 	{
-		//Sqaure Parameterization
-		
-		if (modTruncate.isReadyToCut())
+		//Sqaure Parameterization brute force
+
+		vtkSmartPointer<vtkPolyData> inputPolydata;
+		if (disk_polydata.GetPointer() != NULL && disk_polydata->GetNumberOfPoints() > 0)
 		{
-			vtkSmartPointer<vtkPolyData> outputPropose = modTruncate.GetDiskTopologyPolydata();
-			CPolygonsData polygon ;
-			polygon.InitailDiskTopology(outputPropose);
-			polygon.Parameterize();
+			//use  disk_polydata as input
+			inputPolydata = disk_polydata;			
 		}
+		else
+		{
+			//use polydata as input (load disk topolopy file directly)
+			inputPolydata = polydata;			
+		}
+		CPolygonsData polygon ;
+		polygon.InitailDiskTopology(inputPolydata);
+		
+	}
+	else if (key == "F9")
+	{
+		//Sqaure Parameterization step sampling
+		
+		vtkSmartPointer<vtkPolyData> inputPolydata;
+		if (disk_polydata.GetPointer() != NULL && disk_polydata->GetNumberOfPoints() > 0)
+		{
+			//use  disk_polydata as input
+			inputPolydata = disk_polydata;			
+		}
+		else
+		{
+			//use polydata as input (load disk topolopy file directly)
+			inputPolydata = polydata;			
+		}
+		CPolygonsData polygon ;
+		polygon.InitailDiskTopology(inputPolydata);
 			
 	}
 	else if (key == "plus")
