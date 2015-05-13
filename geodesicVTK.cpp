@@ -637,8 +637,10 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 	else if (key == "F7")
 	{
 		//iterated augment cutting
+		
 		vtkSmartPointer<vtkPolyData> outputOptimumOriginal = vtkSmartPointer<vtkPolyData>::New();
 		double time_original = 0;
+		
 		if (originalTruncate.isReadyToCut())
 		{
 			cout << "Original Iterated Augment Cutting Started..."<< endl;
@@ -648,8 +650,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			polygon.IteratedAugmentCutOriginal(&time_original,outputOptimumOriginal.GetPointer());
 			cout << "Original Iterated Augment Cutting Finished..."<< endl;
 		}
-
-
+		
 		double time_proposed = 0;
 		vtkSmartPointer<vtkPolyData> outputOptimumPropose = vtkSmartPointer<vtkPolyData>::New();
 		if (modTruncate.isReadyToCut())

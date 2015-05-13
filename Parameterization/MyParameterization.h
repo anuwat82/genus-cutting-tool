@@ -50,6 +50,9 @@ public:
 	double	CircularParameterize(PolarVertex *pIPV,
 								 int num_PV,
 								 FILE* logFile= NULL);
+	double	CircularParameterizeOptimalEx(PolarVertex *pIPV,
+										 int num_PV,
+										 FILE* logFile= NULL);
 
 	void	linbcg_Solve();
 	void	DeleteFace(int id);

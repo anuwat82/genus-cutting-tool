@@ -1447,10 +1447,9 @@ void ParametrizationOptimal(int itenum,double error,FILE* logFile = NULL)
 		UaXY[i+1] = pU[i];
 		UaXY[i+numberV+1] = pV[i];
 	}
-	clock_t calTime = 0;
-	calTime = clock();	
+	
 	mybcg->linbcg(((unsigned long)(2*(numberV))),vecb,UaXY,1,error,itenum,&iter,&linerr);
-	calTime = clock() - calTime; 
+	
 	for(i=0;i<numberV;i++)
 	{
 		if(boundary[i]!=1)
@@ -1532,13 +1531,24 @@ void ParametrizationOptimal(int itenum,double error,FILE* logFile = NULL)
 					++dlk;
 					mybcg->sa[dlk] = -nowp->lambda/sigsum[i];
 				}
+				
 			}
+
+			
 		}
      
 		for(i=0;i<numberV;i++)
 		{
-			UaXY[i+1] = pU[i];
-			UaXY[i+numberV+1] = pV[i];
+			if(boundary[i]==1)
+			{
+				UaXY[i+1] = pU[i];
+				UaXY[i+numberV+1] = pV[i];
+			}
+			else
+			{
+				UaXY[i+1] = 0.5;
+				UaXY[i+numberV+1] = 0.5;
+			}
 		}
 
 		mybcg->linbcg(((unsigned long)(2*(numberV))),vecb,UaXY,1,error,itenum,&iter,&linerr); 
@@ -1554,7 +1564,6 @@ void ParametrizationOptimal(int itenum,double error,FILE* logFile = NULL)
 			}
 		}
 		currentstrech = getCurrentE();
-		printf("currentstrech U%d= %lf\n",kk+1,currentstrech);
 		printf("U%d  STRETCH: %f\n",kk+1,currentstrech); 
 
 		if (logFile)
@@ -1752,9 +1761,10 @@ void ParametrizationOptimal(int itenum,double error,FILE* logFile = NULL)
 	  ++dlk;
 	  mybcg->sa[dlk] = -nowp->lambda/sigsum[i];
 	}
-      }
+	  }
     }
-    for(i=0;i<numberV;i++){
+    for(i=0;i<numberV;i++)
+	{
       if(boundary[i]!=1){
 	nowp = PHead[i];
 	while(next(nowp)!=PTail[i]){
@@ -1762,6 +1772,9 @@ void ParametrizationOptimal(int itenum,double error,FILE* logFile = NULL)
 	  ++dlk;
 	  mybcg->sa[dlk] = -nowp->lambda/sigsum[i];
 	}
+
+		pU[i] = 0.5;
+      pV[i] = 0.5;
       }
     }
     
@@ -2430,26 +2443,26 @@ void SortIndexP()
 {
 	return;
 	int i;
-	IDList *now=NULL;
-	PolarList *nowp=NULL;
+	//IDList *now=NULL;
+	//PolarList *nowp=NULL;
   
-	PolarList *DummyHead = NULL;
-	PolarList *DummyTail = NULL;
-  
+	//PolarList *DummyHead = NULL;
+	//PolarList *DummyTail = NULL;
+#pragma omp parallel for 
 	for(i=0;i<numberV;i++)
 	{    
 		if(boundary[i]!=1)
 		{
-			DummyHead = new PolarList();
-			DummyTail = new PolarList();
+			PolarList *DummyHead = new PolarList();
+			PolarList *DummyTail = new PolarList();
 			DummyHead->next = DummyTail;
 			DummyTail->back = DummyHead;
       
-			now = IHead[i];
+			IDList *now = IHead[i];
 			while(next(now)!=ITail[i])
 			{
 				now = next(now);
-				nowp = PHead[i];
+				PolarList * nowp = PHead[i];
 				while(next(nowp)!=PTail[i])
 				{
 					nowp = next(nowp);
@@ -2466,7 +2479,7 @@ void SortIndexP()
 			PTail[i] = new PolarList();
 			PHead[i]->next = PTail[i];
 			PTail[i]->back = PHead[i];
-			nowp = DummyHead;
+			PolarList * nowp = DummyHead;
 			while(next(nowp)!=DummyTail)
 			{
 				nowp = next(nowp);
@@ -2529,36 +2542,34 @@ void SortIndexPNaturalB(){
   
 void setSigmaZero(){
   int i,j;
-  IDList *now=NULL;
-  double varphi,ddv,dsize1,sumarea;
-  double dddhval=0.0;
-  double localsum=0.0;
+#pragma omp parallel for
   for(i=0;i<numberF;i++){
-    
-    dsize1 = PT->getParametricA(pV[Face[i][0]],
+	  Point3d _bc[2];
+    double dsize1 = PT->getParametricA(pV[Face[i][0]],
 				pV[Face[i][1]],
 				pV[Face[i][2]],
 				pU[Face[i][0]],
 				pU[Face[i][1]],
 				pU[Face[i][2]]);
-    PT->setParametricDs(bc[0],point[Face[i][0]],
+    PT->setParametricDs(&_bc[0],point[Face[i][0]],
 			point[Face[i][1]],point[Face[i][2]],
 			pV[Face[i][0]],pV[Face[i][1]],
 			pV[Face[i][2]],dsize1);
-    PT->setParametricDt(bc[1],point[Face[i][0]],
+    PT->setParametricDt(&_bc[1],point[Face[i][0]],
 			point[Face[i][1]],point[Face[i][2]],
 			pU[Face[i][0]],pU[Face[i][1]],
 			pU[Face[i][2]],dsize1);
     
-    E[i] = PT->InnerProduct(bc[0],bc[0]);
-    G[i] = PT->InnerProduct(bc[1],bc[1]);
+    E[i] = PT->InnerProduct(&_bc[0],&_bc[0]);
+    G[i] = PT->InnerProduct(&_bc[1],&_bc[1]);
   }
+ #pragma omp parallel for
   for(i=0;i<numberV;i++){
          
     sigma[i]=0.0;
-    now = FHead[i];
-    varphi=0.0;
-    localsum=0.0;
+    IDList *now = FHead[i];
+    double varphi=0.0;
+    double localsum=0.0;
     
   
    

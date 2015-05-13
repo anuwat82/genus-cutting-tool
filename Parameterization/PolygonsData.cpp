@@ -974,7 +974,7 @@ int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime, vtkPolyData* o
 			//printf( "Calculate Time for seam boundary : %f sec\n", (double)m_calTime/CLOCKS_PER_SEC);
 			//fprintf(logFile,"Calculate Time for seam boundary : %f sec\n", (double)m_calTime/CLOCKS_PER_SEC);			
 			// = 0;
-			cout << "Extened Cut-path " << degree_count <<"times" << endl;
+			cout << "Extened Cut-path " << degree_count-1 <<"times" << endl;
 			break;			
 		}
 
