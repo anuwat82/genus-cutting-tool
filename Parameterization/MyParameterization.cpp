@@ -5,7 +5,7 @@
 
 #include <boost/thread.hpp>
 #include <ppl.h>
-
+bool IsNumber(double x);
 
 MyParameterization::MyParameterization(void)
 {
@@ -5482,7 +5482,11 @@ double MyParameterization::GetStretchError(double *ipU,double *ipV)
 		}  
 	}
 	dsum =constsumarea3D*sqrt(dsum/sumarea3D);
-	return dsum;
+	if (dsum == dsum)
+		return dsum;
+	else
+		return -1.0;
+	
 }
 
 void MyParameterization::SquareParametrizationCPU(int bottomleftIDvertex,IDList *borderH,IDList *borderT,double total_length_edges, int non_zero_element,double *init_sa,unsigned long *init_ija , double *& resultU,double *& resultV,double &resultStretchErr,bool reportlog)
@@ -5992,32 +5996,85 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 	std::vector<double>_resultError(bottomLeftVertexIDList.size(),0.0);
 	
 	int m = bottomLeftVertexIDList.size();
-	cal_count = m;
+	cal_count = 0;
+	printf("=== NUMBER of 25 %% brute force cases : %d ===\n",m);
+
+	int step = 0;
+	if (step_value  == 0 )
+	{
+		//calculate auto step number
+		double d_step = (sqrt(numberV* ((double)m/numberF)));
+		step = floor(d_step);
+		if (step < 2)
+			step = 2;
+		printf("formulated step number: %f (%d)\n", d_step,step);
+	}
+	else
+		step = step_value;
+
+	
+		
+	int count = 1;
+
+
 	#pragma omp parallel for
 	for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
-	{		
-		SquareParametrizationCPU(bottomLeftVertexIDList[i], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[i],_resultV[i],_resultError[i],false);	
+	{	
+		if ( ((i+1) % step) == 1 || step == 1)
+		{
+			#pragma omp critical
+			{
+				printf("S%d,",i);
+			}
+			SquareParametrizationCPU(bottomLeftVertexIDList[i], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[i],_resultV[i],_resultError[i],false);	
+			#pragma omp critical
+			{
+				printf("F%d,",i);
+				cal_count++;
+			}
+		}
+		
 	}
+	cout << endl;
 
 	for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
 	{
-		if (_resultError[i] < bestStretch )
+		if (_resultError[i] < bestStretch && _resultError[i] > 0)
 		{
+			/*
 			if (bestU)
+			{
 				delete [] bestU;
+				bestU = NULL;
+			}
 			if (bestV)
+			{
 				delete [] bestV;
+				bestV= NULL;
+			}
+			*/
+
 			bestU = _resultU[i];
-			bestV = _resultV[i];
-			
+			bestV = _resultV[i];			
 			bestStretch = _resultError[i];
+
 			best_startID = i;
 		}
 		else
-		{
+		{			
+			/*
+			if (_resultU[i])
+			{
+				delete [] _resultU[i];
+				_resultU[i]=NULL;
+			}
+			if (_resultV[i])
+			{
+				delete [] _resultV[i];
+				_resultV[i] = NULL;
+			}
+			*/
 			
-			delete [] _resultU[i];
-			delete [] _resultV[i];
 		}
 
 		if (_resultError[i] > worstStretch)
@@ -6026,20 +6083,139 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 			worst_startID = i;
 		}	
 	}
+
+	if (step > 1)
+	{
+		int oldbestPointIdx = best_startID;
+		int neighbor_startPointIdx = best_startID;
+		int neighbor_finishPointIdx = best_startID;
+	
+	
+		for (int i = best_startID - 1; i >= 0; i --)
+		{
+			if (_resultError[i] <= 0)
+			{
+				continue;
+			}
+			else
+			{
+				neighbor_startPointIdx = i+1;
+				break;
+			}
+
+		}
+
+		for (int i = best_startID + 1; i < m; i ++)
+		{
+			if (_resultError[i] <= 0)
+			{
+				if (i == m - 1)
+				{
+					neighbor_finishPointIdx = i;
+					break;
+				}
+				else
+					continue;
+			}
+			else
+			{
+				neighbor_finishPointIdx = i-1;
+				break;
+			}
+
+		}
+		printf("=== deep check from index %d to %d\n",neighbor_startPointIdx,neighbor_finishPointIdx);
+		#pragma omp parallel for
+		for (int i = neighbor_startPointIdx ; i <= neighbor_finishPointIdx; i++)
+		{				
+			#pragma omp critical
+			{
+				printf("S%d,",i);
+			}
+			SquareParametrizationCPU(bottomLeftVertexIDList[i], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[i],_resultV[i],_resultError[i],false);	
+			#pragma omp critical
+			{
+				printf("F%d,",i);
+				cal_count++;
+			}		
+		}
+
+
+		for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
+		{
+			if (_resultError[i] < bestStretch && _resultError[i] > 0)
+			{
+				/*
+				if (bestU)
+					delete [] bestU;
+				if (bestV)
+					delete [] bestV;
+					*/
+				bestU = _resultU[i];
+				bestV = _resultV[i];
+			
+				bestStretch = _resultError[i];
+				best_startID = i;
+			}
+			else
+			{
+				/*
+			
+				if (_resultU[i])
+				{
+					delete [] _resultU[i];
+					_resultU[i]=NULL;
+				}
+				if (_resultV[i])
+				{
+					delete [] _resultV[i];
+					_resultV[i] = NULL;
+				}
+				*/
+			}
+
+			if (_resultError[i] > worstStretch)
+			{
+				worstStretch = _resultError[i];
+				worst_startID = i;
+			}	
+		}
+
+
+	}
+	cout << endl;
+	
+	
 	printf("=== NUMBER of 25 percent brute force cases : %d ===\n",m);
 	printf("=== Find best stretch  of TEST%d  (best corner at %f) ===\n",best_startID,bestStretch);
 	if (logFile)
 		fprintf(logFile,"=== Find best stretch of TEST%d (best corner ERR = %f)===\n",best_startID,bestStretch);
 	
-	printf("=== Find worst stretch  of TEST%d  (worst corner at %f) ===\n",worst_startID,worstStretch);
+	
+	printf("=== Find worst stretch of TEST%d  (worst corner at %f) ===\n",worst_startID,worstStretch);
 	if (logFile)
 		fprintf(logFile,"=== Find worst stretch  of TEST%d  (worst corner ERR = %f) ===\n",worst_startID,worstStretch);
-
+	
 
 	for (int i=0;i<numberV;i++)
 	{				
 		pIPV[i].u = bestU[i];
 		pIPV[i].v = bestV[i];
+	}
+
+	for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
+	{			
+		if (_resultU[i])
+		{
+			delete [] _resultU[i];
+			_resultU[i]=NULL;
+		}
+		if (_resultV[i])
+		{
+			delete [] _resultV[i];
+			_resultV[i] = NULL;
+		}
+		
 	}
 
 	return bestStretch;
@@ -6213,6 +6389,14 @@ failure:printf ("This example FAILED as the solver has returned the ERROR code %
 	
 }
 #endif
+
+bool IsNumber(double x) 
+{
+    // This looks like it should always be true, 
+    // but it's false if x is a NaN.
+    return (x == x); 
+}
+
 double MyParameterization::ParametrizationOptimalCPU(double *ioU,double *ioV,double error,int non_zero_element,double *init_sa,unsigned long *init_ija,FILE* logFile)
 {
 	
@@ -6266,8 +6450,17 @@ double MyParameterization::ParametrizationOptimalCPU(double *ioU,double *ioV,dou
 	}
 
 
-	double *_sigma  = new double[numberV];	
+	
 	double candidate_l2 = GetStretchError(ioU,ioV);
+
+	if (candidate_l2 < 0)
+	{
+		delete [] UaXY;
+		delete [] vecb;
+		delete mybcg;
+		return candidate_l2;
+	}
+	double *_sigma  = new double[numberV];	
 	double previous_l2= 0;
 	double *sigsum = new double[numberV];
 	double *prevU = new double[numberV];
@@ -6276,6 +6469,7 @@ double MyParameterization::ParametrizationOptimalCPU(double *ioU,double *ioV,dou
 	
 	do
 	{
+		
 		previous_l2 = candidate_l2;
 		memcpy(prevU,ioU,sizeof(double)*numberV);
 		memcpy(prevV,ioV,sizeof(double)*numberV);
@@ -6327,8 +6521,9 @@ double MyParameterization::ParametrizationOptimalCPU(double *ioU,double *ioV,dou
 			}
 		}		
 		candidate_l2 = GetStretchError(ioU,ioV);
-	}
-	while (previous_l2 > candidate_l2);
+		
+ 	}
+	while (previous_l2 > candidate_l2 && candidate_l2 > 0);
 
 	memcpy(ioU,prevU,sizeof(double)*numberV);
 	memcpy(ioV,prevV,sizeof(double)*numberV);
@@ -6337,6 +6532,9 @@ double MyParameterization::ParametrizationOptimalCPU(double *ioU,double *ioV,dou
 	delete [] sigsum;
 	delete [] prevU;
 	delete [] prevV;
+	delete [] UaXY;
+    delete [] vecb;
+	delete mybcg;
 	return previous_l2;
 
 	
