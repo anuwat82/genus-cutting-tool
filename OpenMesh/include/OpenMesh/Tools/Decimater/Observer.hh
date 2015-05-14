@@ -41,127 +41,88 @@
 
 /*===========================================================================*\
  *                                                                           *
- *   $Revision: 1258 $                                                        *
- *   $Date: 2015-04-28 22:07:46 +0900 (Tue, 28 Apr 2015) $                   *
+ *   $Revision: 1199 $                                                         *
+ *   $Date: 2015-01-16 08:47:33 +0100 (Fr, 16 Jan 2015) $                   *
  *                                                                           *
- \*===========================================================================*/
+\*===========================================================================*/
 
-/** \file ModHausdorffT.hh
+/** \file Observer.hh
+ *
+ * This file contains an observer class which is used to monitor the progress
+ * of an decimater.
+ *
  */
 
 //=============================================================================
 //
-//  CLASS ModHausdorffT
+//  CLASS Observer
 //
 //=============================================================================
 
-#ifndef OPENMESH_DECIMATER_MODHAUSDORFFT_HH
-#define OPENMESH_DECIMATER_MODHAUSDORFFT_HH
+#pragma once
 
 //== INCLUDES =================================================================
 
-#include <OpenMesh/Tools/Decimater/ModBaseT.hh>
-#include <OpenMesh/Core/Utils/Property.hh>
-#include <vector>
-#include <cfloat>
+#include <cstddef>
+#include <OpenMesh/Core/System/config.h>
 
-//== NAMESPACES ===============================================================
+//== NAMESPACE ================================================================
 
-namespace OpenMesh {
+namespace OpenMesh  {
 namespace Decimater {
+
 
 //== CLASS DEFINITION =========================================================
 
-/** \brief Use Hausdorff distance to control decimation
+/** \brief Observer class
  *
- * This module computes the aspect ratio.
- *
- * In binary mode, the collapse is legal if:
- *  - The distance after the collapse is lower than the given tolerance
- *
- * No continuous mode
+ * Observers can be used to monitor the progress of the decimation and to
+ * abort it in between.
  */
-template<class MeshT>
-class ModHausdorffT: public ModBaseT<MeshT> {
-  public:
+class OPENMESHDLLEXPORT Observer
+{
+public:
 
-    DECIMATING_MODULE( ModHausdorffT, MeshT, Hausdorff );
+  /** Create an observer
+   *
+   * @param _notificationInterval Interval of decimation steps between notifications.
+   */
+  Observer(size_t _notificationInterval);
+  
+  /// Destructor
+  virtual ~Observer();
+  
+  /// Get the interval between notification steps
+  size_t get_interval() const;
 
-    typedef typename Mesh::Scalar Scalar;
-    typedef typename Mesh::Point Point;
-    typedef typename Mesh::FaceHandle FaceHandle;
-    typedef std::vector<Point> Points;
+  /// Set the interval between notification steps
+  void set_interval(size_t _notificationInterval);
+  
+  /** \brief callback
+   *
+   * This function has to be overloaded. It will be called regularly during
+   * the decimation process and will return the current step.
+   *
+   * @param _step Current step of the decimater
+   */
+  virtual void notify(size_t _step) = 0;
 
-    /// Constructor
-    ModHausdorffT(MeshT& _mesh, Scalar _error_tolerance = FLT_MAX) :
-        Base(_mesh, true), mesh_(Base::mesh()), tolerance_(_error_tolerance) {
-      mesh_.add_property(points_);
-    }
-
-    /// Destructor
-    ~ModHausdorffT() {
-      mesh_.remove_property(points_);
-    }
-
-    /// get max error tolerance
-    Scalar tolerance() const {
-      return tolerance_;
-    }
-
-    /// set max error tolerance
-    void set_tolerance(Scalar _e) {
-      tolerance_ = _e;
-    }
-
-    /// reset per-face point lists
-    virtual void initialize();
-
-    /** \brief compute Hausdorff error for one-ring
-     *
-     * This mod only allows collapses if the Hausdorff distance
-     * after a collapse is lower than the given tolerance.
-     *
-     *
-     * @param _ci Collapse info data
-     * @return Binary return, if collapse is legal or illegal
-     */
-
-    virtual float collapse_priority(const CollapseInfo& _ci);
-
-    /// re-distribute points
-    virtual void postprocess_collapse(const CollapseInfo& _ci);
-
-    /// set the percentage of tolerance
-    void set_error_tolerance_factor(double _factor);
-
-  private:
-
-    /// squared distance from point _p to triangle (_v0, _v1, _v2)
-    Scalar distPointTriangleSquared(const Point& _p, const Point& _v0, const Point& _v1, const Point& _v2);
-
-    /// compute max error for face _fh w.r.t. its point list and _p
-    Scalar compute_sqr_error(FaceHandle _fh, const Point& _p) const;
-
-  private:
-
-    /// Temporary point storage
-    Points tmp_points_;
-
-    Mesh&  mesh_;
-    Scalar tolerance_;
-
-    OpenMesh::FPropHandleT<Points> points_;
+  /** \brief Abort callback
+   *
+   * After each notification, this function is called by the decimater. If the
+   * function returns true, the decimater will stop at a consistent state. Otherwise
+   * it will continue.
+   *
+   * @return abort Yes or No
+   */
+  virtual bool abort() const;
+  
+private:
+  size_t notificationInterval_;
 };
 
+
 //=============================================================================
-}// END_NS_DECIMATER
+} // END_NS_DECIMATER
 } // END_NS_OPENMESH
 //=============================================================================
-#if defined(OM_INCLUDE_TEMPLATES) && !defined(OPENMESH_DECIMATER_MODHAUSDORFFT_C)
-#define OPENMESH_DECIMATER_MODHAUSDORFFT_TEMPLATES
-#include "ModHausdorffT.cc"
-#endif
-//=============================================================================
-#endif // OPENMESH_DECIMATER_MODHAUSDORFFT_HH defined
-//=============================================================================
-
