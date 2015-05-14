@@ -738,7 +738,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 	else if (key == "F8")
 	{
 		//Sqaure Parameterization brute force
-		cout << "Perform   Parameterization 25% brute force..."<< endl;
+		cout << "Perform Parameterization 25% brute force..."<< endl;
 		vtkSmartPointer<vtkPolyData> inputPolydata;
 		if (disk_polydata.GetPointer() != NULL && disk_polydata->GetNumberOfPoints() > 0)
 		{
@@ -779,7 +779,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 
 		unsigned int step_value = 0;  // 0 means using formula
 		char answer;
-		cout << "Do you want to manual set step value? (y/n):";
+		cout << "Do you want to manually set step value? (y/n):";
 		cin >> answer;
 
 		if (answer == 'y' ||answer == 'Y')
@@ -813,9 +813,15 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		}
 
 
-
 		CPolygonsData polygon ;
 		polygon.InitailDiskTopology(inputPolydata);
+		double calTime;
+		unsigned int calCount;
+		polygon.SquareParameterizationOptimization(step_value,&calCount,&calTime);
+
+		cout << "time consume: " << calTime << " sec" << endl;
+		cout << "total test cases examined: " << calCount << " times" << endl;
+		cout << "========================================" << endl;
 			
 	}
 	else if (key == "plus")

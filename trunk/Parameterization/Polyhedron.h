@@ -2701,8 +2701,11 @@ double getCurrentE(){
   
   }
   dsum =constsumarea3D*sqrt(dsum/sumarea3D);
-  return dsum;
 
+  if (dsum==dsum)
+	return dsum;
+  else
+	 return -1.0;
 }
 
 };
