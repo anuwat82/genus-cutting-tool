@@ -111,6 +111,13 @@ public:
 							 int num_PV,
 							 FILE* logFile= NULL);
 
+
+	double    SqaureParameterizationStepSampling_PARALLEL_CPU( unsigned int step_value,
+															   unsigned int &cal_count,
+																PolarVertex *pIPV,
+															 int num_PV,
+															 FILE* logFile= NULL);
+
 	void	ResetInnerLambda();
 	void    CalBorderPath(IDList *BPointH,IDList *BPointT,double *length,int *numPoint);
 

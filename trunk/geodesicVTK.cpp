@@ -30,7 +30,8 @@ vtkWeakPointer<vtkActor> actorPoly1;
 vtkWeakPointer<vtkActor> actorPoly2;
 vtkWeakPointer<vtkActor> actorPoly3;
 geodesic::Mesh geosesic_mesh;
-geodesic::GeodesicAlgorithmExact *exact_algorithm;
+geodesic::GeodesicAlgorithmExact *exact_algorithm = NULL;
+int sourceVertex  = 0;
 struct collisionEdgeInfo
 {
 	int v0;
@@ -59,7 +60,7 @@ vtkSmartPointer<vtkActor> CreateStrightUpPipeline(vtkSmartPointer<vtkMutableUndi
 vtkSmartPointer<vtkActor> CreateCleanPipeline(vtkSmartPointer<vtkMutableUndirectedGraph> CleanGraph);
 vtkSmartPointer<vtkActor> CreateFinalPipeline(vtkSmartPointer<vtkMutableUndirectedGraph> FinalGraph);
 
-void Process(vtkSmartPointer<vtkPolyData> polydata ,int sourceVertexID);
+void InitialGeodesic(vtkSmartPointer<vtkPolyData> polydata ,int sourceVertexID);
 void ScreenShot(vtkRenderWindow* renderWindow);
 std::string GetFileExtension(const std::string& FileName)
 {
@@ -172,7 +173,7 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 }
 */
 
-void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
+void InitialGeodesic(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 {
 	std::vector<collisionEdgeInfo> collision_edges;
 	OmMesh mesh;
@@ -189,6 +190,11 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 	std::cout << "==========================" << endl;
 	std::cout << "source vertex id " << sourceVertexID << endl;
 	
+	if (exact_algorithm)
+	{
+		delete exact_algorithm;
+		exact_algorithm = NULL;
+	}
 	exact_algorithm = new geodesic::GeodesicAlgorithmExact(&geosesic_mesh);
 	GenerateGeodesicDistance(*exact_algorithm,sourceVertexID,collision_edges);
 	std::cout << "number of edges:" << exact_algorithm->mesh()->edges().size() << endl; 
@@ -203,6 +209,8 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 	vtkSmartPointer<vtkPolyData> truncateOriginalPolydata = vtkSmartPointer<vtkPolyData>::New();
 	truncateOriginalPolydata->DeepCopy(polydata);
 	truncateOriginalPolydata->BuildLinks();
+
+
 	vtkSmartPointer<vtkMutableUndirectedGraph> graphState3 = modTruncate.Init(truncateModPolydata,collisionEdgesGraphAfterTruncate,exact_algorithm,sourceVertexID);
 	vtkSmartPointer<vtkMutableUndirectedGraph> graphState4 = originalTruncate.InitOriginal(truncateOriginalPolydata,exact_algorithm,sourceVertexID);
 	
@@ -282,12 +290,13 @@ void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 		actorEdge5 = edge_actor5;
 
 	*/
+	
 }
 
 
 int main(int argc, char* argv[])
 {
-	int sourceVertex  = 0;
+	
 	std::string filename;
 	if (argc >= 2)
 	{
@@ -328,7 +337,7 @@ int main(int argc, char* argv[])
 		modelReader = OFFReader;		
 	}
 	polydata = modelReader->GetOutput();
-	Process(modelReader->GetOutput() , sourceVertex);
+	//Process(modelReader->GetOutput() , sourceVertex);
 
 
 	// Create the tree
@@ -441,6 +450,14 @@ int main(int argc, char* argv[])
 
 	renderWindowInteractor->Start();
 	
+
+	if (exact_algorithm)
+	{
+		delete exact_algorithm;
+		exact_algorithm = NULL;
+	}
+
+
 	return 0;
 }
 
@@ -535,22 +552,25 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			break;
 		case 't':
 			{
-			modTruncate.Step();
-			originalTruncate.Step();
-			vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(modTruncate.GetGraph());
-			if (actorEdge3)
-				actorEdge3->ShallowCopy(edge_actor3);
-			else
-				actorEdge3 = edge_actor3;
-			vtkSmartPointer<vtkActor> edge_actor4 = CreateStrightUpPipeline(originalTruncate.GetGraph());
-			if (actorEdge4)
-				actorEdge4->ShallowCopy(edge_actor4);
-			else
-				actorEdge4 = edge_actor4;
-			renderer->Modified();
-			iren->GetRenderWindow()->Render();
+				if (exact_algorithm == NULL)	
+					InitialGeodesic(polydata.GetPointer(),sourceVertex);
+				modTruncate.Step();
+				originalTruncate.Step();
+				vtkSmartPointer<vtkActor> edge_actor3 = CreateStrightUpPipeline(modTruncate.GetGraph());
+				if (actorEdge3)
+					actorEdge3->ShallowCopy(edge_actor3);
+				else
+					actorEdge3 = edge_actor3;
+				vtkSmartPointer<vtkActor> edge_actor4 = CreateStrightUpPipeline(originalTruncate.GetGraph());
+				if (actorEdge4)
+					actorEdge4->ShallowCopy(edge_actor4);
+				else
+					actorEdge4 = edge_actor4;
+				renderer->Modified();
+				iren->GetRenderWindow()->Render();
 			}
 			break;
+			/*
 		case 'g':
 			{
 			modTruncate.Process();
@@ -574,6 +594,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			cout << "time consume proposed:" << time_proposed << "sec" << endl;
 			}
 			break;
+			*/
 		case 'c':
 			//cutting 
 			if (modTruncate.isReadyToCut())
@@ -614,6 +635,8 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 	else if (key == "F6")
 	{
 		//homotopy cutting		
+		if (exact_algorithm == NULL)	
+			InitialGeodesic(polydata.GetPointer(),sourceVertex);
 		modTruncate.Process();
 		originalTruncate.Process();
 		cout << "num original edge:" << originalTruncate.GetGraph()->GetNumberOfEdges() << endl;
@@ -631,9 +654,11 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		iren->GetRenderWindow()->Render();
 		double time_original = exact_algorithm->GetConsumedTime() + originalTruncate.GetTimeConsumed();
 		double time_proposed = exact_algorithm->GetConsumedTime() + exact_algorithm->GetConsumedTime2() +  modTruncate.GetTimeConsumed();
+		cout.precision(15);
 		cout << "Homotopy Cutting finished..."<< endl;
-		cout << "time consume original:" << time_original << "sec" << endl;
-		cout << "time consume proposed:" << time_proposed << "sec" << endl;
+		printf("time consume original: %.07f sec\n", time_original);// << "sec" << endl;
+		printf("time consume proposed: %.07f sec\n", time_proposed);// << "sec" << endl;
+		//cout << "time consume proposed:" << time_proposed << "sec" << endl;
 		cout << "========================================" << endl;
 	}
 	else if (key == "F7")
@@ -713,7 +738,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 	else if (key == "F8")
 	{
 		//Sqaure Parameterization brute force
-
+		cout << "Perform   Parameterization 25% brute force..."<< endl;
 		vtkSmartPointer<vtkPolyData> inputPolydata;
 		if (disk_polydata.GetPointer() != NULL && disk_polydata->GetNumberOfPoints() > 0)
 		{
@@ -727,6 +752,13 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		}
 		CPolygonsData polygon ;
 		polygon.InitailDiskTopology(inputPolydata);
+		double calTime;
+		unsigned int calCount;
+		polygon.SquareParameterizationOptimization(1,&calCount,&calTime);
+
+		cout << "time consume: " << calTime << " sec" << endl;
+		cout << "total test cases examined: " << calCount << " times" << endl;
+		cout << "========================================" << endl;
 		
 	}
 	else if (key == "F9")
@@ -761,8 +793,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			int numBedge = borderEdges->GetOutput()->GetNumberOfLines();
 			unsigned int limit = (unsigned int )(numBedge*0.25*0.5);
 			do
-			{
-				
+			{			
 				cout << endl << "Enter step value (2 ~ " << limit << "):";
 				while(!(cin >> step_value)){
 					cout << "Bad value!" << endl;
@@ -777,6 +808,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		}
 		else
 		{
+
 			cout << "Use formula step value" << endl;
 		}
 
@@ -818,7 +850,7 @@ void pickCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata, vo
 		if (TrackballStyle->GetInteractor()->GetControlKey() != 0)
 		{
 			vtkSmartPointer<vtkPolyData> PolyData = polydata;
-			Process(PolyData,picker->GetPointId());
+			InitialGeodesic(PolyData,picker->GetPointId());
 			ColoredPoint( TrackballStyle->GetInteractor()->GetRenderWindow()->GetRenderers()->GetFirstRenderer(),PolyData->GetPoint(vertexID), 0.0,1.0,0.0);
 			actorEdge1->Modified();
 			actorEdge2->Modified();
