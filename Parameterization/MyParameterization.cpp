@@ -6529,4 +6529,503 @@ void MyParameterization::CircleParametrizationCPU(IDList *borderH,IDList *border
 }
 
 
+#if 0
+double	  PsoParameterization::OptParam_Sampling(	PolarVertex *pIPV,
+													int num_PV,
+													FILE* logFile)
+{
+	printf("step: %d\n",m_step);
+	double bestStretch = -1;
+	iteNum = (pow((double)((numberV/20000) + 1),2)) *2000;	
+	if (pU)
+		delete [] pU;
+	if (pV)
+		delete [] pV;
 
+	//allocate memory for u and v as number of vertex (disk topology)
+	pU = new double[numberV];
+	pV = new double[numberV];
+	memset(pU,0x00,sizeof(double)*numberV);
+	memset(pV,0x00,sizeof(double)*numberV);
+	
+	double *initU0 = new double[numberV];
+	double *initV0 = new double[numberV];
+	memset(initU0,0x00,sizeof(double)*numberV);
+	memset(initV0,0x00,sizeof(double)*numberV);	
+
+    boundarytype=0;
+	setPolarMap();
+	if (BpointH != NULL)
+		IDtool->CleanNeighbor(BpointH,BpointT);
+
+	BpointH = new IDList();
+	BpointT = new IDList();
+	
+
+	BpointH->next = BpointT;
+	BpointT->back = BpointH;
+	
+	total_edge_length = 0;
+	int numBorderPoint = 0;
+	CalBorderPath(BpointH,BpointT,&total_edge_length,&numBorderPoint);
+	
+	int actualParamCount = 0;
+	
+	totalTestCase = 0;
+	actualCalCount=0;
+	IDList *startPoint = BpointH->next;
+	double loop = 0;
+	int state=0;
+	double clen=0.0;		
+	
+	double sum_length = 0;
+	double edge_length = 0;	
+	while (loop < total_edge_length*0.25)
+	{		
+		loop += PT->Distance(point[startPoint->ID],point[next(startPoint)->ID]);
+		totalTestCase++;
+		startPoint = next(startPoint);
+	}
+	
+	if (boundary_point)
+		delete [] boundary_point;
+	if (boundary_point_stretch)
+		delete [] boundary_point_stretch;
+
+	boundary_point = new IDList *[totalTestCase];
+	boundary_point_stretch = new double [totalTestCase];
+	
+	IDList *now = BpointH;
+	for (int i =  0; i < totalTestCase; i++)
+	{
+		now = now->next;
+		boundary_point[i] = now;
+		boundary_point_stretch[i] = -1;
+	}
+	now = BpointH;	
+
+	if (m_step  == 0 )
+	{
+		//calculate auto step number
+		double d_step = (sqrt(numberV* ((double)totalTestCase/numberF)));
+		m_step = floor(d_step);
+		if (m_step < 2)
+			m_step = 2;
+		printf("cal auto step number: %f (%d)\n", d_step,m_step);
+	}
+	
+		
+	int count = 1;
+	
+	int currentBestIdx = 0;
+	
+	loop = 0;
+	state=0;
+	clen=0.0;	
+	sum_length = 0;
+	edge_length = 0;
+
+	startPoint = BpointH->next;
+	BpointT->ID = BpointH->next->ID; // for cal length;
+
+
+	while (loop < total_edge_length*0.25)
+	{
+		
+		state = 0;
+		sum_length = 0;
+		double this_side_length[4] ={0};
+		int this_side_num_edge[4] = {0};		
+		loop += PT->Distance(point[startPoint->ID],point[next(startPoint)->ID]);
+		IDList *now = startPoint;
+		if (count % m_step == 1)
+		{
+			do
+			{				
+				edge_length = PT->Distance(point[now->ID],point[next(now)->ID]);			
+				if ((sum_length + edge_length>= (total_edge_length*0.25)) && state < 3)
+				{
+					if ((sum_length + edge_length)/(total_edge_length*0.25) >= 1.1&& this_side_num_edge[state] > 0)					
+					{
+						this_side_length[state] = sum_length;
+						this_side_num_edge[state+1]++;
+						sum_length = edge_length;
+					}
+					else
+					{
+						this_side_length[state] = sum_length+edge_length;
+						this_side_num_edge[state]++;
+						sum_length = 0;
+					}				
+					state++;
+				}
+				else
+				{
+					this_side_num_edge[state]++;
+					sum_length += edge_length;
+				}
+				now = next(now);
+				if (now == BpointT)
+					now = BpointH->next;
+			}
+			while (now != startPoint);			
+			this_side_length[state] = sum_length;
+
+
+			state = 0;
+			sum_length  = 0;
+			clen = 0.0;
+			now = startPoint;
+
+			
+			do
+			{
+		
+				switch(state)
+				{
+					case 0:
+						if (clen < 1.0)
+						{
+							pU[now->ID] = clen; 
+							pV[now->ID] = 0.0;
+						}
+						else
+						{
+							pU[now->ID] = 1.0;
+							pV[now->ID] = 0.0;
+							sum_length = 0.0;
+							state=1;											
+						}
+						break;
+					case 1:
+						if (clen < 1.0)
+						{
+							pU[now->ID] = 1.0; 
+							pV[now->ID] = clen;
+						}
+						else
+						{
+							pU[now->ID] = 1.0;
+							pV[now->ID] = 1.0;
+							sum_length = 0.0;
+							state=2;
+						}
+						break;
+					case 2:
+						if (clen < 1.0)
+						{
+							pU[now->ID] = 1.0-clen; 
+							pV[now->ID] = 1.0;
+						}
+						else
+						{
+							pU[now->ID] = 0.0;
+							pV[now->ID] = 1.0;
+							sum_length = 0.0;
+							state=3;
+						}
+						break;
+					case 3:
+						if (clen < 1.0)
+						{
+							pU[now->ID] = 0.0; 
+							pV[now->ID] = 1.0-clen;
+						}
+						else
+						{
+							//should never enter this one;
+							state=4;
+						}
+					default:
+						break;
+
+				}
+				sum_length += PT->Distance(point[now->ID],point[next(now)->ID]);
+				clen = sum_length/this_side_length[state];	
+		
+				now = next(now);
+				if (now == BpointT)
+					now = next(BpointH);
+		
+			}
+			while(	now->ID != startPoint->ID);
+
+
+		
+			for(int i=0;i<numberV;i++)
+			{
+				if(boundary[i]==1)
+				{            
+		
+				}
+				else
+				{
+					pU[i] = 0;
+					pV[i] = 0;
+				}
+			}
+			ResetInnerLambda();	
+		
+		
+			gammaP = 0.75;
+			ParametrizationOptimal(iteNum,PCBCGerror,logFile);
+			gammaP = 1.0;
+			
+			boundary_point_stretch[count - 1] = resultStretch;
+			actualParamCount++;
+			
+			if (resultStretch < bestStretch || bestStretch < 0)
+			{
+				
+				for (int i=0;i<numberV;i++)
+				{
+					pIPV[i].u = pU[i];
+					pIPV[i].v = pV[i];		
+				}
+				
+
+				currentBestIdx = count - 1;
+				bestStretch = resultStretch;
+				
+			}
+			
+		}		
+		count++;
+		
+		//prepare for next loop
+		startPoint = next(startPoint);
+		
+	}
+
+
+
+	//check neighbor of currentBest Point
+	//startpoint 
+
+	int oldbestPointIdx = currentBestIdx;
+	int neighbor_startPointIdx = currentBestIdx;
+	int neighbor_finishPointIdx = currentBestIdx;
+	
+	
+	for (int i = currentBestIdx - 1; i >= 0; i --)
+	{
+		if (boundary_point_stretch[i] < 0)
+		{
+			continue;
+		}
+		else
+		{
+			neighbor_startPointIdx = i+1;
+			break;
+		}
+
+	}
+
+	for (int i = currentBestIdx + 1; i < totalTestCase; i ++)
+	{
+		if (boundary_point_stretch[i] < 0)
+		{
+			if (i == totalTestCase - 1)
+			{
+				neighbor_finishPointIdx = i;
+				break;
+			}
+			else
+				continue;
+		}
+		else
+		{
+			neighbor_finishPointIdx = i-1;
+			break;
+		}
+
+	}
+
+
+	loop = 0;
+	state=0;
+	clen=0.0;	
+	sum_length = 0;
+	edge_length = 0;
+
+	startPoint =  boundary_point[neighbor_startPointIdx];
+	int current_idx = neighbor_startPointIdx;
+	
+	
+	while (1)
+	{
+		
+		state = 0;
+		sum_length = 0;
+		double this_side_length[4] ={0};
+		int this_side_num_edge[4] = {0};		
+		//loop += PT->Distance(point[startPoint->ID],point[next(startPoint)->ID]);
+		IDList *now = startPoint;
+
+		if (startPoint != boundary_point[oldbestPointIdx]) //skip at oldbestPoint
+		{
+			do
+			{				
+				edge_length = PT->Distance(point[now->ID],point[next(now)->ID]);			
+				if ((sum_length + edge_length>= (total_edge_length*0.25)) && state < 3)
+				{
+					if ((sum_length + edge_length)/(total_edge_length*0.25) >= 1.1&& this_side_num_edge[state] > 0)					
+					{
+						this_side_length[state] = sum_length;
+						this_side_num_edge[state+1]++;
+						sum_length = edge_length;
+					}
+					else
+					{
+						this_side_length[state] = sum_length+edge_length;
+						this_side_num_edge[state]++;
+						sum_length = 0;
+					}				
+					state++;
+				}
+				else
+				{
+					this_side_num_edge[state]++;
+					sum_length += edge_length;
+				}
+				now = next(now);
+				if (now == BpointT)
+					now = BpointH->next;
+			}
+			while (now != startPoint);			
+			this_side_length[state] = sum_length;
+
+
+			state = 0;
+			sum_length  = 0;
+			clen = 0.0;
+			now = startPoint;			
+			do
+			{
+		
+				switch(state)
+				{
+					case 0:
+						if (clen < 1.0)
+						{
+							pU[now->ID] = clen; 
+							pV[now->ID] = 0.0;
+						}
+						else
+						{
+							pU[now->ID] = 1.0;
+							pV[now->ID] = 0.0;
+							sum_length = 0.0;
+							state=1;											
+						}
+						break;
+					case 1:
+						if (clen < 1.0)
+						{
+							pU[now->ID] = 1.0; 
+							pV[now->ID] = clen;
+						}
+						else
+						{
+							pU[now->ID] = 1.0;
+							pV[now->ID] = 1.0;
+							sum_length = 0.0;
+							state=2;
+						}
+						break;
+					case 2:
+						if (clen < 1.0)
+						{
+							pU[now->ID] = 1.0-clen; 
+							pV[now->ID] = 1.0;
+						}
+						else
+						{
+							pU[now->ID] = 0.0;
+							pV[now->ID] = 1.0;
+							sum_length = 0.0;
+							state=3;
+						}
+						break;
+					case 3:
+						if (clen < 1.0)
+						{
+							pU[now->ID] = 0.0; 
+							pV[now->ID] = 1.0-clen;
+						}
+						else
+						{
+							//should never enter this one;
+							state=4;
+						}
+					default:
+						break;
+
+				}
+				sum_length += PT->Distance(point[now->ID],point[next(now)->ID]);
+				clen = sum_length/this_side_length[state];	
+		
+				now = next(now);
+				if (now == BpointT)
+					now = next(BpointH);
+		
+			}
+			while(	now->ID != startPoint->ID);
+
+			for(int i=0;i<numberV;i++)
+			{
+				if(boundary[i]==1)
+				{            
+		
+				}
+				else
+				{
+					pU[i] = 0;
+					pV[i] = 0;
+				}
+			}
+			ResetInnerLambda();	
+		
+		
+			gammaP = 0.75;
+			ParametrizationOptimal(iteNum,PCBCGerror,logFile);
+			gammaP = 1.0;
+			
+			boundary_point_stretch[current_idx] = resultStretch;
+			actualParamCount++;
+			
+			if (resultStretch < bestStretch || bestStretch < 0)
+			{
+				
+				for (int i=0;i<numberV;i++)
+				{
+					pIPV[i].u = pU[i];
+					pIPV[i].v = pV[i];		
+				}
+				
+
+				currentBestIdx = current_idx;
+				bestStretch = resultStretch;
+				
+			}
+			
+		} //end- if (now != bestPoint)		
+		current_idx++;
+		
+		//prepare for next loop		
+		if (boundary_point[neighbor_finishPointIdx] == startPoint)
+			break;  // out from loop
+		else
+			startPoint = next(startPoint);
+	}
+	
+
+
+
+	IDtool->CleanNeighbor(BpointH,BpointT);
+	
+	
+	printf("did (%d/%d): best is %f \n", actualParamCount,totalTestCase, bestStretch);
+	return bestStretch ;
+}
+#endif
