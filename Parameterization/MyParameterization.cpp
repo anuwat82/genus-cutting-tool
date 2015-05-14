@@ -5422,62 +5422,63 @@ void MyParameterization::setSigma(double gamma)
 double MyParameterization::GetStretchError(double *ipU,double *ipV)
 {
 	int i;
-	IDList *now=NULL;
-	double varphi,ddv,dsize1,sumarea;
-	double dddhval=0.0;
-	double dsum=0.0;  
-	double localsum=0.0;
-	double pV1,pV2,pV3,pU1,pU2,pU3;
-	double dE = 0.0;
-	double dG = 0.0;
-	Point3d _bc[2];
-	double max_strect = 0.0;
+	double dsum = 0;
 	if(boundarysigma==0)
 	{
+#pragma omp parallel for
 		for(i=0;i<numberF;i++)
 		{
 			if(boundary[Face[i][0]]!=1&&boundary[Face[i][1]]!=1&&boundary[Face[i][2]]!=1)
 			{
-				pV1 = ipV[Face[i][0]];
-				pV2 = ipV[Face[i][1]];
-				pV3 = ipV[Face[i][2]];
-				pU1 = ipU[Face[i][0]];
-				pU2 = ipU[Face[i][1]];
-				pU3 = ipU[Face[i][2]];    
-				dsize1 = PT->getParametricA(pV1,pV2,pV3,pU1,pU2,pU3);      
+				Point3d _bc[2];
+				double pV1 = ipV[Face[i][0]];
+				double pV2 = ipV[Face[i][1]];
+				double pV3 = ipV[Face[i][2]];
+				double pU1 = ipU[Face[i][0]];
+				double pU2 = ipU[Face[i][1]];
+				double pU3 = ipU[Face[i][2]];    
+				double dsize1 = PT->getParametricA(pV1,pV2,pV3,pU1,pU2,pU3);      
 				PT->setParametricDs(&_bc[0],point[Face[i][0]],
 						point[Face[i][1]],point[Face[i][2]],
 						pV1,pV2,pV3,dsize1);
 				PT->setParametricDt(&_bc[1],point[Face[i][0]],
 						point[Face[i][1]],point[Face[i][2]],
 						pU1,pU2,pU3,dsize1);
-				dE = PT->InnerProduct(&_bc[0],&_bc[0]);    
-				dG = PT->InnerProduct(&_bc[1],&_bc[1]);
-				dsum +=  areaMap3D[i]*0.5*(dE+dG);
+				double dE = PT->InnerProduct(&_bc[0],&_bc[0]);    
+				double dG = PT->InnerProduct(&_bc[1],&_bc[1]);
+				#pragma omp critical
+				{
+					dsum +=  areaMap3D[i]*0.5*(dE+dG);
+				}
 			}
 		}
 	}
 	else
 	{
+#pragma omp parallel for
 		for(i=0;i<numberF;i++)
 		{      
-			pV1 = ipV[Face[i][0]];
-			pV2 = ipV[Face[i][1]];
-			pV3 = ipV[Face[i][2]];
-			pU1 = ipU[Face[i][0]];
-			pU2 = ipU[Face[i][1]];
-			pU3 = ipU[Face[i][2]];    
-			dsize1 = PT->getParametricA(pV1,pV2,pV3,pU1,pU2,pU3);      
+			Point3d _bc[2];
+			double pV1 = ipV[Face[i][0]];
+			double pV2 = ipV[Face[i][1]];
+			double pV3 = ipV[Face[i][2]];
+			double pU1 = ipU[Face[i][0]];
+			double pU2 = ipU[Face[i][1]];
+			double pU3 = ipU[Face[i][2]];    
+			double dsize1 = PT->getParametricA(pV1,pV2,pV3,pU1,pU2,pU3);      
 			PT->setParametricDs(&_bc[0],point[Face[i][0]],
 					point[Face[i][1]],point[Face[i][2]],
 					pV1,pV2,pV3,dsize1);
 			PT->setParametricDt(&_bc[1],point[Face[i][0]],
 					point[Face[i][1]],point[Face[i][2]],
 					pU1,pU2,pU3,dsize1);
-			dE = PT->InnerProduct(&_bc[0],&_bc[0]);
+			double dE = PT->InnerProduct(&_bc[0],&_bc[0]);
     
-			dG = PT->InnerProduct(&_bc[1],&_bc[1]);
-			dsum +=  areaMap3D[i]*0.5*(dE+dG);
+			double dG = PT->InnerProduct(&_bc[1],&_bc[1]);
+			#pragma omp critical
+			{
+				dsum +=  areaMap3D[i]*0.5*(dE+dG);
+			}
 		}  
 	}
 	dsum =constsumarea3D*sqrt(dsum/sumarea3D);
@@ -5660,7 +5661,7 @@ void MyParameterization::SquareParametrizationCPU(int bottomleftIDvertex,IDList 
 
 
 	double stretchError = ParametrizationOptimalCPU( ioU,ioV,PCBCGerror,non_zero_element,init_sa,init_ija,NULL);
-	//double stretchError = ParametrizationOptimalSuperLU( ioU,ioV,PCBCGerror,non_zero_element,init_sa,init_ija,NULL);
+	
 	if (reportlog)	
 		printf("stretchError = %f\n",stretchError);
 	resultU = ioU;
@@ -5876,6 +5877,175 @@ double  MyParameterization::PARAM_PARALLEL_CPU(	PolarVertex *pIPV,
 	IDtool->CleanNeighbor(BpointH,BpointT);
 	return bestStretch;	
 }
+
+
+double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(unsigned int step_value,unsigned int &cal_count,
+																			  PolarVertex *pIPV,
+																			 int num_PV,
+																			 FILE* logFile)
+{
+	double bestStretch = DBL_MAX;
+	int best_startID = -1;	
+	int worst_startID = -1;
+	double worstStretch = -1;
+
+
+	if (pU)
+	{
+		delete [] pU;
+		pU = NULL;
+	}
+	if (pV)
+	{
+		delete [] pV;
+		pV = NULL;
+	}
+
+
+    boundarytype=0; //square
+	constsumarea3D = sqrt(1.0/sumarea3D);
+	setPolarMap();
+	IDList *BpointH = new IDList();
+	IDList *BpointT = new IDList();
+    
+	BpointH->next = BpointT;
+	BpointT->back = BpointH;
+	
+	double tlength=0.0;
+	int numBorderPoint = 0;
+	CalBorderPath(BpointH,BpointT,&tlength,&numBorderPoint);
+
+	IDList *now = BpointH;
+	double loop = 0;
+
+	//ResetInnerLambda();
+	setFloaterC();
+	SortIndexP();
+	
+	//record result as array.
+	vector<int> bottomLeftVertexIDList;
+	
+	printf("=== NUMBER BORDER EDGES : %d ===\n",numBorderPoint);
+	if (logFile)
+		fprintf(logFile,"=== NUMBER BORDER EDGES : %d ===\n",numBorderPoint);
+	while (loop < tlength*0.25 && next(now) != BpointT)
+	{
+		now = next(now);		
+		loop += PT->Distance(point[now->ID],point[next(now)->ID]);
+		bottomLeftVertexIDList.push_back(now->ID);
+	}
+
+	//create initial A matrix  ,it is same for all condition
+	//to boost up speed
+	double *init_sa = NULL;
+	unsigned long *init_ija = NULL;
+	int nonzero=(numberV);
+	for(int i=0;i<numberV;i++)
+	{
+		if(boundary[i]!=1)
+		{
+			nonzero += neighborI[i];			
+		}
+	}	
+	init_ija = new unsigned long[2*nonzero+2];
+    init_sa = new double[2*nonzero+2];	
+	init_ija[1] = 2*(numberV)+2;
+	int dlk=2*(numberV)+1;
+  
+	for(int i=0;i<numberV;i++)
+	{
+		init_sa[i+1] = 1.0;		
+		if(boundary[i]!=1)
+		{			
+			PolarList *nowp = PHead[i];      
+			while(nextN(nowp)!=PTail[i])
+			{
+				nowp = nextN(nowp);
+				++dlk;
+				init_sa[dlk] = -nowp->lambda;
+				init_ija[dlk]= nowp->ID+1;
+			}
+		}
+		init_ija[i+1+1]=dlk+1;
+	}
+	for(int i=0;i<numberV;i++)
+	{
+		init_sa[i+1+numberV] = 1.0;
+		if(boundary[i]!=1)
+		{
+			PolarList *nowp = PHead[i];
+			while(nextN(nowp)!=PTail[i])
+			{
+				nowp = nextN(nowp);
+				++dlk;
+				init_sa[dlk] = -nowp->lambda;
+				init_ija[dlk]=nowp->ID+numberV+1;
+			}
+		}
+		init_ija[i+numberV+1+1]=dlk+1;
+	}
+	//prepare for store result array
+	double *bestU = NULL;
+	double *bestV = NULL;
+	std::vector<double *>_resultU(bottomLeftVertexIDList.size(),NULL);
+	std::vector<double *>_resultV(bottomLeftVertexIDList.size(),NULL);
+	std::vector<double>_resultError(bottomLeftVertexIDList.size(),0.0);
+	
+	int m = bottomLeftVertexIDList.size();
+	cal_count = m;
+	#pragma omp parallel for
+	for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
+	{		
+		SquareParametrizationCPU(bottomLeftVertexIDList[i], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[i],_resultV[i],_resultError[i],false);	
+	}
+
+	for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
+	{
+		if (_resultError[i] < bestStretch )
+		{
+			if (bestU)
+				delete [] bestU;
+			if (bestV)
+				delete [] bestV;
+			bestU = _resultU[i];
+			bestV = _resultV[i];
+			
+			bestStretch = _resultError[i];
+			best_startID = i;
+		}
+		else
+		{
+			
+			delete [] _resultU[i];
+			delete [] _resultV[i];
+		}
+
+		if (_resultError[i] > worstStretch)
+		{
+			worstStretch = _resultError[i];
+			worst_startID = i;
+		}	
+	}
+	printf("=== NUMBER of 25 percent brute force cases : %d ===\n",m);
+	printf("=== Find best stretch  of TEST%d  (best corner at %f) ===\n",best_startID,bestStretch);
+	if (logFile)
+		fprintf(logFile,"=== Find best stretch of TEST%d (best corner ERR = %f)===\n",best_startID,bestStretch);
+	
+	printf("=== Find worst stretch  of TEST%d  (worst corner at %f) ===\n",worst_startID,worstStretch);
+	if (logFile)
+		fprintf(logFile,"=== Find worst stretch  of TEST%d  (worst corner ERR = %f) ===\n",worst_startID,worstStretch);
+
+
+	for (int i=0;i<numberV;i++)
+	{				
+		pIPV[i].u = bestU[i];
+		pIPV[i].v = bestV[i];
+	}
+
+	return bestStretch;
+}
+
+
 #ifdef INTEL_MKL_VERSION
 double MyParameterization::ParametrizationOptimalCPU_MKL(double *ioU,double *ioV,double error,int non_zero_element,double *init_sa,unsigned long *init_ija,FILE* logFile)
 {

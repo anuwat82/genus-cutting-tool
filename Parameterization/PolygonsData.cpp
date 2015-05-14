@@ -1031,6 +1031,38 @@ int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime, vtkPolyData* o
 }
 
 
+int CPolygonsData::SquareParameterizationOptimization(unsigned int step_value, unsigned int *testCasesCount,double *op_calTime)
+{
+	clock_t calTime = 0;
+	calTime = clock();
+	
+	int *p_boundarySurfaceFaceInfo = m_boundarySurfaceFaceInfo;
+	int *p_num_boundarySurfaceFaceInfo = &m_num_boundarySurfaceFace;
+	PolarVertex* p_boundarySurfacePolarVertexInfo = m_boundarySurfacePolarVertexInfo;
+	int *p_num_boundarySurfacePolarVertexInfo = &m_num_boundarySurfacePolarVertex;
+	int num_validPolarVertex = numVertex;
+	MyParameterization paramTool;
+		
+	paramTool.SetPolarVertexAndFaceAndBorder(	p_boundarySurfacePolarVertexInfo,
+												p_num_boundarySurfacePolarVertexInfo,
+												num_validPolarVertex,
+												p_boundarySurfaceFaceInfo,
+												p_num_boundarySurfaceFaceInfo,
+												CutHedgeH,
+												CutHedgeT,
+												m_numValen2BoundaryPoint
+											);	
+	m_numValen2BoundaryPoint = 0;
+	unsigned int cal_count(0);
+	double current_stretch = paramTool.SqaureParameterizationStepSampling_PARALLEL_CPU(step_value,cal_count,p_boundarySurfacePolarVertexInfo,*p_num_boundarySurfacePolarVertexInfo,NULL);
+	calTime = clock() - calTime;
+	if (op_calTime)
+		*op_calTime = static_cast<double>(calTime)/CLOCKS_PER_SEC;
+	if (testCasesCount)
+		*testCasesCount = cal_count;
+	return 0;
+}
+
 
 int CPolygonsData::Parameterize()
 {	
