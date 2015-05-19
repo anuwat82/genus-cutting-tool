@@ -322,6 +322,9 @@ int main(int argc, char* argv[])
 	}
 	std::string ext = GetFileExtension(filename);
 	vtkSmartPointer<vtkPolyDataAlgorithm> modelReader;
+
+	
+	
 	if (ext == "ply")
 	{
 		vtkSmartPointer<vtkPLYReader> PLYReader = vtkSmartPointer<vtkPLYReader>::New();
@@ -337,6 +340,20 @@ int main(int argc, char* argv[])
 		modelReader = OFFReader;		
 	}
 	polydata = modelReader->GetOutput();
+	{
+		cout << "************************************" << endl;
+		cout << "Loaded file: " << filename << endl;
+		cout << "Number Of Vertices: " << polydata->GetNumberOfPoints() << "\n";
+		cout << "Number Of Lines: " << polydata->GetNumberOfLines() << "\n";
+		cout << "Number Of Polygons: " << polydata->GetNumberOfPolys() << "\n";
+		cout << "Number Of Triangle Strips: " << polydata->GetNumberOfStrips() << "\n";
+
+		cout << "Number Of Pieces: " << polydata->GetNumberOfPieces() << endl;
+		cout << "Piece: " << polydata->GetPiece() << endl;
+		cout << "Ghost Level: " << polydata->GetGhostLevel() << endl;
+		cout << "************************************" << endl;
+	}
+
 	//Process(modelReader->GetOutput() , sourceVertex);
 
 
