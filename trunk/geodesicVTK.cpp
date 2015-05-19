@@ -296,7 +296,42 @@ void InitialGeodesic(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID 
 
 int main(int argc, char* argv[])
 {
+	/*
+	cpuCompressedMatrixType matrix(8,8,18);
+	matrix(0,0) = 7;
+	matrix(0,2) = 1;
+	matrix(0,5) = 2;
+	matrix(0,6) = 7;
 	
+
+	matrix(4,4) = 5;
+	matrix(4,5) = 1;
+	matrix(4,6) = 5;
+
+	matrix(5,5) = -1;
+	matrix(5,7) = 5;
+
+	matrix(6,6) = 11;
+
+	matrix(7,7) = 5;
+
+
+	matrix(1,1) = -4;
+	matrix(1,2) = 8;
+	matrix(1,4) = 2;
+	
+	matrix(2,2) = 1;
+	matrix(2,7) = 5;
+
+	matrix(3,3) = 7;
+	matrix(3,6) = 9;
+
+	
+	MKL_INT *ia = &(matrix.index1_data()[0]);
+	MKL_INT *ja = &(matrix.index2_data()[0]);
+	double* eleA = &(matrix.value_data()[0]); 
+
+	*/
 	std::string filename;
 	if (argc >= 2)
 	{

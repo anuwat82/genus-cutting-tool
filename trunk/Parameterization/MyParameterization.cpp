@@ -6225,6 +6225,13 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 #ifdef INTEL_MKL_VERSION
 double MyParameterization::ParametrizationOptimalCPU_MKL(double *ioU,double *ioV,double error,int non_zero_element,double *init_sa,unsigned long *init_ija,FILE* logFile)
 {
+	
+	
+	
+	
+
+
+	
 #if 1
 	/*---------------------------------------------------------------------------*/
   /* Define arrays for the upper triangle of the coefficient matrix and rhs vector */

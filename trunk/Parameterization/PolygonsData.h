@@ -13,7 +13,7 @@
 //#include "gui/logwindow.h"
 #include "VTK_Header.h"
 #include "OpenMesh_Header.h"
-
+#include "MyParameterization.h"
 using namespace std;
 #define MAX_CONNECTED_TRIANGLES_PER_VERTEX 50
 #define MAX_CUT_LOOP						10
