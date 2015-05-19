@@ -962,14 +962,23 @@ int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime, vtkPolyData* o
 		{
 			calTime = clock() - calTime; 
 			m_calTime += calTime;
-			if (pPrev_boundarySurfaceFaceInfo != NULL && pPrev_boundarySurfacePolarVertexInfo != NULL )
+			if (current_stretch > previousStretch)
 			{
-				delete [] p_boundarySurfaceFaceInfo;
-				delete [] p_boundarySurfacePolarVertexInfo;
-				m_boundarySurfaceFaceInfo = pPrev_boundarySurfaceFaceInfo;
-				m_num_boundarySurfaceFace = Prev_num_boundarySurfaceFaceInfo;
-				m_boundarySurfacePolarVertexInfo = pPrev_boundarySurfacePolarVertexInfo;
-				m_num_boundarySurfacePolarVertex = Prev_num_boundarySurfacePolarVertexInfo;
+				if (pPrev_boundarySurfaceFaceInfo != NULL && pPrev_boundarySurfacePolarVertexInfo != NULL )
+				{
+					delete [] p_boundarySurfaceFaceInfo;
+					delete [] p_boundarySurfacePolarVertexInfo;
+					m_boundarySurfaceFaceInfo = pPrev_boundarySurfaceFaceInfo;
+					m_num_boundarySurfaceFace = Prev_num_boundarySurfaceFaceInfo;
+					m_boundarySurfacePolarVertexInfo = pPrev_boundarySurfacePolarVertexInfo;
+					m_num_boundarySurfacePolarVertex = Prev_num_boundarySurfacePolarVertexInfo;
+				}
+			}
+			else
+			{
+				delete [] pPrev_boundarySurfaceFaceInfo;
+				delete [] pPrev_boundarySurfacePolarVertexInfo;
+				degree_count++;
 			}
 			//printf( "Calculate Time for seam boundary : %f sec\n", (double)m_calTime/CLOCKS_PER_SEC);
 			//fprintf(logFile,"Calculate Time for seam boundary : %f sec\n", (double)m_calTime/CLOCKS_PER_SEC);			
