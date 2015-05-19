@@ -6,7 +6,7 @@
 #include "PolygonsData.h"
 #include <boost/numeric/ublas/matrix_sparse.hpp>
 #include <mkl.h>    //comment out this line if do not have intel mkl
-typedef boost::numeric::ublas::compressed_matrix<double>        cpuCompressedMatrixType;
+typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,0,boost::numeric::ublas::unbounded_array<MKL_INT>>       cpuCompressedMatrixType;
 typedef struct MirrorFace 
 {
 	Point3d pt[3];	
