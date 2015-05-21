@@ -1040,7 +1040,7 @@ int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime, vtkPolyData* o
 }
 
 
-int CPolygonsData::SquareParameterizationOptimization(unsigned int step_value, unsigned int *testCasesCount,double *op_calTime)
+int CPolygonsData::SquareParameterizationOptimization(unsigned int step_value, unsigned int *testCasesCount,double *op_calTime,vtkFloatArray *texCoord)
 {
 	clock_t calTime = 0;
 	calTime = clock();
@@ -1069,6 +1069,17 @@ int CPolygonsData::SquareParameterizationOptimization(unsigned int step_value, u
 		*op_calTime = static_cast<double>(calTime)/CLOCKS_PER_SEC;
 	if (testCasesCount)
 		*testCasesCount = cal_count;
+	if (texCoord)
+	{
+		vtkSmartPointer<vtkFloatArray> tc = vtkSmartPointer<vtkFloatArray>::New(); 
+		tc->SetNumberOfComponents( 2 ); 
+		//tc->SetNumberOfValues(*p_num_boundarySurfacePolarVertexInfo);
+		tc->SetName("TextureCoordinates");
+		for (int i = 0; i < *p_num_boundarySurfacePolarVertexInfo; i++)
+			tc->InsertNextTuple2((float )p_boundarySurfacePolarVertexInfo[i].u,(float )p_boundarySurfacePolarVertexInfo[i].v);
+
+		texCoord->DeepCopy(tc);
+	}
 	return 0;
 }
 
