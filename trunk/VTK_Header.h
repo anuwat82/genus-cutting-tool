@@ -72,3 +72,4 @@
 #include <vtkBoostBreadthFirstSearchTree.h>
 #include <vtkCurvatures.h>
 #include <vtkTriangle.h>
+#include <vtkPNGReader.h>

@@ -332,6 +332,10 @@ int main(int argc, char* argv[])
 	double* eleA = &(matrix.value_data()[0]); 
 
 	*/
+
+	vtkSmartPointer<vtkPNGReader> pngReader = vtkSmartPointer<vtkPNGReader>::New();
+	pngReader->SetFileName("./texture/square_texture.png");
+	pngReader->Update();
 	std::string filename;
 	if (argc >= 2)
 	{
@@ -359,7 +363,10 @@ int main(int argc, char* argv[])
 	vtkSmartPointer<vtkPolyDataAlgorithm> modelReader;
 
 	
-	
+	vtkSmartPointer<vtkTexture> square_texture = vtkSmartPointer<vtkTexture>::New();
+	square_texture->SetInputConnection(pngReader->GetOutputPort());
+	square_texture->SetBlendingMode(vtkTexture::VTKTextureBlendingMode::VTK_TEXTURE_BLENDING_MODE_ADD  );
+	square_texture->PremultipliedAlphaOn(); 	
 	if (ext == "ply")
 	{
 		vtkSmartPointer<vtkPLYReader> PLYReader = vtkSmartPointer<vtkPLYReader>::New();
@@ -441,7 +448,7 @@ int main(int argc, char* argv[])
 	actorPoly1 = actor;
 	renderer->AddActor(actorPoly1);
 	renderer->AddActor(actorEdge2);
-	
+	actorPoly1->SetTexture(square_texture);
 	/*
 	// Initialize the representation
 	for (int level = 0; level <= 2; level++)
@@ -473,7 +480,7 @@ int main(int argc, char* argv[])
 	pickCallback->SetCallback ( pickCallbackFunc );
 	pickCallback->SetClientData(TrackballStyle);
 	picker->AddObserver(vtkCommand::EndPickEvent,pickCallback);	
-	
+	/*
 	{
 		vtkCamera *cam  = renderer->GetActiveCamera();
 		double pos[3] = {7.21609, -25.5471, 20.343};
@@ -484,7 +491,7 @@ int main(int argc, char* argv[])
 		cam->SetViewUp(up);
 		
 	}
-
+	*/
 	ColoredPoint( renderer,modelReader->GetOutput()->GetPoint(sourceVertex), 1.0,0.5,0.0);
 
 	renderWindow->Render(); 	
@@ -806,8 +813,9 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		polygon.InitailDiskTopology(inputPolydata);
 		double calTime;
 		unsigned int calCount;
-		polygon.SquareParameterizationOptimization(1,&calCount,&calTime);
-
+		vtkSmartPointer<vtkFloatArray> texCoord = vtkSmartPointer<vtkFloatArray>::New();
+		polygon.SquareParameterizationOptimization(1,&calCount,&calTime,texCoord.GetPointer());
+		polydata->GetPointData()->SetTCoords(texCoord);
 		cout << "time consume: " << calTime << " sec" << endl;
 		cout << "total test cases examined: " << calCount << " times" << endl;
 		cout << "========================================" << endl;
@@ -869,8 +877,9 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		polygon.InitailDiskTopology(inputPolydata);
 		double calTime;
 		unsigned int calCount;
-		polygon.SquareParameterizationOptimization(step_value,&calCount,&calTime);
-
+		vtkSmartPointer<vtkFloatArray> texCoord = vtkSmartPointer<vtkFloatArray>::New();
+		polygon.SquareParameterizationOptimization(step_value,&calCount,&calTime,texCoord.GetPointer());
+		polydata->GetPointData()->SetTCoords(texCoord);
 		cout << "time consume: " << calTime << " sec" << endl;
 		cout << "total test cases examined: " << calCount << " times" << endl;
 		cout << "========================================" << endl;
