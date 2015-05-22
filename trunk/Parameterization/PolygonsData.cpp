@@ -1135,7 +1135,7 @@ int CPolygonsData::CircleParameterizationOptimization(double *op_calTime, vtkFlo
 		stretchFace->SetNumberOfComponents( 1 ); 
 		//tc->SetNumberOfValues(*p_num_boundarySurfacePolarVertexInfo);
 		stretchFace->SetName("circular stretch");
-		for (int i = 0; i < *p_num_boundarySurfacePolarVertexInfo; i++)
+		for (int i = 0; i < *p_num_boundarySurfaceFaceInfo; i++)
 			stretchFace->InsertNextTuple1(face_stretch_array[i]);
 
 		op_face_stretch->DeepCopy(stretchFace);
