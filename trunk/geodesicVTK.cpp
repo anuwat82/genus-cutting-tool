@@ -39,7 +39,8 @@ struct collisionEdgeInfo
 	int v1;
 	int type;
 };
-void ColorMesh();
+void ColorMeshVertice(vtkDoubleArray *scalar);
+void ColorMeshFace(vtkDoubleArray *scalar);
 void ColoredPoint(vtkSmartPointer<vtkRenderer> _renderer , double pts[3],  double r, double g, double b);
 void keyPressCallbackFunc(vtkObject*, unsigned long eid, void* clientdata, void *calldata);
 
@@ -495,7 +496,7 @@ int main(int argc, char* argv[])
 	}
 	*/
 	ColoredPoint( renderer,modelReader->GetOutput()->GetPoint(sourceVertex), 1.0,0.5,0.0);
-	ColorMesh();
+	//ColorMesh();
 	renderWindow->Render(); 	
 
 	cout << "===============================" << endl <<
@@ -886,6 +887,32 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		cout << "total test cases examined: " << calCount << " times" << endl;
 		cout << "========================================" << endl;
 			
+	}
+	else if (key == "F3")
+	{
+		//Sqaure Parameterization brute force
+		cout << "Perform Circular Parameterization ..."<< endl;
+		vtkSmartPointer<vtkPolyData> inputPolydata;
+		if (disk_polydata.GetPointer() != NULL && disk_polydata->GetNumberOfPoints() > 0)
+		{
+			//use  disk_polydata as input
+			inputPolydata = disk_polydata;			
+		}
+		else
+		{
+			//use polydata as input (load disk topolopy file directly)
+			inputPolydata = polydata;			
+		}
+		CPolygonsData polygon ;
+		polygon.InitailDiskTopology(inputPolydata);
+		double calTime;
+		unsigned int calCount;
+		vtkSmartPointer<vtkDoubleArray> stretch = vtkSmartPointer<vtkDoubleArray>::New();
+		polygon.CircleParameterizationOptimization(&calTime,NULL,stretch.GetPointer());
+		polydata->GetCellData()->SetScalars(stretch);
+		cout << "time consume: " << calTime << " sec" << endl;		
+		cout << "========================================" << endl;
+		
 	}
 	else if (key == "plus")
 	{
@@ -1819,7 +1846,7 @@ vtkSmartPointer<vtkMutableUndirectedGraph> GIMtruncate(vtkSmartPointer<vtkPolyDa
 
 	return graph;
 }
-void ColorMesh()
+void ColorMeshVertice(vtkDoubleArray *scalar)
 {
 	vtkSmartPointer<vtkCurvatures> curvaturesFilter =vtkSmartPointer<vtkCurvatures>::New();
 	curvaturesFilter->SetInputData(polydata);
@@ -1863,6 +1890,54 @@ void ColorMesh()
 	  actorMainPoly->SetMapper(_mapper);
 	  mapper = _mapper;
 }
+
+
+void ColorMeshFace(vtkDoubleArray *scalar)
+{
+	vtkSmartPointer<vtkCurvatures> curvaturesFilter =vtkSmartPointer<vtkCurvatures>::New();
+	curvaturesFilter->SetInputData(polydata);
+
+	curvaturesFilter->SetCurvatureTypeToGaussian();
+
+	curvaturesFilter->Update();
+ 
+	// Get scalar range from command line if present, otherwise use
+	// range of computed curvature
+	double scalarRange[2];
+	curvaturesFilter->GetOutput()->GetScalarRange(scalarRange);
+	// Build a lookup table
+	vtkSmartPointer<vtkColorSeries> colorSeries = 
+	vtkSmartPointer<vtkColorSeries>::New();
+	colorSeries->SetColorScheme(vtkColorSeries::ColorSchemes::BREWER_DIVERGING_SPECTRAL_11 );
+	std::cout << "Using color scheme #: "
+			<< colorSeries->GetColorScheme() << " is "
+			<< colorSeries->GetColorSchemeName() << std::endl;
+ 
+	vtkSmartPointer<vtkColorTransferFunction> lut =	vtkSmartPointer<vtkColorTransferFunction>::New();
+	lut->SetColorSpaceToHSV();
+	int numColors = colorSeries->GetNumberOfColors();
+	for (int i = 0; i < numColors; i++)
+	{
+		vtkColor3ub color = colorSeries->GetColor(i);
+		double dColor[3];
+		dColor[0] = static_cast<double> (color[0]) / 255.0;
+		dColor[1] = static_cast<double> (color[1]) / 255.0;
+		dColor[2] = static_cast<double> (color[2]) / 255.0;
+		double t = scalarRange[0] + (scalarRange[1] - scalarRange[0])
+			/ (numColors - 1) * i;
+		lut->AddRGBPoint(t, dColor[0], dColor[1], dColor[2]);
+	}
+    vtkSmartPointer<vtkPolyDataMapper> _mapper = 
+    vtkSmartPointer<vtkPolyDataMapper>::New();
+	  _mapper->SetInputConnection(curvaturesFilter->GetOutputPort());
+	  _mapper->SetLookupTable(lut);
+	  _mapper->SetScalarRange(scalarRange);
+
+	  actorMainPoly->SetMapper(_mapper);
+	  mapper = _mapper;
+}
+
+
 void ScreenShot(vtkRenderWindow* renderWindow)
 {
 	// Screenshot  

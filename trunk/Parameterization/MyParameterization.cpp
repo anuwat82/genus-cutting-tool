@@ -758,6 +758,8 @@ double	MyParameterization::CircularParameterize(PolarVertex *pIPV,
 		pIPV[i].u = pU[i];
 		pIPV[i].v = pV[i];		
 	}
+
+	getCurrentE();
 	return resultStretch;
 }
 
@@ -797,7 +799,95 @@ double	MyParameterization::CircularParameterizeOptimalEx(PolarVertex *pIPV,
 	return resultStretch;
 }
 
+void	MyParameterization::mkl_Solve()
+{
+//#define INDEX0
+	int nonzero = numberV;
+	double *rhs = new double[2*(numberV)];	
+	double *solution =  new double[2*(numberV)];
+	for(int i=0;i<numberV;i++)
+	{
+		if(boundary[i]!=1)
+		{			
+			rhs[i] = 0.0;
+			rhs[i+numberV] = 0.0;	//for v
+			solution[i] = 0.5;
+			solution[i+numberV] = 0.5;
+			nonzero += neighborI[i];
+		}
+		else
+		{
+			rhs[i] = pU[i];			
+			rhs[i+numberV] = pV[i];	//for v
+			solution[i] = pU[i];
+			solution[i+numberV] = pV[i];
+		}
+	}	
 
+	int idx = 0;
+#ifdef INDEX0
+	cpuCompressedMatrixTypeIndex0 spaseMatrixA( numberV*2, numberV,nonzero);
+#else
+	cpuCompressedMatrixTypeIndex1 spaseMatrixA( numberV*2, numberV,nonzero);
+	idx = 1;
+#endif
+	
+
+	IDList *now = NULL;	
+	PolarList *nowp = NULL;
+	for(int i=0;i<numberV;i++)
+	{
+		spaseMatrixA(i+idx,i+idx) = 1.0;
+		spaseMatrixA(i+idx +numberV,i+idx) = 1.0;
+		
+		if(boundary[i]!=1)
+		{
+			nowp = PHead[i];
+      
+			while(nextN(nowp)!=PTail[i])
+			{
+				nowp = nextN(nowp);		
+				spaseMatrixA(i+idx,nowp->ID+idx) = -nowp->lambda;
+				spaseMatrixA(i+idx + numberV,nowp->ID+idx) = -nowp->lambda;				
+			}
+		}
+		
+	}
+
+	MKL_INT *ia = &(spaseMatrixA.index1_data()[0]);
+	MKL_INT *ja = &(spaseMatrixA.index2_data()[0]);
+	double* eleA  = &(spaseMatrixA.value_data()[0]); 
+	
+	MKL_INT n = 2*(numberV), rci_request, itercount, expected_itercount = 8;
+	MKL_INT ipar[128];
+	double *tmp = new double[n*4];
+	double dpar[128];
+	dcg_init (&n, solution, rhs, &rci_request, ipar, dpar, tmp);
+	if (rci_request != 0)
+	{
+		//fail
+		goto exit_function;
+	}
+		
+
+	ipar[8] = 1;
+	ipar[9] = 0;
+	dpar[0] = PCBCGerror;
+
+	dcg_check (&n, solution, rhs, &rci_request, ipar, dpar, tmp);
+	if (rci_request != 0)
+	{
+		//failure;
+		goto exit_function;
+	}
+
+
+exit_function:	
+	delete [] tmp;
+	delete [] rhs;
+	delete [] solution;
+
+}
 
 void	MyParameterization::linbcg_Solve()
 {
@@ -812,7 +902,7 @@ void	MyParameterization::linbcg_Solve()
 	int nonzero=(numberV);
 	for(i=0;i<numberV;i++)
 	{
-		vecb[i+1]=0.0;
+		
 		if(boundary[i]!=1)
 		{
 			nonzero += neighborI[i];			
@@ -881,8 +971,16 @@ void	MyParameterization::linbcg_Solve()
   
 	for(i=0;i<numberV;i++)
 	{
-		UaXY[i+1] = pU[i];
-		UaXY[i+numberV+1] = pV[i];
+		if(boundary[i]==1)
+		{
+			UaXY[i+1] = pU[i];
+			UaXY[i+numberV+1] = pV[i];
+		}
+		else
+		{
+			UaXY[i+1] = 0.5;
+			UaXY[i+numberV+1] = 0.5;
+		}
 	}
 
 	mybcg->linbcg(((unsigned long)(2*(numberV))),vecb,UaXY,1,PCBCGerror,(1000+iteNum),&iter,&linerr);
@@ -5418,7 +5516,75 @@ void MyParameterization::setSigma(double gamma)
   
 } 
 
-
+double MyParameterization::GetStretchError(double *ipU,double *ipV, bool include_boundary, double *opFaceStretch)
+{
+	int i;
+	double dsum = 0;
+	if(!include_boundary)
+	{
+#pragma omp parallel for
+		for(i=0;i<numberF;i++)
+		{
+			if(boundary[Face[i][0]]!=1&&boundary[Face[i][1]]!=1&&boundary[Face[i][2]]!=1)
+			{
+				Point3d _bc[2];
+				double pV1 = ipV[Face[i][0]];
+				double pV2 = ipV[Face[i][1]];
+				double pV3 = ipV[Face[i][2]];
+				double pU1 = ipU[Face[i][0]];
+				double pU2 = ipU[Face[i][1]];
+				double pU3 = ipU[Face[i][2]];    
+				double dsize1 = PT->getParametricA(pV1,pV2,pV3,pU1,pU2,pU3);      
+				PT->setParametricDs(&_bc[0],point[Face[i][0]],
+						point[Face[i][1]],point[Face[i][2]],
+						pV1,pV2,pV3,dsize1);
+				PT->setParametricDt(&_bc[1],point[Face[i][0]],
+						point[Face[i][1]],point[Face[i][2]],
+						pU1,pU2,pU3,dsize1);
+				double dE = PT->InnerProduct(&_bc[0],&_bc[0]);    
+				double dG = PT->InnerProduct(&_bc[1],&_bc[1]);
+				opFaceStretch[i] = dE+dG;
+				#pragma omp critical
+				{
+					dsum +=  areaMap3D[i]*0.5*(dE+dG);
+				}
+			}
+		}
+	}
+	else
+	{
+#pragma omp parallel for
+		for(i=0;i<numberF;i++)
+		{      
+			Point3d _bc[2];
+			double pV1 = ipV[Face[i][0]];
+			double pV2 = ipV[Face[i][1]];
+			double pV3 = ipV[Face[i][2]];
+			double pU1 = ipU[Face[i][0]];
+			double pU2 = ipU[Face[i][1]];
+			double pU3 = ipU[Face[i][2]];    
+			double dsize1 = PT->getParametricA(pV1,pV2,pV3,pU1,pU2,pU3);      
+			PT->setParametricDs(&_bc[0],point[Face[i][0]],
+					point[Face[i][1]],point[Face[i][2]],
+					pV1,pV2,pV3,dsize1);
+			PT->setParametricDt(&_bc[1],point[Face[i][0]],
+					point[Face[i][1]],point[Face[i][2]],
+					pU1,pU2,pU3,dsize1);
+			double dE = PT->InnerProduct(&_bc[0],&_bc[0]);    
+			double dG = PT->InnerProduct(&_bc[1],&_bc[1]);
+			opFaceStretch[i] = dE+dG;
+			#pragma omp critical
+			{
+				dsum +=  areaMap3D[i]*0.5*(dE+dG);
+			}
+		}  
+	}
+	dsum =constsumarea3D*sqrt(dsum/sumarea3D);
+	if (dsum == dsum)
+		return dsum;
+	else
+		return -1.0;
+}
 double MyParameterization::GetStretchError(double *ipU,double *ipV)
 {
 	int i;

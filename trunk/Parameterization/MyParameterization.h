@@ -5,8 +5,15 @@
 #include "IDCutHedge.h"
 #include "PolygonsData.h"
 #include <boost/numeric/ublas/matrix_sparse.hpp>
+
 #include <mkl.h>    //comment out this line if do not have intel mkl
-typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,0,boost::numeric::ublas::unbounded_array<MKL_INT>>       cpuCompressedMatrixType;
+#ifdef INTEL_MKL_VERSION 
+typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,0,boost::numeric::ublas::unbounded_array<MKL_INT>>       cpuCompressedMatrixTypeIndex0;
+typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,1,boost::numeric::ublas::unbounded_array<MKL_INT>>       cpuCompressedMatrixTypeIndex1;
+#else
+typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,0,boost::numeric::ublas::unbounded_array<int>>       cpuCompressedMatrixTypeIndex0;
+typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,1,boost::numeric::ublas::unbounded_array<int>>       cpuCompressedMatrixTypeIndex1;
+#endif
 typedef struct MirrorFace 
 {
 	Point3d pt[3];	
@@ -55,6 +62,7 @@ public:
 										 FILE* logFile= NULL);
 
 	void	linbcg_Solve();
+	void	mkl_Solve();
 	void	DeleteFace(int id);
 	void	ChangeVertexIndexInSurfaceFaces(int oldID, int newID, int faceExcludeID, int startHalfEdge,int stopHalfEdge,int	*pIOFace = NULL); 
 	void	CalculateEdgeLength();
@@ -145,6 +153,7 @@ public:
 	#endif
 	void SetSigma(double *ipU,double *ipV,double *opSigma ,double gamma = 1.0);
 	double GetStretchError(double *ipU,double *ipV);
+	double GetStretchError(double *ipU,double *ipV, bool include_boundary, double *opFaceStretch);
 	void setSigma(double gamma);
 	//IDCutHedge *m_pCutHedgeH;
 	//IDCutHedge *m_pCutHedgeT;

@@ -45,6 +45,7 @@ public:
 	int IteratedAugmentCutOriginal(double *calTime, vtkPolyData* op_mesh);
 	int GetHighestCurvatureFace();
 	int SquareParameterizationOptimization(unsigned int step_value, unsigned int *testCasesCount,double *calTime, vtkFloatArray *texCoord);   //step_value 1 is bruteforce   
+	int CircleParameterizationOptimization(double *calTime, vtkFloatArray *texCoord, vtkDoubleArray *face_stretch); 
 private:
 	
 protected:
