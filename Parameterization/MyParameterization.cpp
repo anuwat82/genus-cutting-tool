@@ -3,7 +3,7 @@
 #include "GPUSolver.cuh"
 //#include <NL/nl.h>
 
-#include <boost/thread.hpp>
+//#include <boost/thread.hpp>
 #include <ppl.h>
 bool IsNumber(double x);
 
@@ -798,7 +798,7 @@ double	MyParameterization::CircularParameterizeOptimalEx(PolarVertex *pIPV,
 	}
 	return resultStretch;
 }
-
+#ifdef INTEL_MKL_VERSION
 void	MyParameterization::mkl_Solve()
 {
 //#define INDEX0
@@ -888,7 +888,7 @@ exit_function:
 	delete [] solution;
 
 }
-
+#endif
 void	MyParameterization::linbcg_Solve()
 {
 	int i = 0;
@@ -5543,7 +5543,7 @@ double MyParameterization::GetStretchError(double *ipU,double *ipV, bool include
 						pU1,pU2,pU3,dsize1);
 				double dE = PT->InnerProduct(&_bc[0],&_bc[0]);    
 				double dG = PT->InnerProduct(&_bc[1],&_bc[1]);
-				opFaceStretch[i] = dE+dG;
+				opFaceStretch[i] = sqrt((dE+dG)*0.5);
 				#pragma omp critical
 				{
 					dsum +=  areaMap3D[i]*0.5*(dE+dG);
@@ -5572,7 +5572,7 @@ double MyParameterization::GetStretchError(double *ipU,double *ipV, bool include
 					pU1,pU2,pU3,dsize1);
 			double dE = PT->InnerProduct(&_bc[0],&_bc[0]);    
 			double dG = PT->InnerProduct(&_bc[1],&_bc[1]);
-			opFaceStretch[i] = dE+dG;
+			opFaceStretch[i] = sqrt((dE+dG)*0.5);
 			#pragma omp critical
 			{
 				dsum +=  areaMap3D[i]*0.5*(dE+dG);

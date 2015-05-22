@@ -4,13 +4,15 @@
 #include "Polyhedron.h"
 #include "IDCutHedge.h"
 #include "PolygonsData.h"
-#include <boost/numeric/ublas/matrix_sparse.hpp>
+
 
 #include <mkl.h>    //comment out this line if do not have intel mkl
 #ifdef INTEL_MKL_VERSION 
+#include <boost/numeric/ublas/matrix_sparse.hpp>
 typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,0,boost::numeric::ublas::unbounded_array<MKL_INT>>       cpuCompressedMatrixTypeIndex0;
 typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,1,boost::numeric::ublas::unbounded_array<MKL_INT>>       cpuCompressedMatrixTypeIndex1;
 #else
+#include <boost/numeric/ublas/matrix_sparse.hpp>
 typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,0,boost::numeric::ublas::unbounded_array<int>>       cpuCompressedMatrixTypeIndex0;
 typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,1,boost::numeric::ublas::unbounded_array<int>>       cpuCompressedMatrixTypeIndex1;
 #endif
@@ -62,7 +64,9 @@ public:
 										 FILE* logFile= NULL);
 
 	void	linbcg_Solve();
+	#ifdef INTEL_MKL_VERSION
 	void	mkl_Solve();
+	#endif
 	void	DeleteFace(int id);
 	void	ChangeVertexIndexInSurfaceFaces(int oldID, int newID, int faceExcludeID, int startHalfEdge,int stopHalfEdge,int	*pIOFace = NULL); 
 	void	CalculateEdgeLength();

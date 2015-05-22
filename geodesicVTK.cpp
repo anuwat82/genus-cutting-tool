@@ -299,42 +299,7 @@ void InitialGeodesic(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID 
 
 int main(int argc, char* argv[])
 {
-	/*
-	cpuCompressedMatrixType matrix(8,8,18);
-	matrix(0,0) = 7;
-	matrix(0,2) = 1;
-	matrix(0,5) = 2;
-	matrix(0,6) = 7;
-	
 
-	matrix(4,4) = 5;
-	matrix(4,5) = 1;
-	matrix(4,6) = 5;
-
-	matrix(5,5) = -1;
-	matrix(5,7) = 5;
-
-	matrix(6,6) = 11;
-
-	matrix(7,7) = 5;
-
-
-	matrix(1,1) = -4;
-	matrix(1,2) = 8;
-	matrix(1,4) = 2;
-	
-	matrix(2,2) = 1;
-	matrix(2,7) = 5;
-
-	matrix(3,3) = 7;
-	matrix(3,6) = 9;
-
-	
-	MKL_INT *ia = &(matrix.index1_data()[0]);
-	MKL_INT *ja = &(matrix.index2_data()[0]);
-	double* eleA = &(matrix.value_data()[0]); 
-
-	*/
 
 	vtkSmartPointer<vtkPNGReader> pngReader = vtkSmartPointer<vtkPNGReader>::New();
 	pngReader->SetFileName("./texture/square_texture.png");
@@ -412,7 +377,7 @@ int main(int argc, char* argv[])
 	
 	vtkSmartPointer<vtkPolyDataMapper> _mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
 	_mapper->SetInputConnection(modelReader->GetOutputPort());
-	mapper = mapper;
+	mapper = _mapper;
 	vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
 	actor->SetMapper(mapper);
 	actorMainPoly = actor;
@@ -449,8 +414,7 @@ int main(int argc, char* argv[])
 	//renderWindowInteractor->SetPicker(cellPicker);
 	TrackballStyle->SetPickColor(1.0,0.0,0.0);
 	actorPoly1 = actor;
-	renderer->AddActor(actorPoly1);
-	renderer->AddActor(actorEdge2);
+	
 	actorPoly1->SetTexture(square_texture);
 	/*
 	// Initialize the representation
@@ -497,6 +461,11 @@ int main(int argc, char* argv[])
 	*/
 	ColoredPoint( renderer,modelReader->GetOutput()->GetPoint(sourceVertex), 1.0,0.5,0.0);
 	//ColorMesh();
+	renderer->AddActor(actorEdge2);
+	renderer->AddActor(actorPoly1);
+	
+
+	//renderer->ResetCamera(-10,10,-10,10,-10,10);
 	renderWindow->Render(); 	
 
 	cout << "===============================" << endl <<
@@ -534,8 +503,8 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 	{
 		case 'r':
 			{
-				vtkCamera *cam  = renderer->GetActiveCamera();
-				cout<< *cam << endl;
+				renderer->ResetCamera();
+				renderer->Modified();
 			}
 			break;
 		case '1':
@@ -909,7 +878,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		unsigned int calCount;
 		vtkSmartPointer<vtkDoubleArray> stretch = vtkSmartPointer<vtkDoubleArray>::New();
 		polygon.CircleParameterizationOptimization(&calTime,NULL,stretch.GetPointer());
-		polydata->GetCellData()->SetScalars(stretch);
+		ColorMeshFace(stretch);
 		cout << "time consume: " << calTime << " sec" << endl;		
 		cout << "========================================" << endl;
 		
@@ -1894,17 +1863,15 @@ void ColorMeshVertice(vtkDoubleArray *scalar)
 
 void ColorMeshFace(vtkDoubleArray *scalar)
 {
-	vtkSmartPointer<vtkCurvatures> curvaturesFilter =vtkSmartPointer<vtkCurvatures>::New();
-	curvaturesFilter->SetInputData(polydata);
-
-	curvaturesFilter->SetCurvatureTypeToGaussian();
-
-	curvaturesFilter->Update();
- 
+	
 	// Get scalar range from command line if present, otherwise use
 	// range of computed curvature
+
+
+	polydata->GetCellData()->SetScalars(scalar);
 	double scalarRange[2];
-	curvaturesFilter->GetOutput()->GetScalarRange(scalarRange);
+	scalar->GetRange(scalarRange);
+	
 	// Build a lookup table
 	vtkSmartPointer<vtkColorSeries> colorSeries = 
 	vtkSmartPointer<vtkColorSeries>::New();
@@ -1929,9 +1896,10 @@ void ColorMeshFace(vtkDoubleArray *scalar)
 	}
     vtkSmartPointer<vtkPolyDataMapper> _mapper = 
     vtkSmartPointer<vtkPolyDataMapper>::New();
-	  _mapper->SetInputConnection(curvaturesFilter->GetOutputPort());
+	_mapper->SetInputData(polydata);
 	  _mapper->SetLookupTable(lut);
 	  _mapper->SetScalarRange(scalarRange);
+	  _mapper->SetScalarModeToUseCellData();
 
 	  actorMainPoly->SetMapper(_mapper);
 	  mapper = _mapper;
