@@ -3483,7 +3483,212 @@ double    MyParameterization::PARAM_MYEXPER4(PolarVertex *pIPV,
 	return resultStretch;
 }
 
+void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::vector<double> &op_stretch)
+{
 
+	CircularParameterize( pIPV,num_PV,NULL);
+	double *face_stretch_array = new double[numberF];
+	GetStretchError( pU,pV, true, face_stretch_array);
+	IDList *BpointH = new IDList();
+	IDList *BpointT = new IDList();
+    
+	BpointH->next = BpointT;
+	BpointT->back = BpointH;
+	
+	double tlength=0.0;
+	int numBorderPoint = 0;
+	CalBorderPath(BpointH,BpointT,&tlength,&numBorderPoint);
+
+	IDList *now = BpointH;
+	
+	int state=0;
+	double clen=0.0;		
+	double loop = 0;
+	double sum_length = 0;
+	double edge_length = 0;		
+	IDList *startPoint = BpointH->next;	
+	double worstStretch = -1;
+	int count = 0;
+
+	
+
+	//record result as array.
+	op_stretch.resize(numBorderPoint);
+	while (loop < tlength*0.25)
+	{
+		BpointT->ID = BpointH->next->ID; // for cal length;
+		state = 0;
+		sum_length = 0;
+		double this_side_length[4] ={0};
+		int this_side_num_edge[4] = {0};		
+		loop += PT->Distance(point[startPoint->ID],point[next(startPoint)->ID]);
+		IDList *now = startPoint;
+		
+		
+			do
+			{				
+				edge_length = PT->Distance(point[now->ID],point[next(now)->ID]);			
+				if ((sum_length + edge_length>= (tlength*0.25)) && state < 3)
+				{
+					if ((sum_length + edge_length)/(tlength*0.25) >= 1.1&& this_side_num_edge[state] > 0)					
+					{
+						this_side_length[state] = sum_length;
+						this_side_num_edge[state+1]++;
+						sum_length = edge_length;
+					}
+					else
+					{
+						this_side_length[state] = sum_length+edge_length;
+						this_side_num_edge[state]++;
+						sum_length = 0;
+					}				
+					state++;
+				}
+				else
+				{
+					this_side_num_edge[state]++;
+					sum_length += edge_length;
+				}
+				now = next(now);
+				if (now == BpointT)
+					now = BpointH->next;
+			}
+			while (now != startPoint);			
+			this_side_length[state] = sum_length;
+
+		
+
+			state = 0;
+			sum_length  = 0;
+			clen = 0.0;
+			now = BpointH;
+			BpointT->ID = BpointH->next->ID; // for cal length;			
+			op_stretch[count] = 	0;
+			bool at_corner = true;
+			int count_edge = 0;
+			while(next(now)!=BpointT)
+			{
+				now = next(now);
+				switch(state)
+				{
+					case 0:
+						if (clen < 1.0)
+						{
+							pU[now->ID] = clen; 
+							pV[now->ID] = 0.0;
+							at_corner = false;
+						}
+						else
+						{
+							pU[now->ID] = 1.0;
+							pV[now->ID] = 0.0;
+							sum_length = 0.0;
+							state=1;	
+							at_corner = true;
+							count_edge =0;
+						}
+						break;
+					case 1:
+						if (clen < 1.0)
+						{
+							pU[now->ID] = 1.0; 
+							pV[now->ID] = clen;
+							at_corner = false;
+						}
+						else
+						{
+							pU[now->ID] = 1.0;
+							pV[now->ID] = 1.0;
+							sum_length = 0.0;
+							state=2;
+							at_corner = true;
+							count_edge = 0;
+
+						}
+						break;
+					case 2:
+						if (clen < 1.0)
+						{
+							pU[now->ID] = 1.0-clen; 
+							pV[now->ID] = 1.0;
+							at_corner = false;
+						}
+						else
+						{
+							pU[now->ID] = 0.0;
+							pV[now->ID] = 1.0;
+							sum_length = 0.0;
+							state=3;
+							
+							at_corner = true;
+							count_edge = 0;
+
+						}
+						break;
+					case 3:
+						if (clen < 1.0)
+						{
+							pU[now->ID] = 0.0; 
+							pV[now->ID] = 1.0-clen;
+							at_corner = false;
+						}
+						else
+						{
+							//should never enter this one;
+							state=4;
+							at_corner = true;
+							count_edge = 0;
+						}
+					default:
+						break;
+
+				}	
+				
+				
+
+				
+				sum_length += PT->Distance(point[now->ID],point[next(now)->ID]);
+				clen = sum_length/this_side_length[state];	
+
+				count_edge++;
+				if (count_edge == 1 || count_edge == this_side_num_edge[state] )
+				{
+					VList *nowv= VHead[now->ID];
+					while(next(nowv)!= VTail[now->ID])
+					{
+						nowv=next(nowv);
+						if (nowv->ID == next(now)->ID)
+							break;
+					}
+					op_stretch[count] += face_stretch_array[nowv->FaceID];
+				}
+				
+			}			
+		
+		
+		if (loop >= tlength*0.25)
+			break;
+
+		count++;
+		//prepare for next loop
+		startPoint = next(startPoint);
+		//reconstruct BpointH , BpointT according to startPoint
+		int startPointID = startPoint->ID;
+		while (BpointH->next->ID != startPoint->ID)
+		{
+			IDList *move_node = BpointH->next;
+			BpointH->next = move_node->next;
+			move_node->next->back = BpointH;
+			
+			move_node->back = BpointT->back;
+			BpointT->back->next = move_node;
+			BpointT->back = move_node;
+			move_node->next = BpointT;
+		}
+	}
+	IDtool->CleanNeighbor(BpointH,BpointT);
+
+}
 double    MyParameterization::PARAM_MYEXPER(PolarVertex *pIPV,
 										int num_PV,
 										FILE* logFile)
@@ -6054,6 +6259,39 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 																			 int num_PV,
 																			 FILE* logFile)
 {
+	
+	vector<double> each_mapping_cost;
+	StretchAtBoundary(pIPV, num_PV,each_mapping_cost);
+	{
+		double maxCost = 0;
+		double minCost = DBL_MAX;
+		int idxMax;
+		int idxMin;
+		for (int i = 0 ; i < each_mapping_cost.size(); i++)
+		{
+			if (each_mapping_cost[i] > 0)
+			{
+				const double cost = each_mapping_cost[i];
+				if (cost > maxCost)
+				{
+					idxMax = i;
+					maxCost = cost;
+				}
+			
+				if (cost < minCost)
+				{
+					idxMin = i;
+					minCost = cost;
+				}
+			
+				
+			}
+			
+		}
+		printf("=== max cost stretch of TEST%d  (%f) ===\n",idxMax,maxCost);	
+		printf("=== min cost stretch of TEST%d  (%f) ===\n",idxMin,minCost);
+	}
+
 	double bestStretch = DBL_MAX;
 	int best_startID = -1;	
 	int worst_startID = -1;
@@ -6104,6 +6342,8 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 		loop += PT->Distance(point[now->ID],point[next(now)->ID]);
 		bottomLeftVertexIDList.push_back(now->ID);
 	}
+
+	
 
 	//create initial A matrix  ,it is same for all condition
 	//to boost up speed
@@ -6383,7 +6623,7 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 		}
 		
 	}
-
+	
 	return bestStretch;
 }
 
