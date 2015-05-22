@@ -1084,6 +1084,67 @@ int CPolygonsData::SquareParameterizationOptimization(unsigned int step_value, u
 }
 
 
+int CPolygonsData::CircleParameterizationOptimization(double *op_calTime, vtkFloatArray *texCoord, vtkDoubleArray *op_face_stretch)
+{
+	clock_t calTime = 0;
+	calTime = clock();
+	
+	int *p_boundarySurfaceFaceInfo = m_boundarySurfaceFaceInfo;
+	int *p_num_boundarySurfaceFaceInfo = &m_num_boundarySurfaceFace;
+	PolarVertex* p_boundarySurfacePolarVertexInfo = m_boundarySurfacePolarVertexInfo;
+	int *p_num_boundarySurfacePolarVertexInfo = &m_num_boundarySurfacePolarVertex;
+	int num_validPolarVertex = numVertex;
+	MyParameterization paramTool;
+		
+	paramTool.SetPolarVertexAndFaceAndBorder(	p_boundarySurfacePolarVertexInfo,
+												p_num_boundarySurfacePolarVertexInfo,
+												num_validPolarVertex,
+												p_boundarySurfaceFaceInfo,
+												p_num_boundarySurfaceFaceInfo,
+												CutHedgeH,
+												CutHedgeT,
+												m_numValen2BoundaryPoint
+											);	
+	m_numValen2BoundaryPoint = 0;
+	unsigned int cal_count(0);
+	double current_stretch = paramTool.CircularParameterize(p_boundarySurfacePolarVertexInfo,*p_num_boundarySurfacePolarVertexInfo,NULL);
+	calTime = clock() - calTime;
+	if (op_calTime)
+		*op_calTime = static_cast<double>(calTime)/CLOCKS_PER_SEC;
+	
+	if (texCoord)
+	{
+		vtkSmartPointer<vtkFloatArray> tc = vtkSmartPointer<vtkFloatArray>::New(); 
+		tc->SetNumberOfComponents( 2 ); 
+		//tc->SetNumberOfValues(*p_num_boundarySurfacePolarVertexInfo);
+		tc->SetName("TextureCoordinates");
+		for (int i = 0; i < *p_num_boundarySurfacePolarVertexInfo; i++)
+			tc->InsertNextTuple2((float )p_boundarySurfacePolarVertexInfo[i].u,(float )p_boundarySurfacePolarVertexInfo[i].v);
+
+		texCoord->DeepCopy(tc);
+		
+	}
+
+	if (op_face_stretch)
+	{
+		double *face_stretch_array = new double[*p_num_boundarySurfaceFaceInfo];
+		paramTool.GetStretchError( paramTool.pU,paramTool.pV, true, face_stretch_array);
+		
+
+		vtkSmartPointer<vtkDoubleArray> stretchFace = vtkSmartPointer<vtkDoubleArray>::New(); 
+		stretchFace->SetNumberOfComponents( 1 ); 
+		//tc->SetNumberOfValues(*p_num_boundarySurfacePolarVertexInfo);
+		stretchFace->SetName("circular stretch");
+		for (int i = 0; i < *p_num_boundarySurfacePolarVertexInfo; i++)
+			stretchFace->InsertNextTuple1(face_stretch_array[i]);
+
+		op_face_stretch->DeepCopy(stretchFace);
+	}
+
+
+	return 0;
+}
+
 int CPolygonsData::Parameterize()
 {	
 
