@@ -73,3 +73,5 @@
 #include <vtkCurvatures.h>
 #include <vtkTriangle.h>
 #include <vtkPNGReader.h>
+#include <vtkColorSeries.h>
+#include <vtkColorTransferFunction.h>
