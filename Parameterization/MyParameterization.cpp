@@ -3483,6 +3483,21 @@ double    MyParameterization::PARAM_MYEXPER4(PolarVertex *pIPV,
 	return resultStretch;
 }
 
+void   MyParameterization::GetSurroundFace(unsigned int level , int vid , std::set<int> &opID)
+{
+	if (level == 0)
+		return;
+
+	VList *nowv= VHead[vid];
+	while(next(nowv)!= VTail[vid])
+	{
+		nowv = next(nowv);
+		opID.insert(nowv->FaceID);		
+		nowv = next(nowv);
+		GetSurroundFace(level-1,nowv->ID,opID);
+	}
+	
+}
 void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::vector<double> &op_stretch)
 {
 
@@ -3650,17 +3665,29 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 				sum_length += PT->Distance(point[now->ID],point[next(now)->ID]);
 				clen = sum_length/this_side_length[state];	
 
+				double u = 0.0; //distance from a corner point
+				double xpos = (u + sqrt(2.0-(u*u)))/2.0;
+				double weight_of_each_face = (1.0-xpos)*sqrt(2) ;  //divide by sin(45)
 				count_edge++;
-				if (count_edge == 1 || count_edge == this_side_num_edge[state] )
+				if (count_edge == 1)
 				{
+
+					std::set<int> surround_faceID;
+					GetSurroundFace(2, now->ID, surround_faceID);
+					for (std::set<int>::iterator it = surround_faceID.begin(); it!=surround_faceID.end();it++)
+					{
+						const int vid = *it;
+						op_stretch[count] += face_stretch_array[vid];
+					}
+					/*
 					VList *nowv= VHead[now->ID];
 					while(next(nowv)!= VTail[now->ID])
 					{
-						nowv=next(nowv);
-						if (nowv->ID == next(now)->ID)
-							break;
+						nowv = next(nowv);
+						op_stretch[count] += face_stretch_array[nowv->FaceID];
+						nowv = next(nowv);
 					}
-					op_stretch[count] += face_stretch_array[nowv->FaceID];
+					*/
 				}
 				
 			}			
@@ -6259,7 +6286,7 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 																			 int num_PV,
 																			 FILE* logFile)
 {
-	
+	/*
 	vector<double> each_mapping_cost;
 	StretchAtBoundary(pIPV, num_PV,each_mapping_cost);
 	{
@@ -6291,7 +6318,7 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 		printf("=== max cost stretch of TEST%d  (%f) ===\n",idxMax,maxCost);	
 		printf("=== min cost stretch of TEST%d  (%f) ===\n",idxMin,minCost);
 	}
-
+	*/
 	double bestStretch = DBL_MAX;
 	int best_startID = -1;	
 	int worst_startID = -1;

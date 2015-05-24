@@ -1039,7 +1039,81 @@ int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime, vtkPolyData* o
 	return 0;
 }
 
+int CPolygonsData::CheckBoundaryMapping(vtkDoubleArray *op_face_stretch)
+{
+	clock_t calTime = 0;
+	calTime = clock();
+	
+	int *p_boundarySurfaceFaceInfo = m_boundarySurfaceFaceInfo;
+	int *p_num_boundarySurfaceFaceInfo = &m_num_boundarySurfaceFace;
+	PolarVertex* p_boundarySurfacePolarVertexInfo = m_boundarySurfacePolarVertexInfo;
+	int *p_num_boundarySurfacePolarVertexInfo = &m_num_boundarySurfacePolarVertex;
+	int num_validPolarVertex = numVertex;
+	MyParameterization paramTool;
+		
+	paramTool.SetPolarVertexAndFaceAndBorder(	p_boundarySurfacePolarVertexInfo,
+												p_num_boundarySurfacePolarVertexInfo,
+												num_validPolarVertex,
+												p_boundarySurfaceFaceInfo,
+												p_num_boundarySurfaceFaceInfo,
+												CutHedgeH,
+												CutHedgeT,
+												m_numValen2BoundaryPoint
+											);	
+	m_numValen2BoundaryPoint = 0;
 
+
+	vector<double> each_mapping_cost;
+	paramTool.StretchAtBoundary(p_boundarySurfacePolarVertexInfo, *p_num_boundarySurfacePolarVertexInfo,each_mapping_cost);
+	{
+		double maxCost = 0;
+		double minCost = DBL_MAX;
+		int idxMax;
+		int idxMin;
+		for (int i = 0 ; i < each_mapping_cost.size(); i++)
+		{
+			if (each_mapping_cost[i] > 0)
+			{
+				const double cost = each_mapping_cost[i];
+				if (cost > maxCost)
+				{
+					idxMax = i;
+					maxCost = cost;
+				}
+			
+				if (cost < minCost)
+				{
+					idxMin = i;
+					minCost = cost;
+				}
+			
+				
+			}
+			
+		}
+		printf("=== max cost stretch of TEST%d  (%f) ===\n",idxMax,maxCost);	
+		printf("=== min cost stretch of TEST%d  (%f) ===\n",idxMin,minCost);
+	}
+
+	calTime = clock() - calTime;
+	if (op_face_stretch)
+	{
+		double *face_stretch_array = new double[*p_num_boundarySurfaceFaceInfo];
+		paramTool.GetStretchError( paramTool.pU,paramTool.pV, true, face_stretch_array);
+		
+
+		vtkSmartPointer<vtkDoubleArray> stretchFace = vtkSmartPointer<vtkDoubleArray>::New(); 
+		stretchFace->SetNumberOfComponents( 1 ); 
+		//tc->SetNumberOfValues(*p_num_boundarySurfacePolarVertexInfo);
+		stretchFace->SetName("circular stretch");
+		for (int i = 0; i < *p_num_boundarySurfaceFaceInfo; i++)
+			stretchFace->InsertNextTuple1(face_stretch_array[i]);
+
+		op_face_stretch->DeepCopy(stretchFace);
+	}
+	return 0;
+
+}
 int CPolygonsData::SquareParameterizationOptimization(unsigned int step_value, unsigned int *testCasesCount,double *op_calTime,vtkFloatArray *texCoord)
 {
 	clock_t calTime = 0;

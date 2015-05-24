@@ -4,7 +4,7 @@
 #include "Polyhedron.h"
 #include "IDCutHedge.h"
 #include "PolygonsData.h"
-
+#include <set>
 
 #include <mkl.h>    //comment out this line if do not have intel mkl
 #ifdef INTEL_MKL_VERSION 
@@ -176,5 +176,5 @@ public:
 	void CircleParametrizationCPU(IDList *borderH,IDList *borderT,double total_length_edges,int non_zero_element, double *init_sa,unsigned long *init_ija , double *& resultU,double *& resultV,double &resultStretchErr,bool reportlog = true);
 
 	void StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::vector<double> &op_stretch);
-	
+	void GetSurroundFace(unsigned int level , int vid , std::set<int> &opID);
 };

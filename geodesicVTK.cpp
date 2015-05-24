@@ -877,9 +877,11 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		double calTime;
 		unsigned int calCount;
 		vtkSmartPointer<vtkDoubleArray> stretch = vtkSmartPointer<vtkDoubleArray>::New();
-		polygon.CircleParameterizationOptimization(&calTime,NULL,stretch.GetPointer());
+		//polygon.CircleParameterizationOptimization(&calTime,NULL,stretch.GetPointer());
+		//ColorMeshFace(stretch);
+		polygon.CheckBoundaryMapping(stretch.GetPointer());
 		ColorMeshFace(stretch);
-		cout << "time consume: " << calTime << " sec" << endl;		
+		//cout << "time consume: " << calTime << " sec" << endl;		
 		cout << "========================================" << endl;
 		
 	}
@@ -1875,7 +1877,7 @@ void ColorMeshFace(vtkDoubleArray *scalar)
 	// Build a lookup table
 	vtkSmartPointer<vtkColorSeries> colorSeries = 
 	vtkSmartPointer<vtkColorSeries>::New();
-	colorSeries->SetColorScheme(vtkColorSeries::ColorSchemes::BREWER_DIVERGING_SPECTRAL_11 );
+	colorSeries->SetColorScheme(vtkColorSeries::ColorSchemes::BREWER_SEQUENTIAL_YELLOW_ORANGE_BROWN_9 );
 	std::cout << "Using color scheme #: "
 			<< colorSeries->GetColorScheme() << " is "
 			<< colorSeries->GetColorSchemeName() << std::endl;
