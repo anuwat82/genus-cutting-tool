@@ -769,8 +769,10 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 	else if (key == "F8")
 	{
 		//Sqaure Parameterization brute force
-		cout << "Perform Parameterization 25% brute force..."<< endl;
+
 		vtkSmartPointer<vtkPolyData> inputPolydata;
+
+		vtkSmartPointer<vtkFloatArray> texCoord = vtkSmartPointer<vtkFloatArray>::New();
 		if (disk_polydata.GetPointer() != NULL && disk_polydata->GetNumberOfPoints() > 0)
 		{
 			//use  disk_polydata as input
@@ -781,12 +783,43 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			//use polydata as input (load disk topolopy file directly)
 			inputPolydata = polydata;			
 		}
-		CPolygonsData polygon ;
-		polygon.InitailDiskTopology(inputPolydata);
 		double calTime;
 		unsigned int calCount;
-		vtkSmartPointer<vtkFloatArray> texCoord = vtkSmartPointer<vtkFloatArray>::New();
-		polygon.SquareParameterizationOptimization(1,&calCount,&calTime,texCoord.GetPointer());
+		char answer;
+		cout << "Do you want to manually set test case? (y/n):";
+		cin >> answer;
+
+		if (answer == 'y' ||answer == 'Y')
+		{
+
+			int manual_case;
+			do
+			{			
+				cout << endl << "Enter test case value:";
+				while(!(cin >> manual_case)){
+					cout << "Bad value!" << endl;
+					cout << "Re enter the value:";
+					cin.clear();
+					cin.ignore(numeric_limits<streamsize>::max(), '\n');
+				}
+			}
+			while (manual_case < 0 );
+			CPolygonsData polygon ;
+			polygon.InitailDiskTopology(inputPolydata);
+			double calTime;
+			unsigned int calCount;
+			
+			polygon.SquareParameterizationManual(manual_case,&calTime,texCoord.GetPointer());
+		}
+		else
+		{
+			cout << "Perform Parameterization 25% brute force..."<< endl;
+			CPolygonsData polygon ;
+			polygon.InitailDiskTopology(inputPolydata);
+			
+		
+			polygon.SquareParameterizationOptimization(1,&calCount,&calTime,texCoord.GetPointer());
+		}
 		polydata->GetPointData()->SetTCoords(texCoord);
 		cout << "time consume: " << calTime << " sec" << endl;
 		cout << "total test cases examined: " << calCount << " times" << endl;
@@ -1877,7 +1910,7 @@ void ColorMeshFace(vtkDoubleArray *scalar)
 	// Build a lookup table
 	vtkSmartPointer<vtkColorSeries> colorSeries = 
 	vtkSmartPointer<vtkColorSeries>::New();
-	colorSeries->SetColorScheme(vtkColorSeries::ColorSchemes::BREWER_SEQUENTIAL_YELLOW_ORANGE_BROWN_9 );
+	colorSeries->SetColorScheme(vtkColorSeries::ColorSchemes::CITRUS );
 	std::cout << "Using color scheme #: "
 			<< colorSeries->GetColorScheme() << " is "
 			<< colorSeries->GetColorSchemeName() << std::endl;

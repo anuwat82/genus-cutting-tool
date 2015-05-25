@@ -129,6 +129,10 @@ public:
 																PolarVertex *pIPV,
 															 int num_PV,
 															 FILE* logFile= NULL);
+	double    SqaureParameterizationManualInput_PARALLEL_CPU( std::vector<int> &tests,
+																PolarVertex *pIPV,
+																int num_PV,
+																FILE* logFile= NULL);
 
 	void	ResetInnerLambda();
 	void    CalBorderPath(IDList *BPointH,IDList *BPointT,double *length,int *numPoint);
@@ -157,7 +161,7 @@ public:
 	#endif
 	void SetSigma(double *ipU,double *ipV,double *opSigma ,double gamma = 1.0);
 	double GetStretchError(double *ipU,double *ipV);
-	double GetStretchError(double *ipU,double *ipV, bool include_boundary, double *opFaceStretch);
+	double GetStretchError(double *ipU,double *ipV, bool include_boundary, double *opFaceStretch ,double *opVertexStretch);
 	void setSigma(double gamma);
 	//IDCutHedge *m_pCutHedgeH;
 	//IDCutHedge *m_pCutHedgeT;
@@ -176,5 +180,5 @@ public:
 	void CircleParametrizationCPU(IDList *borderH,IDList *borderT,double total_length_edges,int non_zero_element, double *init_sa,unsigned long *init_ija , double *& resultU,double *& resultV,double &resultStretchErr,bool reportlog = true);
 
 	void StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::vector<double> &op_stretch);
-	void GetSurroundFace(unsigned int level , int vid , std::set<int> &opID);
+	void GetSurroundFace(unsigned int level , int vid ,bool* checked_vid, std::set<int> &opID);
 };

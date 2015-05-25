@@ -3483,27 +3483,68 @@ double    MyParameterization::PARAM_MYEXPER4(PolarVertex *pIPV,
 	return resultStretch;
 }
 
-void   MyParameterization::GetSurroundFace(unsigned int level , int vid , std::set<int> &opID)
+void   MyParameterization::GetSurroundFace(unsigned int level , int vid , bool* checked_vid ,std::set<int> &opID)
 {
 	if (level == 0)
 		return;
-
-	VList *nowv= VHead[vid];
-	while(next(nowv)!= VTail[vid])
+	
+	IDList *nowf = FHead[vid];
+	while(next(nowf)!= FTail[vid])
+	{
+		nowf = next(nowf);
+		opID.insert(nowf->ID);
+	}
+	checked_vid[vid] = true;
+	vector<int> checkIds ;
+	IDList *nowv= IHead[vid];
+	while(next(nowv)!= ITail[vid])
 	{
 		nowv = next(nowv);
-		opID.insert(nowv->FaceID);		
-		nowv = next(nowv);
-		GetSurroundFace(level-1,nowv->ID,opID);
+		if (!checked_vid[nowv->ID])
+		{
+			checkIds.push_back(nowv->ID);
+			checked_vid[nowv->ID] = true;
+		}		
 	}
-	
+
+	for (int i = 0 ; i < checkIds.size();i++)
+	{
+		GetSurroundFace(level-1, checkIds[i], checked_vid,opID);
+	}
 }
 void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::vector<double> &op_stretch)
 {
 
 	CircularParameterize( pIPV,num_PV,NULL);
 	double *face_stretch_array = new double[numberF];
-	GetStretchError( pU,pV, true, face_stretch_array);
+	double *vertex_stretch_array = new double[numberV];
+	GetStretchError( pU,pV, true, face_stretch_array,vertex_stretch_array);
+
+	int maxStretchVertexIdx;
+	int maxStretchFaceIdx;
+	double maxStretchVertex(0);
+	double maxStretchFace(0);
+	for (int i = 0; i < numberV ;i++)
+	{
+		if (vertex_stretch_array[i] > maxStretchVertex)
+		{
+			maxStretchVertexIdx = i;
+			maxStretchVertex = vertex_stretch_array[i];
+		}
+	}
+
+	for (int i = 0; i < numberF ;i++)
+	{
+		if (face_stretch_array[i] > maxStretchFace)
+		{
+			maxStretchFaceIdx = i;
+			maxStretchFace = face_stretch_array[i];
+		}
+	}
+
+	printf("max stretch vertex id:%d\n", maxStretchVertexIdx);
+	printf("max stretch face id:%d\n", maxStretchFaceIdx);
+
 	IDList *BpointH = new IDList();
 	IDList *BpointT = new IDList();
     
@@ -3531,6 +3572,13 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 	op_stretch.resize(numBorderPoint);
 	while (loop < tlength*0.25)
 	{
+		/*
+		if (count == 48)
+		{
+			printf("vertex id: %d\n",startPoint->ID);
+			printf("face id: %d\n",next(VHead[startPoint->ID])->FaceID);
+		}
+		*/
 		BpointT->ID = BpointH->next->ID; // for cal length;
 		state = 0;
 		sum_length = 0;
@@ -3598,8 +3646,10 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 							pU[now->ID] = 1.0;
 							pV[now->ID] = 0.0;
 							sum_length = 0.0;
+							clen = 0.0;
 							state=1;	
 							at_corner = true;
+							
 							count_edge =0;
 						}
 						break;
@@ -3615,6 +3665,7 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 							pU[now->ID] = 1.0;
 							pV[now->ID] = 1.0;
 							sum_length = 0.0;
+							clen = 0.0;
 							state=2;
 							at_corner = true;
 							count_edge = 0;
@@ -3633,6 +3684,7 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 							pU[now->ID] = 0.0;
 							pV[now->ID] = 1.0;
 							sum_length = 0.0;
+							clen = 0.0;
 							state=3;
 							
 							at_corner = true;
@@ -3650,6 +3702,7 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 						else
 						{
 							//should never enter this one;
+							clen = 0.0;
 							state=4;
 							at_corner = true;
 							count_edge = 0;
@@ -3660,34 +3713,60 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 				}	
 				
 				
-
+				double prev_clen = clen;
 				
 				sum_length += PT->Distance(point[now->ID],point[next(now)->ID]);
 				clen = sum_length/this_side_length[state];	
+				double midpoint = ((clen + prev_clen)/2.0) ;
+				//double dist_from_corner = 0.5-fabs(midpoint - 0.5);
+				double dist_from_corner = 0.5-fabs(prev_clen - 0.5);
 
-				double u = 0.0; //distance from a corner point
+				double u = dist_from_corner*2.0; //distance from a corner point  in circle r length 1 and squre half side length is 1
 				double xpos = (u + sqrt(2.0-(u*u)))/2.0;
-				double weight_of_each_face = (1.0-xpos)*sqrt(2) ;  //divide by sin(45)
-				count_edge++;
-				if (count_edge == 1)
-				{
+				double weight_of_edge = (1.0-xpos)*sqrt(2.0) ;  //*sqrt(2.0) means divide by sin(45) 
 
+				//double weight_of_edge = 1.0 - u;
+				/*
+				if (u <= sqrt(2.0)*(sqrt(2.0) - 1))
+					weight_of_edge = 1.0;
+				else
+					weight_of_edge = 0.0;
+					*/
+				//weight_of_edge = pow(2, -u);
+				count_edge++;
+				
+				
+				
+				//if (count_edge == 1)
+				{
+					/*
+					bool *checkedV = new bool[numberV];
+					memset(checkedV,0,sizeof(bool)*numberV);
 					std::set<int> surround_faceID;
-					GetSurroundFace(2, now->ID, surround_faceID);
+					GetSurroundFace(18, now->ID,checkedV, surround_faceID);
 					for (std::set<int>::iterator it = surround_faceID.begin(); it!=surround_faceID.end();it++)
 					{
-						const int vid = *it;
-						op_stretch[count] += face_stretch_array[vid];
+						const int fid = *it;
+						op_stretch[count] += face_stretch_array[fid];
 					}
-					/*
-					VList *nowv= VHead[now->ID];
-					while(next(nowv)!= VTail[now->ID])
-					{
-						nowv = next(nowv);
-						op_stretch[count] += face_stretch_array[nowv->FaceID];
-						nowv = next(nowv);
-					}
+					delete [] checkedV;
 					*/
+					
+					/*
+					VList *nowv= next(VHead[now->ID]);
+					if (nowv->ID == next(now)->ID)
+						op_stretch[count] += weight_of_edge * face_stretch_array[nowv->FaceID];
+					else
+					{
+						nowv= back(VTail[now->ID]);
+						if (nowv->ID == next(now)->ID)
+							op_stretch[count] += weight_of_edge * face_stretch_array[nowv->FaceID];
+						else
+							throw; //should not happen
+					}				
+					*/
+					
+					op_stretch[count] += weight_of_edge*vertex_stretch_array[now->ID];
 				}
 				
 			}			
@@ -3714,6 +3793,9 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 		}
 	}
 	IDtool->CleanNeighbor(BpointH,BpointT);
+
+	delete [] vertex_stretch_array;
+	delete [] face_stretch_array;
 
 }
 double    MyParameterization::PARAM_MYEXPER(PolarVertex *pIPV,
@@ -5748,7 +5830,7 @@ void MyParameterization::setSigma(double gamma)
   
 } 
 
-double MyParameterization::GetStretchError(double *ipU,double *ipV, bool include_boundary, double *opFaceStretch)
+double MyParameterization::GetStretchError(double *ipU,double *ipV, bool include_boundary, double *opFaceStretch,double *opVertexStretch)
 {
 	int i;
 	double dsum = 0;
@@ -5812,6 +5894,29 @@ double MyParameterization::GetStretchError(double *ipU,double *ipV, bool include
 		}  
 	}
 	dsum =constsumarea3D*sqrt(dsum/sumarea3D);
+
+
+	if (opVertexStretch)
+	{
+		//calulate vertex stretch
+#pragma omp parallel for
+		for (int i = 0 ; i < numberV;i++)
+		{			
+			double	varphi=0.0;
+			double localsum=0.0; 
+			IDList* now = FHead[i];
+			while(next(now)!=FTail[i])
+			{
+				now = next(now);
+				varphi += areaMap3D[now->ID]*(opFaceStretch[now->ID] * opFaceStretch[now->ID]);
+				localsum += (areaMap3D[now->ID]);      
+			}  
+			double local_sigma = sqrt((varphi/localsum));
+			opVertexStretch[i] = local_sigma;
+		}
+		
+
+	}
 	if (dsum == dsum)
 		return dsum;
 	else
@@ -6280,6 +6385,234 @@ double  MyParameterization::PARAM_PARALLEL_CPU(	PolarVertex *pIPV,
 	return bestStretch;	
 }
 
+
+double    MyParameterization::SqaureParameterizationManualInput_PARALLEL_CPU( std::vector<int> &tests,
+																PolarVertex *pIPV,
+																int num_PV,
+																FILE* logFile)
+{
+	double bestStretch = DBL_MAX;
+	int best_startID = -1;	
+	int worst_startID = -1;
+	double worstStretch = -1;
+
+
+	if (pU)
+	{
+		delete [] pU;
+		pU = NULL;
+	}
+	if (pV)
+	{
+		delete [] pV;
+		pV = NULL;
+	}
+
+
+    boundarytype=0; //square
+	constsumarea3D = sqrt(1.0/sumarea3D);
+	setPolarMap();
+	IDList *BpointH = new IDList();
+	IDList *BpointT = new IDList();
+    
+	BpointH->next = BpointT;
+	BpointT->back = BpointH;
+	
+	double tlength=0.0;
+	int numBorderPoint = 0;
+	CalBorderPath(BpointH,BpointT,&tlength,&numBorderPoint);
+
+	IDList *now = BpointH;
+	double loop = 0;
+
+	//ResetInnerLambda();
+	setFloaterC();
+	SortIndexP();
+	
+	//record result as array.
+	vector<int> bottomLeftVertexIDList;
+	
+	printf("=== NUMBER BORDER EDGES : %d ===\n",numBorderPoint);
+	if (logFile)
+		fprintf(logFile,"=== NUMBER BORDER EDGES : %d ===\n",numBorderPoint);
+	while (loop < tlength*0.25 && next(now) != BpointT)
+	{
+		now = next(now);		
+		loop += PT->Distance(point[now->ID],point[next(now)->ID]);
+		bottomLeftVertexIDList.push_back(now->ID);
+	}
+
+	
+
+	//create initial A matrix  ,it is same for all condition
+	//to boost up speed
+	double *init_sa = NULL;
+	unsigned long *init_ija = NULL;
+	int nonzero=(numberV);
+	for(int i=0;i<numberV;i++)
+	{
+		if(boundary[i]!=1)
+		{
+			nonzero += neighborI[i];			
+		}
+	}	
+	init_ija = new unsigned long[2*nonzero+2];
+    init_sa = new double[2*nonzero+2];	
+	init_ija[1] = 2*(numberV)+2;
+	int dlk=2*(numberV)+1;
+  
+	for(int i=0;i<numberV;i++)
+	{
+		init_sa[i+1] = 1.0;		
+		if(boundary[i]!=1)
+		{			
+			PolarList *nowp = PHead[i];      
+			while(nextN(nowp)!=PTail[i])
+			{
+				nowp = nextN(nowp);
+				++dlk;
+				init_sa[dlk] = -nowp->lambda;
+				init_ija[dlk]= nowp->ID+1;
+			}
+		}
+		init_ija[i+1+1]=dlk+1;
+	}
+	for(int i=0;i<numberV;i++)
+	{
+		init_sa[i+1+numberV] = 1.0;
+		if(boundary[i]!=1)
+		{
+			PolarList *nowp = PHead[i];
+			while(nextN(nowp)!=PTail[i])
+			{
+				nowp = nextN(nowp);
+				++dlk;
+				init_sa[dlk] = -nowp->lambda;
+				init_ija[dlk]=nowp->ID+numberV+1;
+			}
+		}
+		init_ija[i+numberV+1+1]=dlk+1;
+	}
+	//prepare for store result array
+	double *bestU = NULL;
+	double *bestV = NULL;
+	std::vector<double *>_resultU(bottomLeftVertexIDList.size(),NULL);
+	std::vector<double *>_resultV(bottomLeftVertexIDList.size(),NULL);
+	std::vector<double>_resultError(bottomLeftVertexIDList.size(),0.0);
+	
+	int m = bottomLeftVertexIDList.size();
+	
+	printf("=== NUMBER of 25 %% brute force cases : %d ===\n",m);
+
+	
+	
+		
+	int count = 1;
+
+
+	#pragma omp parallel for
+	for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
+	{	
+		if (std::find(tests.begin(),tests.end(), i ) != tests.end())
+		{
+			#pragma omp critical
+			{
+				printf("S%d,",i);
+			}
+			SquareParametrizationCPU(bottomLeftVertexIDList[i], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[i],_resultV[i],_resultError[i],false);	
+			#pragma omp critical
+			{
+				printf("F%d,",i);
+				
+			}
+		}
+		
+	}
+	cout << endl;
+
+	for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
+	{
+		if (_resultError[i] < bestStretch && _resultError[i] > 0)
+		{
+			/*
+			if (bestU)
+			{
+				delete [] bestU;
+				bestU = NULL;
+			}
+			if (bestV)
+			{
+				delete [] bestV;
+				bestV= NULL;
+			}
+			*/
+
+			bestU = _resultU[i];
+			bestV = _resultV[i];			
+			bestStretch = _resultError[i];
+
+			best_startID = i;
+		}
+		else
+		{			
+			/*
+			if (_resultU[i])
+			{
+				delete [] _resultU[i];
+				_resultU[i]=NULL;
+			}
+			if (_resultV[i])
+			{
+				delete [] _resultV[i];
+				_resultV[i] = NULL;
+			}
+			*/
+			
+		}
+
+		if (_resultError[i] > worstStretch)
+		{
+			worstStretch = _resultError[i];
+			worst_startID = i;
+		}	
+	}
+	cout << endl;
+	
+	
+	printf("=== NUMBER of 25 percent brute force cases : %d ===\n",m);
+	printf("=== Find best stretch  of TEST%d  (best corner at %f) ===\n",best_startID,bestStretch);
+	if (logFile)
+		fprintf(logFile,"=== Find best stretch of TEST%d (best corner ERR = %f)===\n",best_startID,bestStretch);
+	
+	
+	printf("=== Find worst stretch of TEST%d  (worst corner at %f) ===\n",worst_startID,worstStretch);
+	if (logFile)
+		fprintf(logFile,"=== Find worst stretch  of TEST%d  (worst corner ERR = %f) ===\n",worst_startID,worstStretch);
+	
+
+	for (int i=0;i<numberV;i++)
+	{				
+		pIPV[i].u = bestU[i];
+		pIPV[i].v = bestV[i];
+	}
+
+	for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
+	{			
+		if (_resultU[i])
+		{
+			delete [] _resultU[i];
+			_resultU[i]=NULL;
+		}
+		if (_resultV[i])
+		{
+			delete [] _resultV[i];
+			_resultV[i] = NULL;
+		}
+		
+	}
+	
+	return bestStretch;
+}
 
 double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(unsigned int step_value,unsigned int &cal_count,
 																			  PolarVertex *pIPV,
