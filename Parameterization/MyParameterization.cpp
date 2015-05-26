@@ -3545,6 +3545,21 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 	printf("max stretch vertex id:%d\n", maxStretchVertexIdx);
 	printf("max stretch face id:%d\n", maxStretchFaceIdx);
 
+	if (boundary[maxStretchVertexIdx] != 1)
+	{
+		IDList *now = IHead[maxStretchVertexIdx];
+		while(next(now)!=ITail[maxStretchVertexIdx])
+		{
+			now = next(now); 
+			if (boundary[now->ID] == 1)
+			{
+				maxStretchVertexIdx = now->ID;
+				printf("move max stretch vertex to id:%d (original one is not boundary vertex) \n", maxStretchVertexIdx);
+				break;
+			}
+		}
+	}
+
 	IDList *BpointH = new IDList();
 	IDList *BpointT = new IDList();
     
@@ -3721,7 +3736,7 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 				double xpos = (u + sqrt(2.0-(u*u)))/2.0;
 				double weight = (1.0-xpos)*sqrt(2.0) ;  //*sqrt(2.0) means divide by sin(45) 
 
-				weight = 1-(u*u);
+				//weight = 1-(u*u);
 				
 				/*
 				if (u <= sqrt(2.0)*(sqrt(2.0) - 1))
