@@ -3567,18 +3567,13 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 	int count = 0;
 
 	
-
+	double minDistanceFromACorner = 0.5;
+	int minDistanceFromACornerIdx = -1;
 	//record result as array.
 	op_stretch.resize(numBorderPoint);
 	while (loop < tlength*0.25)
 	{
-		/*
-		if (count == 48)
-		{
-			printf("vertex id: %d\n",startPoint->ID);
-			printf("face id: %d\n",next(VHead[startPoint->ID])->FaceID);
-		}
-		*/
+			
 		BpointT->ID = BpointH->next->ID; // for cal length;
 		state = 0;
 		sum_length = 0;
@@ -3589,7 +3584,8 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 		
 		
 			do
-			{				
+			{	
+				
 				edge_length = PT->Distance(point[now->ID],point[next(now)->ID]);			
 				if ((sum_length + edge_length>= (tlength*0.25)) && state < 3)
 				{
@@ -3726,6 +3722,7 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 				double weight = (1.0-xpos)*sqrt(2.0) ;  //*sqrt(2.0) means divide by sin(45) 
 
 				weight = 1-(u*u);
+				
 				/*
 				if (u <= sqrt(2.0)*(sqrt(2.0) - 1))
 					weight_of_edge = 1.0;
@@ -3735,14 +3732,19 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 				//weight_of_edge = pow(2, -u);
 				count_edge++;
 				
-				if (count_edge == 1)
+				
+				if (now->ID == maxStretchVertexIdx)
 				{
-					if (now->ID == maxStretchVertexIdx)
+					if (dist_from_corner < minDistanceFromACorner)
 					{
-						printf ("***TEST %d *****\n",count);
+						minDistanceFromACorner = dist_from_corner;
+						minDistanceFromACornerIdx = count;
 					}
 				}
+
 				
+				
+
 				//if (count_edge == 1)
 				{
 					/*
@@ -3799,7 +3801,11 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 		}
 	}
 	IDtool->CleanNeighbor(BpointH,BpointT);
-
+	if (minDistanceFromACornerIdx >= 0)
+	{		
+		printf ("***TEST %d has max stretch near at corner*****\n",minDistanceFromACornerIdx);
+	
+	}
 	delete [] vertex_stretch_array;
 	delete [] face_stretch_array;
 
