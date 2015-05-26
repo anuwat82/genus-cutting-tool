@@ -3723,9 +3723,9 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 
 				double u = dist_from_corner*2.0; //distance from a corner point  in circle r length 1 and squre half side length is 1
 				double xpos = (u + sqrt(2.0-(u*u)))/2.0;
-				double weight_of_edge = (1.0-xpos)*sqrt(2.0) ;  //*sqrt(2.0) means divide by sin(45) 
+				double weight = (1.0-xpos)*sqrt(2.0) ;  //*sqrt(2.0) means divide by sin(45) 
 
-				//double weight_of_edge = 1.0 - u;
+				weight = 1-(u*u);
 				/*
 				if (u <= sqrt(2.0)*(sqrt(2.0) - 1))
 					weight_of_edge = 1.0;
@@ -3735,7 +3735,13 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 				//weight_of_edge = pow(2, -u);
 				count_edge++;
 				
-				
+				if (count_edge == 1)
+				{
+					if (now->ID == maxStretchVertexIdx)
+					{
+						printf ("***TEST %d *****\n",count);
+					}
+				}
 				
 				//if (count_edge == 1)
 				{
@@ -3766,7 +3772,7 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 					}				
 					*/
 					
-					op_stretch[count] += weight_of_edge*vertex_stretch_array[now->ID];
+					op_stretch[count] += weight*vertex_stretch_array[now->ID];
 				}
 				
 			}			
