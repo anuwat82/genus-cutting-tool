@@ -7164,20 +7164,18 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 	cal_count = 0;
 	printf("=== NUMBER of 25 %% brute force cases : %d ===\n",m);
 	
-	int step = 3;
-	/*
-	if (step_value  == 0 )
-	{
+	int step =0;
+	
+	
 		//calculate auto step number
 		double d_step = (sqrt(numberV* ((double)m/numberF)));
 		step = floor(d_step);
 		if (step < 2)
 			step = 2;
 		printf("formulated step number: %f (%d)\n", d_step,step);
-	}
-	else
-		step = step_value;
-		*/
+	
+	
+	
 	
 		
 	int count = 1;

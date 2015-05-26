@@ -1201,6 +1201,49 @@ int CPolygonsData::SquareParameterizationManual( int mycase,double *op_calTime, 
 	return 0;
 }
 
+int CPolygonsData::SquareParameterizationExperiment(double *op_calTime, vtkFloatArray *texCoord)
+{
+	clock_t calTime = 0;
+	calTime = clock();
+	
+	int *p_boundarySurfaceFaceInfo = m_boundarySurfaceFaceInfo;
+	int *p_num_boundarySurfaceFaceInfo = &m_num_boundarySurfaceFace;
+	PolarVertex* p_boundarySurfacePolarVertexInfo = m_boundarySurfacePolarVertexInfo;
+	int *p_num_boundarySurfacePolarVertexInfo = &m_num_boundarySurfacePolarVertex;
+	int num_validPolarVertex = numVertex;
+	MyParameterization paramTool;
+		
+	paramTool.SetPolarVertexAndFaceAndBorder(	p_boundarySurfacePolarVertexInfo,
+												p_num_boundarySurfacePolarVertexInfo,
+												num_validPolarVertex,
+												p_boundarySurfaceFaceInfo,
+												p_num_boundarySurfaceFaceInfo,
+												CutHedgeH,
+												CutHedgeT,
+												m_numValen2BoundaryPoint
+											);	
+	m_numValen2BoundaryPoint = 0;
+	unsigned int cal_count(0);
+	
+	
+	double current_stretch = paramTool.SqaureParameterizationPredictFromCircle_PARALLEL_CPU(cal_count , p_boundarySurfacePolarVertexInfo,*p_num_boundarySurfacePolarVertexInfo,NULL);
+	calTime = clock() - calTime;
+	if (op_calTime)
+		*op_calTime = static_cast<double>(calTime)/CLOCKS_PER_SEC;
+	
+	if (texCoord)
+	{
+		vtkSmartPointer<vtkFloatArray> tc = vtkSmartPointer<vtkFloatArray>::New(); 
+		tc->SetNumberOfComponents( 2 ); 
+		//tc->SetNumberOfValues(*p_num_boundarySurfacePolarVertexInfo);
+		tc->SetName("TextureCoordinates");
+		for (int i = 0; i < *p_num_boundarySurfacePolarVertexInfo; i++)
+			tc->InsertNextTuple2((float )p_boundarySurfacePolarVertexInfo[i].u,(float )p_boundarySurfacePolarVertexInfo[i].v);
+
+		texCoord->DeepCopy(tc);
+	}
+	return 0;
+}
 int CPolygonsData::CircleParameterizationOptimization(double *op_calTime, vtkFloatArray *texCoord, vtkDoubleArray *op_face_stretch)
 {
 	clock_t calTime = 0;
