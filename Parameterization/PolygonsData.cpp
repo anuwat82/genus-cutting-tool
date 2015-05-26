@@ -1065,6 +1065,7 @@ int CPolygonsData::CheckBoundaryMapping(vtkDoubleArray *op_face_stretch)
 
 	vector<double> each_mapping_cost;
 	paramTool.StretchAtBoundary(p_boundarySurfacePolarVertexInfo, *p_num_boundarySurfacePolarVertexInfo,each_mapping_cost);
+	/*
 	{
 		double maxCost = 0;
 		double minCost = DBL_MAX;
@@ -1094,7 +1095,7 @@ int CPolygonsData::CheckBoundaryMapping(vtkDoubleArray *op_face_stretch)
 		printf("=== max cost stretch of TEST%d  (%f) ===\n",idxMax,maxCost);	
 		printf("=== min cost stretch of TEST%d  (%f) ===\n",idxMin,minCost);
 	}
-
+	*/
 	calTime = clock() - calTime;
 	if (op_face_stretch)
 	{
