@@ -132,8 +132,11 @@ public:
 	double    SqaureParameterizationManualInput_PARALLEL_CPU( std::vector<int> &tests,
 																PolarVertex *pIPV,
 																int num_PV,
-																FILE* logFile= NULL);
-
+																int *best_tests_idx);
+	double    SqaureParameterizationPredictFromCircle_PARALLEL_CPU( unsigned int &cal_count,
+																	PolarVertex *pIPV,
+																	int num_PV,
+																	FILE* logFile= NULL);
 	void	ResetInnerLambda();
 	void    CalBorderPath(IDList *BPointH,IDList *BPointT,double *length,int *numPoint);
 
@@ -180,5 +183,6 @@ public:
 	void CircleParametrizationCPU(IDList *borderH,IDList *borderT,double total_length_edges,int non_zero_element, double *init_sa,unsigned long *init_ija , double *& resultU,double *& resultV,double &resultStretchErr,bool reportlog = true);
 
 	void StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::vector<double> &op_stretch);
+	int GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,double *stretch);
 	void GetSurroundFace(unsigned int level , int vid ,bool* checked_vid, std::set<int> &opID);
 };
