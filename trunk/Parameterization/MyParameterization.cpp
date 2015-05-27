@@ -7523,6 +7523,20 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 
 
 	}
+	else
+	{
+		//report all stretch
+		//ofstream myfile;
+		//myfile.open ("result_all_stretches.txt");
+		cout << "***START REPORT ALL STRETCH***" <<endl;
+		for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
+		{
+			cout<< i << "," << _resultError[i] << endl;
+		}
+		cout << "***END REPORT ALL STRETCH***" <<endl;
+		//myfile.close();
+
+	}
 	cout << endl;
 	
 	
