@@ -3525,41 +3525,35 @@ int MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,d
 	int maxStretchFaceIdx;
 	double maxStretchVertex(0);
 	double maxStretchFace(0);
+	
 	for (int i = 0; i < numberV ;i++)
 	{
-		if (vertex_stretch_array[i] > maxStretchVertex)
+		if (boundary[i] ==1)
 		{
-			maxStretchVertexIdx = i;
-			maxStretchVertex = vertex_stretch_array[i];
+			if (vertex_stretch_array[i] > maxStretchVertex)
+			{
+
+				maxStretchVertexIdx = i;
+				maxStretchVertex = vertex_stretch_array[i];
+			}
 		}
 	}
 
 	for (int i = 0; i < numberF ;i++)
 	{
-		if (face_stretch_array[i] > maxStretchFace)
+		if(boundary[Face[i][0]]==1 || boundary[Face[i][1]] ==1 || boundary[Face[i][2]] ==1)
 		{
-			maxStretchFaceIdx = i;
-			maxStretchFace = face_stretch_array[i];
-		}
-	}
-
-	printf("max stretch vertex id:%d\n", maxStretchVertexIdx);
-	printf("max stretch face id:%d\n", maxStretchFaceIdx);
-
-	if (boundary[maxStretchVertexIdx] != 1)
-	{
-		IDList *now = IHead[maxStretchVertexIdx];
-		while(next(now)!=ITail[maxStretchVertexIdx])
-		{
-			now = next(now); 
-			if (boundary[now->ID] == 1)
+			if (face_stretch_array[i] > maxStretchFace)
 			{
-				maxStretchVertexIdx = now->ID;
-				printf("move max stretch vertex to id:%d (original one is not boundary vertex) \n", maxStretchVertexIdx);
-				break;
+				maxStretchFaceIdx = i;
+				maxStretchFace = face_stretch_array[i];
 			}
 		}
 	}
+
+	printf("max stretch b.vertex id:%d\n", maxStretchVertexIdx);
+	printf("max stretch b.face id:%d\n", maxStretchFaceIdx);
+
 
 	IDList *BpointH = new IDList();
 	IDList *BpointT = new IDList();
@@ -3884,29 +3878,50 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 
 	int maxStretchVertexIdx;
 	int maxStretchFaceIdx;
-	double maxStretchVertex(0);
+	double maxStretchVertex(0); //At boundary
 	double maxStretchFace(0);
-	for (int i = 0; i < numberV ;i++)
-	{
-		if (vertex_stretch_array[i] > maxStretchVertex)
+#pragma omp parallel
+	{		
+		#pragma omp single nowait
 		{
-			maxStretchVertexIdx = i;
-			maxStretchVertex = vertex_stretch_array[i];
+			//printf("Start V\n");
+			for (int i = 0; i < numberV ;i++)
+			{
+				if (boundary[i] == 1)
+				{
+					if (vertex_stretch_array[i] > maxStretchVertex)
+					{
+						maxStretchVertexIdx = i;
+						maxStretchVertex = vertex_stretch_array[i];
+					}
+				}
+			}
+			//printf("End V\n");
 		}
-	}
 
-	for (int i = 0; i < numberF ;i++)
-	{
-		if (face_stretch_array[i] > maxStretchFace)
+		#pragma omp single nowait
 		{
-			maxStretchFaceIdx = i;
-			maxStretchFace = face_stretch_array[i];
+			//printf("Start F\n");
+			for (int i = 0; i < numberF ;i++)
+			{
+				if(boundary[Face[i][0]]==1 || boundary[Face[i][1]] ==1 || boundary[Face[i][2]] ==1)
+				{
+					if (face_stretch_array[i] > maxStretchFace)
+					{
+						maxStretchFaceIdx = i;
+						maxStretchFace = face_stretch_array[i];
+					}
+				}
+			}
+			//printf("End F\n");
 		}
-	}
+		
+	} //end of omp parallel
 
-	printf("max stretch vertex id:%d\n", maxStretchVertexIdx);
-	printf("max stretch face id:%d\n", maxStretchFaceIdx);
+	printf("max stretch boundary vertex id:%d\n", maxStretchVertexIdx);
+	printf("max stretch boundary face id:%d\n", maxStretchFaceIdx);
 
+	/*
 	if (boundary[maxStretchVertexIdx] != 1)
 	{
 		IDList *now = IHead[maxStretchVertexIdx];
@@ -3921,6 +3936,7 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 			}
 		}
 	}
+	*/
 
 	IDList *BpointH = new IDList();
 	IDList *BpointT = new IDList();
@@ -4221,14 +4237,14 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 
 	}
 
-	
+	/*
 	
 	std::vector<double *>_resultU(count,NULL);
 	std::vector<double *>_resultV(count,NULL);
 	std::vector<double>_resultError(count,0.0);
 	int starting_idx;
 	double this_stretch = SqaureParameterizationManualInput_PARALLEL_CPU(test_cases,pIPV,num_PV,&starting_idx);
-
+	*/
 	delete [] vertex_stretch_array;
 	delete [] face_stretch_array;
 
