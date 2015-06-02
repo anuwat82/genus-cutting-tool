@@ -928,12 +928,15 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		double calTime;
 		unsigned int calCount;
 		vtkSmartPointer<vtkDoubleArray> stretch = vtkSmartPointer<vtkDoubleArray>::New();
+		vtkSmartPointer<vtkFloatArray> texCoord = vtkSmartPointer<vtkFloatArray>::New();
 		//polygon.CircleParameterizationOptimization(&calTime,NULL,stretch.GetPointer());
 		//ColorMeshFace(stretch);
 		//polygon.CheckBoundaryMapping(NULL);
-		polygon.SquareParameterizationExperiment(&calTime,NULL);
+		polygon.SquareParameterizationExperiment(&calTime,texCoord.GetPointer());
+		polydata->GetPointData()->SetTCoords(texCoord);
 		//ColorMeshFace(stretch);
-		//cout << "time consume: " << calTime << " sec" << endl;		
+		cout << "time consume: " << calTime << " sec" << endl;		
+		
 		cout << "========================================" << endl;
 		
 	}
