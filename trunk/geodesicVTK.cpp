@@ -459,10 +459,28 @@ int main(int argc, char* argv[])
 		
 	}
 	*/
-	ColoredPoint( renderer,modelReader->GetOutput()->GetPoint(sourceVertex), 1.0,0.5,0.0);
+	 ColoredPoint( renderer,modelReader->GetOutput()->GetPoint(sourceVertex), 1.0,0.5,0.0);
+	 /*
+	 vtkSmartPointer<vtkFeatureEdges> featureEdges =
+    vtkSmartPointer<vtkFeatureEdges>::New();
+	 featureEdges->SetInputData(polydata);
+  featureEdges->BoundaryEdgesOn();
+  featureEdges->FeatureEdgesOff();
+  featureEdges->ManifoldEdgesOff();
+  featureEdges->NonManifoldEdgesOff();
+  featureEdges->Update();
+  vtkSmartPointer<vtkPolyDataMapper> bedgeMapper =
+    vtkSmartPointer<vtkPolyDataMapper>::New();
+  bedgeMapper->SetInputConnection(featureEdges->GetOutputPort());
+  vtkSmartPointer<vtkActor> bedgeActor =
+    vtkSmartPointer<vtkActor>::New();
+  bedgeActor->SetMapper(bedgeMapper);
+  bedgeActor->GetProperty()->SetLineWidth(2);
 	//ColorMesh();
+	*/
 	renderer->AddActor(actorEdge2);
 	renderer->AddActor(actorPoly1);
+	//renderer->AddActor(bedgeActor);
 	
 
 	//renderer->ResetCamera(-10,10,-10,10,-10,10);
