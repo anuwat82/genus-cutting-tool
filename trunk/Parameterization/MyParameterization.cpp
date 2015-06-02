@@ -7206,19 +7206,17 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 		idxRight += step-1;
 		if (idxLeft < 0)
 		{
-			idxLeft = 0;
-			stopLeft = true;
+			idxLeft = 0;			
 		}
 		if (idxRight >= m)
 		{
-			idxRight = m-1;
-			stopRight = true;
+			idxRight = m-1;			
 		}
 		#pragma omp parallel
 		{
 			#pragma omp single nowait
 			{
-				if (_resultError[idxLeft] == 0.0)
+				if (_resultError[idxLeft] == 0.0 && !stopLeft)
 				{
 					cout << "S" << idxLeft << ",";
 					SquareParametrizationCPU(bottomLeftVertexIDList[idxLeft], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[idxLeft],_resultV[idxLeft],_resultError[idxLeft],false);	
@@ -7228,7 +7226,7 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 			}
 			#pragma omp single nowait
 			{
-				if (_resultError[idxRight] == 0.0)
+				if (_resultError[idxRight] == 0.0 && !stopRight)
 				{
 					cout << "S" << idxRight << ",";
 					SquareParametrizationCPU(bottomLeftVertexIDList[idxRight], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[idxRight],_resultV[idxRight],_resultError[idxRight],false);	
@@ -7237,19 +7235,24 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 				}
 			}
 		}
-		if (_resultError[idxLeft] < leftBest)
+		if (_resultError[idxLeft] < leftBest && !stopLeft)
 		{
 			leftBest = _resultError[idxLeft];
 			leftBestIdx = idxLeft;
 		}
 		else
 			stopLeft = true;
-		if (_resultError[idxRight] < rightBest)
+		if (_resultError[idxRight] < rightBest && !stopRight )
 		{
 			rightBest = _resultError[idxRight];
 			rightBestIdx = idxRight;
 		}
 		else
+			stopRight = true;
+
+		if (idxLeft <= 0)
+			stopLeft = true;
+		if (idxRight >= m-1)
 			stopRight = true;
 	}
 	
