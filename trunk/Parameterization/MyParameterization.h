@@ -183,6 +183,6 @@ public:
 	void CircleParametrizationCPU(IDList *borderH,IDList *borderT,double total_length_edges,int non_zero_element, double *init_sa,unsigned long *init_ija , double *& resultU,double *& resultV,double &resultStretchErr,bool reportlog = true);
 
 	void StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::vector<double> &op_stretch);
-	int GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,double *stretch);
+	void GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,int op_suggest_indices[2]);
 	void GetSurroundFace(unsigned int level , int vid ,bool* checked_vid, std::set<int> &opID);
 };

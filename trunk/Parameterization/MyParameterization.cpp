@@ -3514,7 +3514,7 @@ void   MyParameterization::GetSurroundFace(unsigned int level , int vid , bool* 
 }
 
 
-int MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,double *op_stretch)
+void MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,int op_suggest_indices[2])
 {
 	CircularParameterize( pIPV,num_PV,NULL);
 	double *face_stretch_array = new double[numberF];
@@ -3526,34 +3526,47 @@ int MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,d
 	double maxStretchVertex(0);
 	double maxStretchFace(0);
 	
-	for (int i = 0; i < numberV ;i++)
-	{
-		if (boundary[i] ==1)
+	#pragma omp parallel
+	{		
+		#pragma omp single nowait
 		{
-			if (vertex_stretch_array[i] > maxStretchVertex)
+			//printf("Start V\n");
+			for (int i = 0; i < numberV ;i++)
 			{
-
-				maxStretchVertexIdx = i;
-				maxStretchVertex = vertex_stretch_array[i];
+				if (boundary[i] == 1)
+				{
+					if (vertex_stretch_array[i] > maxStretchVertex)
+					{
+						maxStretchVertexIdx = i;
+						maxStretchVertex = vertex_stretch_array[i];
+					}
+				}
 			}
+			//printf("End V\n");
 		}
-	}
 
-	for (int i = 0; i < numberF ;i++)
-	{
-		if(boundary[Face[i][0]]==1 || boundary[Face[i][1]] ==1 || boundary[Face[i][2]] ==1)
+		#pragma omp single nowait
 		{
-			if (face_stretch_array[i] > maxStretchFace)
+			//printf("Start F\n");
+			for (int i = 0; i < numberF ;i++)
 			{
-				maxStretchFaceIdx = i;
-				maxStretchFace = face_stretch_array[i];
+				if(boundary[Face[i][0]]==1 || boundary[Face[i][1]] ==1 || boundary[Face[i][2]] ==1)
+				{
+					if (face_stretch_array[i] > maxStretchFace)
+					{
+						maxStretchFaceIdx = i;
+						maxStretchFace = face_stretch_array[i];
+					}
+				}
 			}
+			//printf("End F\n");
 		}
-	}
+		
+	} //end of omp parallel
 
-	printf("max stretch b.vertex id:%d\n", maxStretchVertexIdx);
-	printf("max stretch b.face id:%d\n", maxStretchFaceIdx);
-
+	printf("max stretch boundary vertex id:%d\n", maxStretchVertexIdx);
+	printf("max stretch boundary face id:%d\n", maxStretchFaceIdx);
+	
 
 	IDList *BpointH = new IDList();
 	IDList *BpointT = new IDList();
@@ -3633,7 +3646,7 @@ int MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,d
 			clen = 0.0;
 			now = BpointH;
 			BpointT->ID = BpointH->next->ID; // for cal length;			
-			op_stretch[count] = 	0;
+			
 			bool at_corner = true;
 			int count_edge = 0;
 			while(next(now)!=BpointT)
@@ -3818,8 +3831,7 @@ int MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,d
 	if (minDistanceFromACornerIdx >= 0)
 	{		
 		printf ("***TEST %d has max stretch near at corner*****\n",minDistanceFromACornerIdx);
-
-		test_cases.push_back(minDistanceFromACornerIdx);
+		op_suggest_indices[0] = minDistanceFromACornerIdx;		
 	}
 
 
@@ -3828,45 +3840,27 @@ int MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,d
 		double minCost = DBL_MAX;
 		int idxMax;
 		int idxMin;
-		for (int i = 0 ; i < cost.size(); i++)
-		{
-			if (op_stretch[i] > 0)
+		for (int i = 0 ; i < count; i++)
+		{		
+			const double _cost = cost[i];
+			if (_cost > maxCost)
 			{
-				const double _cost = cost[i];
-				if (_cost > maxCost)
-				{
-					idxMax = i;
-					maxCost = _cost;
-				}
-			
-				if (_cost < minCost)
-				{
-					idxMin = i;
-					minCost = _cost;
-				}
-			
-				
+				idxMax = i;
+				maxCost = _cost;
 			}
 			
+			if (_cost < minCost)
+			{
+				idxMin = i;
+				minCost = _cost;
+			}			
 		}
 		printf("=== max cost stretch of TEST%d  (%f) ===\n",idxMax,maxCost);	
 		printf("=== min cost stretch of TEST%d  (%f) ===\n",idxMin,minCost);
-		test_cases.push_back(idxMax);
+		op_suggest_indices[1] = idxMax;
 
 	}
 
-	
-	
-	std::vector<double *>_resultU(count,NULL);
-	std::vector<double *>_resultV(count,NULL);
-	std::vector<double>_resultError(count,0.0);
-	int starting_idx;
-	double this_stretch = SqaureParameterizationManualInput_PARALLEL_CPU(test_cases,pIPV,num_PV,&starting_idx);
-	if (op_stretch)
-		*op_stretch = this_stretch;
-	delete [] vertex_stretch_array;
-	delete [] face_stretch_array;
-	return test_cases[starting_idx];
 }
 void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::vector<double> &op_stretch)
 {
@@ -7052,24 +7046,11 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 																	int num_PV,
 																	FILE* logFile)
 {
-	double suggest_stretch;
-	int suggest_starting_idx = GetSuggestionStartingIdx(pIPV,num_PV,&suggest_stretch);
 
-	double *suggest_resultU = new double[numberV];
-	double *suggest_resultV = new double[numberV];
+	int suggest_starting_idx[2];
+	GetSuggestionStartingIdx(pIPV,num_PV,suggest_starting_idx);	
 
-	for (int i=0;i<numberV;i++)
-	{				
-		suggest_resultU[i] = pIPV[i].u;
-		suggest_resultV[i] = pIPV[i].v;
-	}
-	double bestStretch = DBL_MAX;
-	int best_startID = -1;	
-	int worst_startID = -1;
-	double worstStretch = -1;
-
-
-	if (pU)
+    if (pU)
 	{
 		delete [] pU;
 		pU = NULL;
@@ -7105,16 +7086,13 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 	vector<int> bottomLeftVertexIDList;
 	
 	printf("=== NUMBER BORDER EDGES : %d ===\n",numBorderPoint);
-	if (logFile)
-		fprintf(logFile,"=== NUMBER BORDER EDGES : %d ===\n",numBorderPoint);
+	
 	while (loop < tlength*0.25 && next(now) != BpointT)
 	{
 		now = next(now);		
 		loop += PT->Distance(point[now->ID],point[next(now)->ID]);
 		bottomLeftVertexIDList.push_back(now->ID);
 	}
-
-	
 
 	//create initial A matrix  ,it is same for all condition
 	//to boost up speed
@@ -7171,34 +7149,55 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 	std::vector<double *>_resultU(bottomLeftVertexIDList.size(),NULL);
 	std::vector<double *>_resultV(bottomLeftVertexIDList.size(),NULL);
 	std::vector<double>_resultError(bottomLeftVertexIDList.size(),0.0);
-	
-	
-	_resultU[suggest_starting_idx] = suggest_resultU;
-	_resultV[suggest_starting_idx] = suggest_resultV;
-	_resultError[suggest_starting_idx] = suggest_stretch;
 	int m = bottomLeftVertexIDList.size();
 	cal_count = 0;
-	printf("=== NUMBER of 25 %% brute force cases : %d ===\n",m);
+	
 	
 	int step =0;
 	
 	
-		//calculate auto step number
-		double d_step = (sqrt(numberV* ((double)m/numberF)));
-		step = floor(d_step);
-		if (step < 2)
-			step = 2;
-		printf("formulated step number: %f (%d)\n", d_step,step);
+	//calculate auto step number
+	double d_step = (sqrt(numberV* ((double)m/numberF)));
+	step = floor(d_step);
+	if (step < 2)
+		step = 2;
+	printf("formulated step number: %f (%d)\n", d_step,step);
 	
+	#pragma omp parallel
+	{
+		#pragma omp single nowait
+		{
+			cout << "S" << suggest_starting_idx[0] << ",";
+			SquareParametrizationCPU(bottomLeftVertexIDList[suggest_starting_idx[0]], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[suggest_starting_idx[0]],_resultV[suggest_starting_idx[0]],_resultError[suggest_starting_idx[0]],false);	
+			cout << "F" << suggest_starting_idx[0] << ",";
+			cal_count++;
+		}
+		#pragma omp single nowait
+		{
+			if (suggest_starting_idx[0] != suggest_starting_idx[1])
+			{
+				cout << "S" << suggest_starting_idx[1] << ",";
+				SquareParametrizationCPU(bottomLeftVertexIDList[suggest_starting_idx[1]], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[suggest_starting_idx[1]],_resultV[suggest_starting_idx[1]],_resultError[suggest_starting_idx[1]],false);	
+				cout << "F" << suggest_starting_idx[1] << ",";
+				cal_count++;
+			}
+		}
+	}
 	
-	
-	
-		
+	int startingIdx;
+	if (_resultError[suggest_starting_idx[0]] < _resultError[suggest_starting_idx[1]])
+		startingIdx = suggest_starting_idx[0];
+	else
+		startingIdx = suggest_starting_idx[1];
+
+
 	int count = 1;
-	double leftBest = suggest_stretch;
-	double rightBest = suggest_stretch;
-	int idxLeft = suggest_starting_idx;
-	int idxRight = suggest_starting_idx;
+	double leftBest = _resultError[startingIdx];
+	double rightBest = _resultError[startingIdx];
+	int leftBestIdx = startingIdx;
+	int rightBestIdx = startingIdx;
+	int idxLeft = startingIdx;
+	int idxRight = startingIdx;
 	bool stopLeft = false;
 	bool stopRight = false;
 	while (!stopLeft || !stopRight)
@@ -7217,23 +7216,167 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 		}
 		#pragma omp parallel
 		{
-			SquareParametrizationCPU(bottomLeftVertexIDList[idxLeft], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[idxLeft],_resultV[idxLeft],_resultError[idxLeft],false);	
-			SquareParametrizationCPU(bottomLeftVertexIDList[idxRight], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[idxRight],_resultV[idxRight],_resultError[idxRight],false);	
+			#pragma omp single nowait
+			{
+				if (_resultError[idxLeft] == 0.0)
+				{
+					cout << "S" << idxLeft << ",";
+					SquareParametrizationCPU(bottomLeftVertexIDList[idxLeft], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[idxLeft],_resultV[idxLeft],_resultError[idxLeft],false);	
+					cout << "F" << idxLeft << ",";
+					cal_count++;
+				}
+			}
+			#pragma omp single nowait
+			{
+				if (_resultError[idxRight] == 0.0)
+				{
+					cout << "S" << idxRight << ",";
+					SquareParametrizationCPU(bottomLeftVertexIDList[idxRight], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[idxRight],_resultV[idxRight],_resultError[idxRight],false);	
+					cout << "F" << idxRight << ",";
+					cal_count++;
+				}
+			}
 		}
 		if (_resultError[idxLeft] < leftBest)
+		{
 			leftBest = _resultError[idxLeft];
+			leftBestIdx = idxLeft;
+		}
 		else
 			stopLeft = true;
 		if (_resultError[idxRight] < rightBest)
+		{
 			rightBest = _resultError[idxRight];
+			rightBestIdx = idxRight;
+		}
 		else
 			stopRight = true;
 	}
 	
 	cout << endl;
+	int oldbestPointIdx;
+	
+	if ( leftBest < rightBest)
+	{
+		oldbestPointIdx = leftBestIdx;
+	}
+	else
+	{
+		oldbestPointIdx = rightBestIdx;
+	}
+	int neighbor_startPointIdx = oldbestPointIdx;
+	int neighbor_finishPointIdx = oldbestPointIdx;
+	
+#pragma omp parallel 
+	{
+		#pragma omp single nowait
+		{
+			for (int i = oldbestPointIdx - 1; i >= 0; i --)
+			{
+				if (_resultError[i] <= 0)
+				{
+					continue;
+				}
+				else
+				{
+					neighbor_startPointIdx = i+1;
+					break;
+				}
+
+			}
+		}
 
 
-	return 0;
+		#pragma omp single nowait
+		{
+			for (int i = oldbestPointIdx + 1; i < m; i ++)
+			{
+				if (_resultError[i] <= 0)
+				{
+					if (i == m - 1)
+					{
+						neighbor_finishPointIdx = i;
+						break;
+					}
+					else
+						continue;
+				}
+				else
+				{
+					neighbor_finishPointIdx = i-1;
+					break;
+				}
+
+			}
+		}
+	}
+	printf("=== deep check from index %d to %d\n",neighbor_startPointIdx,neighbor_finishPointIdx);
+
+	#pragma omp parallel for
+	for (int i = neighbor_startPointIdx ; i <= neighbor_finishPointIdx; i++)
+	{				
+		if (_resultError[i] == 0.0)
+		{
+			//#pragma omp critical
+			{
+				printf("S%d,",i);
+			}
+			SquareParametrizationCPU(bottomLeftVertexIDList[i], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[i],_resultV[i],_resultError[i],false);	
+			//#pragma omp critical
+			{
+				printf("F%d,",i);
+				cal_count++;
+			}
+		}
+	}
+
+	int best_startID = oldbestPointIdx;
+	double bestStretch = _resultError[oldbestPointIdx];
+	bestU = _resultU[oldbestPointIdx];
+	bestV = _resultV[oldbestPointIdx];
+	for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
+	{
+		if (_resultError[i] < bestStretch && _resultError[i] > 0)
+		{
+				
+			bestU = _resultU[i];
+			bestV = _resultV[i];
+			
+			bestStretch = _resultError[i];
+			best_startID = i;
+		}
+						
+	}
+
+
+	printf("=== NUMBER of 25 percent brute force cases : %d ===\n",m);
+	printf("=== Find best stretch  of TEST%d  (best corner at %f) ===\n",best_startID,bestStretch);	
+	
+
+	for (int i=0;i<numberV;i++)
+	{				
+		pIPV[i].u = bestU[i];
+		pIPV[i].v = bestV[i];
+	}
+
+	for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
+	{			
+		if (_resultU[i])
+		{
+			delete [] _resultU[i];
+			_resultU[i]=NULL;
+		}
+		if (_resultV[i])
+		{
+			delete [] _resultV[i];
+			_resultV[i] = NULL;
+		}
+		
+	}
+	
+	return bestStretch;
+
+	
 }
 
 double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(unsigned int step_value,unsigned int &cal_count,
