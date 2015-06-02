@@ -1231,6 +1231,7 @@ int CPolygonsData::SquareParameterizationExperiment(double *op_calTime, vtkFloat
 	if (op_calTime)
 		*op_calTime = static_cast<double>(calTime)/CLOCKS_PER_SEC;
 	
+	cout << "Total Square parameterization performed number: "<< cal_count << endl;
 	if (texCoord)
 	{
 		vtkSmartPointer<vtkFloatArray> tc = vtkSmartPointer<vtkFloatArray>::New(); 
