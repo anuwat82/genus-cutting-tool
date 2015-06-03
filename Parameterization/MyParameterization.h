@@ -138,7 +138,7 @@ public:
 																	int num_PV,
 																	FILE* logFile= NULL);
 	void	ResetInnerLambda();
-	void    CalBorderPath(IDList *BPointH,IDList *BPointT,double *length,int *numPoint);
+	void    CalBorderPath(IDList *BPointH,IDList *BPointT,double *length,int *numPoint, int *num25percent = NULL);
 
 	double	getCurrentE_EX();
 	double	getCurrentE_U();
@@ -185,4 +185,5 @@ public:
 	void StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::vector<double> &op_stretch);
 	void GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,int op_suggest_indices[2]);
 	void GetSurroundFace(unsigned int level , int vid ,bool* checked_vid, std::set<int> &opID);
+	int GetMappingAtNearestCorner(int vid, IDList *borderH,IDList *borderT,double total_length_edges,int first25percent); 
 };
