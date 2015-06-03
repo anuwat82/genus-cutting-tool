@@ -1567,7 +1567,7 @@ void MyParameterization::setTutteC()
 		}
 	}
 }
-void    MyParameterization::CalBorderPath(IDList *BpointH,IDList *BpointT,double *length,int *numPoint)
+void    MyParameterization::CalBorderPath(IDList *BpointH,IDList *BpointT,double *length,int *numPoint,int *num25percent)
 {
 	int i=0,j=0,k=0;
 	IDList *now=NULL;
@@ -1661,18 +1661,19 @@ void    MyParameterization::CalBorderPath(IDList *BpointH,IDList *BpointT,double
 		if(jumpcheck!=1)
 			now = next(now);
 	}
-
-	double tlength=0.0;
+	/*
+	double _tlength=0.0;
 	now = BedgeH;
 	while(next(now)!=BedgeT)
 	{
 		now = next(now);
-		tlength += PT->Distance(point[now->ID],point[next(now)->ID]);
+		_tlength += PT->Distance(point[now->ID],point[next(now)->ID]);
 		now = next(now);
       
 	}
+	*/
 	
-	//tlength is total length of border now
+	
 
 	int startID=0;
 	int *checkbin = new int[numberV];
@@ -1739,7 +1740,36 @@ void    MyParameterization::CalBorderPath(IDList *BpointH,IDList *BpointT,double
   
 	IDtool->CleanNeighbor(BedgeH,BedgeT);  //de-allocate BedgeH&T because border info now is at BpointH&T
 	delete [] checkbin;
+	double tlength=0.0;
+
+	now = BpointH;
+	BpointT->ID = BpointH->next->ID; 
+	int first25percentNumEdge = 0;
+	
+	while(next(now)!=BpointT)
+	{
+		now = next(now);
+		tlength += PT->Distance(point[now->ID],point[next(now)->ID]);      
+		
+	}
+
 	*length = tlength;
+
+	if (num25percent != NULL)
+	{
+		now = BpointH;
+		BpointT->ID = BpointH->next->ID; 
+		int first25percentNumEdge = 0;
+		double length=0.0;
+		while(next(now)!=BpointT && length < tlength * 0.25)
+		{
+			now = next(now);
+			length += PT->Distance(point[now->ID],point[next(now)->ID]);  
+			first25percentNumEdge ++;		
+		}
+		*num25percent = first25percentNumEdge;
+	}
+
 }
 
 void MyParameterization::MyBoundaryMap()
@@ -3576,10 +3606,126 @@ void MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,
 	
 	double tlength=0.0;
 	int numBorderPoint = 0;
-	CalBorderPath(BpointH,BpointT,&tlength,&numBorderPoint);
-
-	IDList *now = BpointH;
+	int first25percent = 0;
+	CalBorderPath(BpointH,BpointT,&tlength,&numBorderPoint,&first25percent);	
+	double minDistanceFromACorner = DBL_MAX;
+	int minDistanceFromACornerIdx  = -1;
+	std::vector<double> cost(first25percent,0.0);	
+#pragma omp parallel for
+	for (int i = 0; i < first25percent ; i++)
+	{
+		vector<int> bordervertexT;
+		vector<int> bordervertex;
+		vector<int>::iterator bv_iter;
+		IDList *now=BpointH;
+		int count = 0;
+		while(next(now)!=BpointT)
+		{
+			now = next(now);
+			if (count == i)
+			{
+				bordervertex.push_back(now->ID);
+				while(next(now)!=BpointT)
+				{
+					now = next(now);
+					bordervertex.push_back(now->ID);
+				}
+			}
+			else
+			{
+				bordervertexT.push_back(now->ID);
+			}
+			count++;
+		}	
+		if (bordervertexT.size()>0)
+			bordervertex.insert(bordervertex.end(), bordervertexT.begin(), bordervertexT.end());
 	
+		bordervertex.push_back(bordervertex[0]); //for easy loop back at end
+
+	
+		int state = 0;
+		double this_side_length[4] ={0};
+		int this_side_num_edge[4] = {0};
+		double sum_length = 0;
+		bv_iter = bordervertex.begin();
+		do
+		{				
+			double edge_length = PT->Distance(point[*bv_iter],point[*(bv_iter+1)]);			
+			if ((sum_length + edge_length>= (tlength*0.25)) && state < 3)
+			{
+				if ((sum_length + edge_length)/(tlength*0.25) >= 1.1&& this_side_num_edge[state] > 0)					
+				{
+					this_side_length[state] = sum_length;
+					this_side_num_edge[state+1]++;
+					sum_length = edge_length;
+				}
+				else
+				{
+					this_side_length[state] = sum_length+edge_length;
+					this_side_num_edge[state]++;
+					sum_length = 0;
+				}				
+				state++;
+			}
+			else
+			{
+				this_side_num_edge[state]++;
+				sum_length += edge_length;
+			}
+			bv_iter++;
+		}
+		while ((bv_iter) != bordervertex.end() - 1);
+		this_side_length[state] = sum_length;  //for last stage
+	
+		//memcpy(pU,initU0,sizeof(double)*numberV);
+		//memcpy(pV,initV0,sizeof(double)*numberV);
+
+		state = 0;
+		sum_length  = 0;
+		double clen = 0.0;			
+		bv_iter = bordervertex.begin();
+		do
+		{	
+			if (clen >= 1.0)
+			{
+				sum_length = 0.0;
+				state++;
+			}
+			
+			double prev_clen = clen;
+				
+			sum_length += PT->Distance(point[*bv_iter],point[*(bv_iter+1)]);
+			clen = sum_length/this_side_length[state];	
+			double midpoint = ((clen + prev_clen)/2.0) ;
+			//double dist_from_corner = 0.5-fabs(midpoint - 0.5);
+			double dist_from_corner = 0.5-fabs(prev_clen - 0.5);
+
+			double u = dist_from_corner*2.0; //distance from a corner point  in circle r length 1 and squre half side length is 1
+			double xpos = (u + sqrt(2.0-(u*u)))/2.0;
+			double weight = (1.0-xpos)*sqrt(2.0) ;  //*sqrt(2.0) means divide by sin(45) 				
+				
+			if (*bv_iter == maxStretchVertexIdx)
+			{
+				#pragma omp critical 
+				{
+					if (dist_from_corner < minDistanceFromACorner)
+					{
+						minDistanceFromACorner = dist_from_corner;
+						minDistanceFromACornerIdx = i;
+					}
+				}
+			}				
+			cost[i] += weight*vertex_stretch_array[*bv_iter];
+
+			
+
+			bv_iter++;
+		}
+		while (bv_iter != bordervertex.end()-1);
+	}
+	
+	IDList *now = BpointH;
+	/*
 	int state=0;
 	double clen=0.0;		
 	double loop = 0;
@@ -3589,11 +3735,12 @@ void MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,
 	double worstStretch = -1;
 	int count = 0;
 
+
 	
-	double minDistanceFromACorner = 0.5;
-	int minDistanceFromACornerIdx = -1;
+	//double minDistanceFromACorner = 0.5;
+	//int minDistanceFromACornerIdx = -1;
 	//record result as array.
-	std::vector<double> cost(numBorderPoint,0.0);
+	//std::vector<double> cost(numBorderPoint,0.0);
 	
 	while (loop < tlength*0.25)
 	{
@@ -3747,12 +3894,7 @@ void MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,
 
 				//weight = 1-(u*u);
 				
-				/*
-				if (u <= sqrt(2.0)*(sqrt(2.0) - 1))
-					weight_of_edge = 1.0;
-				else
-					weight_of_edge = 0.0;
-					*/
+				
 				//weight_of_edge = pow(2, -u);
 				count_edge++;
 				
@@ -3764,43 +3906,8 @@ void MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,
 						minDistanceFromACorner = dist_from_corner;
 						minDistanceFromACornerIdx = count;
 					}
-				}
-
-				
-				
-
-				//if (count_edge == 1)
-				{
-					/*
-					bool *checkedV = new bool[numberV];
-					memset(checkedV,0,sizeof(bool)*numberV);
-					std::set<int> surround_faceID;
-					GetSurroundFace(18, now->ID,checkedV, surround_faceID);
-					for (std::set<int>::iterator it = surround_faceID.begin(); it!=surround_faceID.end();it++)
-					{
-						const int fid = *it;
-						op_stretch[count] += face_stretch_array[fid];
-					}
-					delete [] checkedV;
-					*/
-					
-					/*
-					VList *nowv= next(VHead[now->ID]);
-					if (nowv->ID == next(now)->ID)
-						op_stretch[count] += weight_of_edge * face_stretch_array[nowv->FaceID];
-					else
-					{
-						nowv= back(VTail[now->ID]);
-						if (nowv->ID == next(now)->ID)
-							op_stretch[count] += weight_of_edge * face_stretch_array[nowv->FaceID];
-						else
-							throw; //should not happen
-					}				
-					*/
-					
-					cost[count] += weight*vertex_stretch_array[now->ID];
-				}
-				
+				}					
+				cost[count] += weight*vertex_stretch_array[now->ID];				
 			}			
 		
 		
@@ -3825,6 +3932,7 @@ void MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,
 		}
 	}
 	IDtool->CleanNeighbor(BpointH,BpointT);
+	*/
 	std::vector<int> test_cases;
 
 
@@ -3840,7 +3948,7 @@ void MyParameterization::GetSuggestionStartingIdx(PolarVertex *pIPV, int num_PV,
 		double minCost = DBL_MAX;
 		int idxMax;
 		int idxMin;
-		for (int i = 0 ; i < count; i++)
+		for (int i = 0 ; i < first25percent; i++)
 		{		
 			const double _cost = cost[i];
 			if (_cost > maxCost)
@@ -8750,3 +8858,115 @@ double	  PsoParameterization::OptParam_Sampling(	PolarVertex *pIPV,
 	return bestStretch ;
 }
 #endif
+
+
+int MyParameterization::GetMappingAtNearestCorner(int vid, IDList *borderH,IDList *borderT,double total_length_edges,int first25percent)
+{
+	 
+	double minDistanceFromACorner = DBL_MAX;
+	int minDistanceFromACornerIdx  = -1;
+#pragma omp parallel for
+	for (int i = 0; i < first25percent ; i++)
+	{
+		vector<int> bordervertexT;
+		vector<int> bordervertex;
+		vector<int>::iterator bv_iter;
+		IDList *now=borderH;
+		int count = 0;
+		while(next(now)!=borderT)
+		{
+			now = next(now);
+			if (count == i)
+			{
+				bordervertex.push_back(now->ID);
+				while(next(now)!=borderT)
+				{
+					now = next(now);
+					bordervertex.push_back(now->ID);
+				}
+			}
+			else
+			{
+				bordervertexT.push_back(now->ID);				
+			}
+			count++;
+		}	
+		if (bordervertexT.size()>0)
+			bordervertex.insert(bordervertex.end(), bordervertexT.begin(), bordervertexT.end());
+	
+		bordervertex.push_back(bordervertex[0]); //for easy loop back at end
+
+	
+		int state = 0;
+		double this_side_length[4] ={0};
+		int this_side_num_edge[4] = {0};
+		double sum_length = 0;
+		bv_iter = bordervertex.begin();
+		do
+		{				
+			double edge_length = PT->Distance(point[*bv_iter],point[*(bv_iter+1)]);			
+			if ((sum_length + edge_length>= (total_length_edges*0.25)) && state < 3)
+			{
+				if ((sum_length + edge_length)/(total_length_edges*0.25) >= 1.1&& this_side_num_edge[state] > 0)					
+				{
+					this_side_length[state] = sum_length;
+					this_side_num_edge[state+1]++;
+					sum_length = edge_length;
+				}
+				else
+				{
+					this_side_length[state] = sum_length+edge_length;
+					this_side_num_edge[state]++;
+					sum_length = 0;
+				}				
+				state++;
+			}
+			else
+			{
+				this_side_num_edge[state]++;
+				sum_length += edge_length;
+			}
+			bv_iter++;
+		}
+		while ((bv_iter) != bordervertex.end() - 1);
+		this_side_length[state] = sum_length;  //for last stage
+	
+		//memcpy(pU,initU0,sizeof(double)*numberV);
+		//memcpy(pV,initV0,sizeof(double)*numberV);
+
+		state = 0;
+		sum_length  = 0;
+		double clen = 0.0;			
+		bv_iter = bordervertex.begin();
+		do
+		{	
+			if (clen >= 1.0)
+			{
+				sum_length = 0.0;
+				state++;
+			}
+			
+			double prev_clen = clen;
+			sum_length += PT->Distance(point[*bv_iter],point[*(bv_iter+1)]);
+			clen = sum_length/this_side_length[state];			
+			double dist_from_corner = 0.5-fabs(prev_clen - 0.5);
+			if (*bv_iter == vid)
+			{
+				#pragma omp critical 
+				{
+					if (dist_from_corner < minDistanceFromACorner)
+					{
+						minDistanceFromACorner = dist_from_corner;
+						minDistanceFromACornerIdx = i;
+					}
+				}
+				break;
+			}
+
+			bv_iter++;
+		}
+		while (bv_iter != bordervertex.end()-1);
+	}
+	return minDistanceFromACornerIdx;
+
+}
