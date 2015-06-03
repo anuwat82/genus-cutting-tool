@@ -7298,6 +7298,53 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 	else
 		startingIdx = suggest_starting_idx[1];
 
+	double *face_stretch_array = new double[numberF];
+	double *vertex_stretch_array = new double[numberV];
+	GetStretchError(_resultU[startingIdx],_resultV[startingIdx],true, face_stretch_array,vertex_stretch_array);
+	int maxStretchVertexIdx;
+	int maxStretchFaceIdx;
+	double maxStretchVertex(0);
+	double maxStretchFace(0);
+	
+	#pragma omp parallel
+	{		
+		#pragma omp single nowait
+		{
+			//printf("Start V\n");
+			for (int i = 0; i < numberV ;i++)
+			{
+				if (boundary[i] == 1)
+				{
+					if (vertex_stretch_array[i] > maxStretchVertex)
+					{
+						maxStretchVertexIdx = i;
+						maxStretchVertex = vertex_stretch_array[i];
+					}
+				}
+			}
+			//printf("End V\n");
+		}
+
+		#pragma omp single nowait
+		{
+			//printf("Start F\n");
+			for (int i = 0; i < numberF ;i++)
+			{
+				if(boundary[Face[i][0]]==1 || boundary[Face[i][1]] ==1 || boundary[Face[i][2]] ==1)
+				{
+					if (face_stretch_array[i] > maxStretchFace)
+					{
+						maxStretchFaceIdx = i;
+						maxStretchFace = face_stretch_array[i];
+					}
+				}
+			}
+			//printf("End F\n");
+		}
+		
+	} //end of omp parallel
+
+	int setting =  GetMappingAtNearestCorner(maxStretchVertexIdx, BpointH,BpointT,tlength,m); 
 
 	int count = 1;
 	double leftBest = _resultError[startingIdx];
