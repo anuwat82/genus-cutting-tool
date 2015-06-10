@@ -1,10 +1,10 @@
-#define BOOST_LIB_DIAGNOSTIC
+//#define BOOST_LIB_DIAGNOSTIC
 #include "MyParameterization.h"
-#include "GPUSolver.cuh"
+//#include "GPUSolver.cuh"
 //#include <NL/nl.h>
 
 //#include <boost/thread.hpp>
-#include <ppl.h>
+//#include <ppl.h>
 bool IsNumber(double x);
 
 MyParameterization::MyParameterization(void)
@@ -798,7 +798,7 @@ double	MyParameterization::CircularParameterizeOptimalEx(PolarVertex *pIPV,
 	}
 	return resultStretch;
 }
-#ifdef INTEL_MKL_VERSION
+#if defined(INTEL_MKL_VERSION) && defined(HAVE_BOOST)
 void	MyParameterization::mkl_Solve()
 {
 //#define INDEX0
@@ -7893,7 +7893,7 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 }
 
 
-#ifdef INTEL_MKL_VERSION
+#if defined(INTEL_MKL_VERSION) && defined(HAVE_BOOST)
 double MyParameterization::ParametrizationOptimalCPU_MKL(double *ioU,double *ioV,double error,int non_zero_element,double *init_sa,unsigned long *init_ija,FILE* logFile)
 {
 	
@@ -7903,7 +7903,7 @@ double MyParameterization::ParametrizationOptimalCPU_MKL(double *ioU,double *ioV
 
 
 	
-#if 1
+#if 0
 	/*---------------------------------------------------------------------------*/
   /* Define arrays for the upper triangle of the coefficient matrix and rhs vector */
   /* Compressed sparse row storage is used for sparse representation           */
