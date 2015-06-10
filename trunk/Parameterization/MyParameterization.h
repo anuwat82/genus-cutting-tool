@@ -7,14 +7,17 @@
 #include <set>
 
 #include <mkl.h>    //comment out this line if do not have intel mkl
-#ifdef INTEL_MKL_VERSION 
+//#define HAVE_BOOST
+#if defined(INTEL_MKL_VERSION) && defined(HAVE_BOOST)
 #include <boost/numeric/ublas/matrix_sparse.hpp>
 typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,0,boost::numeric::ublas::unbounded_array<MKL_INT>>       cpuCompressedMatrixTypeIndex0;
 typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,1,boost::numeric::ublas::unbounded_array<MKL_INT>>       cpuCompressedMatrixTypeIndex1;
 #else
+#ifdef HAVE_BOOST
 #include <boost/numeric/ublas/matrix_sparse.hpp>
 typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,0,boost::numeric::ublas::unbounded_array<int>>       cpuCompressedMatrixTypeIndex0;
 typedef boost::numeric::ublas::compressed_matrix<double,boost::numeric::ublas::row_major,1,boost::numeric::ublas::unbounded_array<int>>       cpuCompressedMatrixTypeIndex1;
+#endif
 #endif
 typedef struct MirrorFace 
 {
@@ -64,7 +67,7 @@ public:
 										 FILE* logFile= NULL);
 
 	void	linbcg_Solve();
-	#ifdef INTEL_MKL_VERSION
+	#if defined(INTEL_MKL_VERSION) && defined(HAVE_BOOST)
 	void	mkl_Solve();
 	#endif
 	void	DeleteFace(int id);
@@ -159,7 +162,7 @@ public:
 	//double ParametrizationOptimalGPU(double *ioU,double *ioV,double error, cpuCompressedMatrixType *initAMatrix,bool directsolver,FILE* logFile);
 	//double ParametrizationOptimalGPU_2timeSolves(double *ioU,double *ioV,double error, cpuCompressedMatrixType *initAMatrix,bool directsolver,FILE* logFile);
 	double ParametrizationOptimalCPU(double *ioU,double *ioV,double error,int non_zero_element,double *init_sa,unsigned long *init_ija,FILE* logFile);
-	#ifdef INTEL_MKL_VERSION
+	#if defined(INTEL_MKL_VERSION) && defined(HAVE_BOOST)
 	double ParametrizationOptimalCPU_MKL(double *ioU,double *ioV,double error,int non_zero_element,double *init_sa,unsigned long *init_ija,FILE* logFile);
 	#endif
 	void SetSigma(double *ipU,double *ipV,double *opSigma ,double gamma = 1.0);

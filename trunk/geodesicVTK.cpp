@@ -1,4 +1,3 @@
-
 #include "stdafx.h"
 
 #include <Windows.h>
@@ -299,7 +298,7 @@ void InitialGeodesic(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID 
 
 int main(int argc, char* argv[])
 {
-
+	vtkObject::GlobalWarningDisplayOff();
 
 	vtkSmartPointer<vtkPNGReader> pngReader = vtkSmartPointer<vtkPNGReader>::New();
 	pngReader->SetFileName("./texture/square_texture.png");
@@ -487,13 +486,20 @@ int main(int argc, char* argv[])
 	renderWindow->Render(); 	
 
 	cout << "===============================" << endl <<
+		"CTRL + Left click to change starting point" <<endl <<
 		"Function Key:" << endl <<
 		"F6 = homotopy cutting" << endl <<
+			"  1 = display both kind of crossing edges" << endl <<
+			"  2 = display edges after removing dangling ones" << endl <<
+			"  3 = display our final cutting path (red)" << endl <<
+			"  4 = display original final cutting path (yellow)" << endl <<
 		"F7 = iterative augmented cutting" << endl <<
 		"F8 = square parameterizations (25% brute force)" << endl <<
 		"F9 = square parameterizations (step sampling)" << endl << endl <<
 		
 		"F10 = save screenshot" << endl << 
+		"+/- = increase/decrease opacity" << endl << 
+
 		"===============================" << endl;
 
 
@@ -903,14 +909,14 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		vtkSmartPointer<vtkFloatArray> texCoord = vtkSmartPointer<vtkFloatArray>::New();
 		polygon.SquareParameterizationOptimization(step_value,&calCount,&calTime,texCoord.GetPointer());
 		polydata->GetPointData()->SetTCoords(texCoord);
-		cout << "time consume: " << calTime << " sec" << endl;
+		cout << "consuming time : " << calTime << " sec" << endl;
 		cout << "total test cases examined: " << calCount << " times" << endl;
 		cout << "========================================" << endl;
 			
 	}
 	else if (key == "F3")
 	{
-		//Sqaure Parameterization brute force
+		
 		cout << "Perform Circular Parameterization ..."<< endl;
 		vtkSmartPointer<vtkPolyData> inputPolydata;
 		if (disk_polydata.GetPointer() != NULL && disk_polydata->GetNumberOfPoints() > 0)
@@ -967,16 +973,17 @@ void pickCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata, vo
 	if (picker->GetPointId() >= 0 )
 	{
 		int vertexID = picker->GetPointId();
-		std::cout << "Pick Point:" << vertexID <<  std::endl;
+		
 
 		if (TrackballStyle->GetInteractor()->GetControlKey() != 0)
 		{
 			vtkSmartPointer<vtkPolyData> PolyData = polydata;
-			InitialGeodesic(PolyData,picker->GetPointId());
+			InitialGeodesic(PolyData,vertexID);
 			ColoredPoint( TrackballStyle->GetInteractor()->GetRenderWindow()->GetRenderers()->GetFirstRenderer(),PolyData->GetPoint(vertexID), 0.0,1.0,0.0);
 			actorEdge1->Modified();
 			actorEdge2->Modified();
 			TrackballStyle->GetInteractor()->GetRenderWindow()->Render();
+			std::cout << "Picked PointID:" << vertexID <<  std::endl;
 		}
 	}
 	
