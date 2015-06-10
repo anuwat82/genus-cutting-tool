@@ -5,6 +5,7 @@
 
 //#include <boost/thread.hpp>
 //#include <ppl.h>
+#include <omp.h>
 bool IsNumber(double x);
 
 MyParameterization::MyParameterization(void)
@@ -7265,11 +7266,7 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 	
 	
 	//calculate auto step number
-	double d_step = (sqrt(numberV* ((double)m/numberF)));
-	step = floor(d_step);
-	if (step < 2)
-		step = 2;
-	printf("formulated step number: %f (%d)\n", d_step,step);
+	
 	
 	#pragma omp parallel
 	{
@@ -7298,6 +7295,15 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 	else
 		startingIdx = suggest_starting_idx[1];
 
+	cout << endl << "search around " << startingIdx << endl ;
+	double d_step = (sqrt(numberV* ((double)m/numberF)));
+	int _step = floor(d_step);		
+	step = _step -1;
+	if (step < 1)
+		step = 1;
+	printf("formulated step number: %f(%d) and use %d \n", d_step,_step,step);
+
+	/*
 	double *face_stretch_array = new double[numberF];
 	double *vertex_stretch_array = new double[numberV];
 	GetStretchError(_resultU[startingIdx],_resultV[startingIdx],true, face_stretch_array,vertex_stretch_array);
@@ -7345,7 +7351,7 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 	} //end of omp parallel
 
 	int setting =  GetMappingAtNearestCorner(maxStretchVertexIdx, BpointH,BpointT,tlength,m); 
-
+	*/
 	int count = 1;
 	double leftBest = _resultError[startingIdx];
 	double rightBest = _resultError[startingIdx];
@@ -7355,6 +7361,77 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 	int idxRight = startingIdx;
 	bool stopLeft = false;
 	bool stopRight = false;
+
+#pragma omp parallel sections
+	{
+		#pragma omp section
+		{
+			while (!stopLeft)
+			{
+				idxLeft -= step;
+				
+				if (idxLeft < 0)
+				{
+					idxLeft = 0;			
+				}				
+				
+				if (_resultError[idxLeft] == 0.0 && !stopLeft)
+				{
+					cout << "S" << idxLeft << ",";
+					SquareParametrizationCPU(bottomLeftVertexIDList[idxLeft], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[idxLeft],_resultV[idxLeft],_resultError[idxLeft],false);	
+					cout << "F" << idxLeft << ",";
+					cal_count++;
+				}			
+				
+				if (_resultError[idxLeft] < leftBest && !stopLeft)
+				{
+					leftBest = _resultError[idxLeft];
+					leftBestIdx = idxLeft;
+				}
+				else
+					stopLeft = true;				
+
+				if (idxLeft <= 0)
+					stopLeft = true;
+				
+			}
+		}
+
+		#pragma omp section
+		{
+			while (!stopRight)
+			{
+				
+				idxRight += step;
+				
+				if (idxRight >= m)
+				{
+					idxRight = m-1;			
+				}
+			
+				if (_resultError[idxRight] == 0.0 && !stopRight)
+				{
+					cout << "S" << idxRight << ",";
+					SquareParametrizationCPU(bottomLeftVertexIDList[idxRight], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[idxRight],_resultV[idxRight],_resultError[idxRight],false);	
+					cout << "F" << idxRight << ",";
+					cal_count++;
+				}
+					
+				
+				if (_resultError[idxRight] < rightBest && !stopRight )
+				{
+					rightBest = _resultError[idxRight];
+					rightBestIdx = idxRight;
+				}
+				else
+					stopRight = true;
+
+				if (idxRight >= m-1)
+					stopRight = true;
+			}
+		}
+	}
+	/*
 	while (!stopLeft || !stopRight)
 	{
 		idxLeft -= step-1;
@@ -7410,7 +7487,7 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 		if (idxRight >= m-1)
 			stopRight = true;
 	}
-	
+	*/
 	cout << endl;
 	int oldbestPointIdx;
 	
@@ -7469,8 +7546,9 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 		}
 	}
 	printf("=== deep check from index %d to %d\n",neighbor_startPointIdx,neighbor_finishPointIdx);
-
-	#pragma omp parallel for
+int numProc =  omp_get_num_procs();
+	int maxProc = (numProc/2);  //in case of processor w/o HT technology, please set maxProce = numProc  
+	#pragma omp parallel for num_threads(maxProc)
 	for (int i = neighbor_startPointIdx ; i <= neighbor_finishPointIdx; i++)
 	{				
 		if (_resultError[i] == 0.0)
@@ -7506,7 +7584,7 @@ double    MyParameterization::SqaureParameterizationPredictFromCircle_PARALLEL_C
 						
 	}
 
-
+	cout << endl;
 	printf("=== NUMBER of 25 percent brute force cases : %d ===\n",m);
 	printf("=== Find best stretch  of TEST%d  (best corner at %f) ===\n",best_startID,bestStretch);	
 	
@@ -7673,20 +7751,18 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 		
 	int count = 1;
 
-
-	#pragma omp parallel for
+	int numProc =  omp_get_num_procs();
+	int maxProc = (numProc/2);  //in case of processor w/o HT technology, please set maxProce = numProc  
+	#pragma omp parallel for num_threads(maxProc)
 	for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
 	{	
 		if ( ((i+1) % step) == 1 || step == 1)
-		{
-			#pragma omp critical
-			{
-				printf("S%d,",i);
-			}
+		{			
+			printf("S%d,",i);
 			SquareParametrizationCPU(bottomLeftVertexIDList[i], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[i],_resultV[i],_resultError[i],false);	
+			printf("F%d,",i);
 			#pragma omp critical
-			{
-				printf("F%d,",i);
+			{				
 				cal_count++;
 			}
 		}
@@ -7782,17 +7858,16 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 
 		}
 		printf("=== deep check from index %d to %d\n",neighbor_startPointIdx,neighbor_finishPointIdx);
-		#pragma omp parallel for
+		#pragma omp parallel for num_threads(maxProc)
 		for (int i = neighbor_startPointIdx ; i <= neighbor_finishPointIdx; i++)
 		{				
-			#pragma omp critical
-			{
-				printf("S%d,",i);
-			}
+			
+			printf("S%d,",i);			
 			SquareParametrizationCPU(bottomLeftVertexIDList[i], BpointH,BpointT, tlength,nonzero,init_sa,init_ija,_resultU[i],_resultV[i],_resultError[i],false);	
+			printf("F%d,",i);
 			#pragma omp critical
 			{
-				printf("F%d,",i);
+			
 				cal_count++;
 			}		
 		}
@@ -7845,12 +7920,14 @@ double    MyParameterization::SqaureParameterizationStepSampling_PARALLEL_CPU(un
 		//report all stretch
 		//ofstream myfile;
 		//myfile.open ("result_all_stretches.txt");
+		/*
 		cout << "***START REPORT ALL STRETCH***" <<endl;
 		for (int i = 0 ; i < bottomLeftVertexIDList.size(); i++)
 		{
 			cout<< i << "," << _resultError[i] << endl;
 		}
 		cout << "***END REPORT ALL STRETCH***" <<endl;
+		*/
 		//myfile.close();
 
 	}
