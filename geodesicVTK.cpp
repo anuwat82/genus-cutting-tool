@@ -844,7 +844,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		
 			polygon.SquareParameterizationOptimization(1,&calCount,&calTime,texCoord.GetPointer());
 		}
-		polydata->GetPointData()->SetTCoords(texCoord);
+		inputPolydata->GetPointData()->SetTCoords(texCoord);
 		cout << "time consume: " << calTime << " sec" << endl;
 		cout << "total test cases examined: " << calCount << " times" << endl;
 		cout << "========================================" << endl;
@@ -908,7 +908,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		unsigned int calCount;
 		vtkSmartPointer<vtkFloatArray> texCoord = vtkSmartPointer<vtkFloatArray>::New();
 		polygon.SquareParameterizationOptimization(step_value,&calCount,&calTime,texCoord.GetPointer());
-		polydata->GetPointData()->SetTCoords(texCoord);
+		inputPolydata->GetPointData()->SetTCoords(texCoord);
 		cout << "consuming time : " << calTime << " sec" << endl;
 		cout << "total test cases examined: " << calCount << " times" << endl;
 		cout << "========================================" << endl;
@@ -939,7 +939,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		//ColorMeshFace(stretch);
 		//polygon.CheckBoundaryMapping(NULL);
 		polygon.SquareParameterizationExperiment(&calTime,texCoord.GetPointer());
-		polydata->GetPointData()->SetTCoords(texCoord);
+		inputPolydata->GetPointData()->SetTCoords(texCoord);
 		//ColorMeshFace(stretch);
 		cout << "time consume: " << calTime << " sec" << endl;		
 		
