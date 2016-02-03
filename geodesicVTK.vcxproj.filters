@@ -78,9 +78,6 @@
     <ClInclude Include="OpenMesh_Header.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MyTruncate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GIMmodTruncate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -162,9 +159,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vtkOFFReader.cxx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MyTruncate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GIMmodTruncate.cpp">

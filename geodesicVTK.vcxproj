@@ -179,7 +179,6 @@
     <ClInclude Include="geodesic\geodesic_mesh_elements.h" />
     <ClInclude Include="GIMmodTruncate.h" />
     <ClInclude Include="MouseInteractorStylePP.h" />
-    <ClInclude Include="MyTruncate.h" />
     <ClInclude Include="OpenMesh_Header.h" />
     <ClInclude Include="Parameterization\IDCutHedge.h" />
     <ClInclude Include="Parameterization\IDList.h" />
@@ -210,7 +209,6 @@
     <ClCompile Include="GIMmodTruncate.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MouseInteractorStylePP.cpp" />
-    <ClCompile Include="MyTruncate.cpp" />
     <ClCompile Include="Parameterization\IDCutHedge.cpp" />
     <ClCompile Include="Parameterization\IDList.cpp" />
     <ClCompile Include="Parameterization\IDSet.cxx" />
