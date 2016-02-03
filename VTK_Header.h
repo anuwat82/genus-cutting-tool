@@ -76,3 +76,5 @@
 #include <vtkColorSeries.h>
 #include <vtkColorTransferFunction.h>
 #include <vtkDelimitedTextWriter.h>
+#include "vtkOFFReader.h"
+#include "MouseInteractorStylePP.h"

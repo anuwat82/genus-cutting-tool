@@ -141,6 +141,9 @@
     <ClInclude Include="Parameterization\VList.h">
       <Filter>Parameterization</Filter>
     </ClInclude>
+    <ClInclude Include="GeodesicVTK.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -202,6 +205,9 @@
     </ClCompile>
     <ClCompile Include="Parameterization\IDCutHedge.cpp">
       <Filter>Parameterization</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

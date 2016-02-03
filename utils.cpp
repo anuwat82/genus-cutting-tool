@@ -1,6 +1,16 @@
 #include "utils.h"
 #include <Windows.h>
 #include <string>
+
+
+std::string GetFileExtension(const std::string& FileName)
+{
+    if(FileName.find_last_of(".") != std::string::npos)
+        return FileName.substr(FileName.find_last_of(".")+1);
+    return "";
+}
+
+
 int GetFileName(std::string &filename ,const char* filter ,bool save)
 {
 	OPENFILENAME ofn;       // common dialog box structure
