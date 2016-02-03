@@ -75,3 +75,4 @@
 #include <vtkPNGReader.h>
 #include <vtkColorSeries.h>
 #include <vtkColorTransferFunction.h>
+#include <vtkDelimitedTextWriter.h>

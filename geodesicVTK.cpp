@@ -64,6 +64,38 @@ vtkSmartPointer<vtkActor> CreateFinalPipeline(vtkSmartPointer<vtkMutableUndirect
 
 void InitialGeodesic(vtkSmartPointer<vtkPolyData> polydata ,int sourceVertexID);
 void ScreenShot(vtkRenderWindow* renderWindow);
+
+
+void AskForSaveSqp(vtkFloatArray *texCoord)
+{
+	char answer;
+	cout << "Do you want to save sqp file? (y/n):";
+	cin >> answer;
+
+	if (answer == 'y' ||answer == 'Y')
+	{
+		std::string filename;
+		if (GetFileName(filename,"SQP File\0*.sqp\0All Files\0*.*\0",true))
+		{
+			int numPoint = texCoord->GetNumberOfTuples();
+			ofstream myfile (filename.c_str());
+			if (myfile.is_open())
+			{
+				for (int i = 0; i < numPoint ; i++)
+				{
+					const double *st = texCoord->GetTuple2(i);
+					myfile << st[0] << " " << st[1] << endl;
+				}
+				myfile.close();
+			}
+			
+		}
+	}
+	else
+	{
+		cout << "No save" << endl;
+	}
+}
 std::string GetFileExtension(const std::string& FileName)
 {
     if(FileName.find_last_of(".") != std::string::npos)
@@ -848,6 +880,8 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		cout << "time consume: " << calTime << " sec" << endl;
 		cout << "total test cases examined: " << calCount << " times" << endl;
 		cout << "========================================" << endl;
+
+		AskForSaveSqp(texCoord);
 		
 	}
 	else if (key == "F9")
@@ -912,6 +946,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		cout << "consuming time : " << calTime << " sec" << endl;
 		cout << "total test cases examined: " << calCount << " times" << endl;
 		cout << "========================================" << endl;
+		AskForSaveSqp(texCoord);
 			
 	}
 	else if (key == "F3")
