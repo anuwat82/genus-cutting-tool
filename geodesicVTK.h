@@ -1,7 +1,6 @@
 #pragma once
 #include "geodesic\geodesic_algorithm_exact.h"
 #include "VTK_Header.h"
-#include "MyTruncate.h"
 #include "GIMmodTruncate.h"
 
 //extern MyTruncate gimTruncate;
