@@ -20,6 +20,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkOBJReader.h>
 #include <vtkPLYReader.h>
+#include <vtkPLYWriter.h>
 #include <vtkParallelCoordinatesInteractorStyle.h>
 #include <vtkPlane.h>
 #include <vtkPlaneSource.h>
@@ -76,5 +77,6 @@
 #include <vtkColorSeries.h>
 #include <vtkColorTransferFunction.h>
 #include <vtkDelimitedTextWriter.h>
+#include <vtkPoints.h>
 #include "vtkOFFReader.h"
 #include "MouseInteractorStylePP.h"

@@ -36,36 +36,6 @@ geodesic::GeodesicAlgorithmExact *exact_algorithm = NULL;
 int sourceVertex  = 0;
 
 
-void AskForSaveSqp(vtkFloatArray *texCoord)
-{
-	char answer;
-	cout << "Do you want to save sqp file? (y/n):";
-	cin >> answer;
-
-	if (answer == 'y' ||answer == 'Y')
-	{
-		std::string filename;
-		if (GetFileName(filename,"SQP File\0*.sqp\0All Files\0*.*\0",true))
-		{
-			int numPoint = texCoord->GetNumberOfTuples();
-			ofstream myfile (filename.c_str());
-			if (myfile.is_open())
-			{
-				for (int i = 0; i < numPoint ; i++)
-				{
-					const double *st = texCoord->GetTuple2(i);
-					myfile << st[0] << " " << st[1] << endl;
-				}
-				myfile.close();
-			}
-			
-		}
-	}
-	else
-	{
-		cout << "No save" << endl;
-	}
-}
 /*
 void Process(vtkSmartPointer<vtkPolyData> polydata , int sourceVertexID )
 {
@@ -1295,4 +1265,54 @@ void ScreenShot(vtkRenderWindow* renderWindow)
 		  cout << "Screenshot :" << filename.c_str() << endl;
 	}
   
+}
+
+
+void AskForSaveSqp(vtkFloatArray *texCoord)
+{
+	char answer;
+	cout << "Do you want to save sqp file? (y/n):";
+	cin >> answer;
+
+	if (answer == 'y' ||answer == 'Y')
+	{
+		std::string filename;
+		if (GetFileName(filename,"SQP File\0*.sqp\0All Files\0*.*\0",true))
+		{
+			int numPoint = texCoord->GetNumberOfTuples();
+			ofstream myfile (filename.c_str());
+			if (myfile.is_open())
+			{
+				for (int i = 0; i < numPoint ; i++)
+				{
+					const double *st = texCoord->GetTuple2(i);
+					myfile << st[0] << " " << st[1] << endl;
+				}
+				myfile.close();
+			}
+			
+		}
+	}
+	else
+	{
+		cout << "No save" << endl;
+	}
+}
+
+
+void AskForSaveParameterizationPLY(vtkPolyData* diskTopology, vtkFloatArray *texCoord)
+{
+	std::string filename;
+	if (GetFileName(filename,"PLY file\0*.ply\0All\0*.*\0",true))
+	{
+		vtkSmartPointer<vtkPolyData> polydata =  vtkSmartPointer<vtkPolyData>::New();
+		polydata->DeepCopy(diskTopology);
+
+		for (vtkIdType vid = 0; vid < polydata->GetNumberOfPoints(); vid++)
+		{
+			double *tex = texCoord->GetTuple2(vid);
+			polydata->GetPoints()->SetPoint(vid,tex[0],tex[1],0.0);
+		}
+
+	}
 }
