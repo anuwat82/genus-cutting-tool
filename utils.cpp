@@ -11,7 +11,7 @@ std::string GetFileExtension(const std::string& FileName)
 }
 
 
-int GetFileName(std::string &filename ,const char* filter ,bool save)
+int GetFileName(std::string &filename ,LPTSTR dialogTitle ,const char* filter ,bool save)
 {
 	OPENFILENAME ofn;       // common dialog box structure
 	char szFile[260];       // buffer for file name
@@ -32,6 +32,7 @@ int GetFileName(std::string &filename ,const char* filter ,bool save)
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
 	ofn.lpstrInitialDir = NULL;
+	ofn.lpstrTitle = dialogTitle;
 	if (!save)
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 	else

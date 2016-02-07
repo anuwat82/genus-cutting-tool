@@ -63,6 +63,8 @@
 #include <vtkPLYWriter.h>
 #include <vtkWindowToImageFilter.h>
 #include <vtkPNGWriter.h>
+#include <vtkJPEGReader.h>
+#include <vtkJPEGWriter.h>
 #include <vtkOBBTree.h>
 #include <vtkPolyDataConnectivityFilter.h>
 #include <vtkPoints.h>
@@ -78,5 +80,6 @@
 #include <vtkColorTransferFunction.h>
 #include <vtkDelimitedTextWriter.h>
 #include <vtkPoints.h>
+#include <vtkGlyph2D.h>
 #include "vtkOFFReader.h"
 #include "MouseInteractorStylePP.h"

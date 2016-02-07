@@ -1247,7 +1247,7 @@ void ScreenShot(vtkRenderWindow* renderWindow)
 	// Screenshot  
 
 	std::string filename;
-	if (GetFileName(filename,"PNG file\0*.png\0All\0*.*\0",true))
+	if (GetFileName(filename,__T("Save screenshot as image file..."),"PNG file\0*.png\0All\0*.*\0",true))
 	{
 		vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = 
 		vtkSmartPointer<vtkWindowToImageFilter>::New();
@@ -1277,7 +1277,7 @@ void AskForSaveSqp(vtkFloatArray *texCoord)
 	if (answer == 'y' ||answer == 'Y')
 	{
 		std::string filename;
-		if (GetFileName(filename,"SQP File\0*.sqp\0All Files\0*.*\0",true))
+		if (GetFileName(filename,__T("Save raw texture coordinate of each vertex..."),"SQP File\0*.sqp\0All Files\0*.*\0",true))
 		{
 			int numPoint = texCoord->GetNumberOfTuples();
 			ofstream myfile (filename.c_str());
@@ -1303,16 +1303,25 @@ void AskForSaveSqp(vtkFloatArray *texCoord)
 void AskForSaveParameterizationPLY(vtkPolyData* diskTopology, vtkFloatArray *texCoord)
 {
 	std::string filename;
-	if (GetFileName(filename,"PLY file\0*.ply\0All\0*.*\0",true))
+	if (GetFileName(filename,__T("Save planar polyhedron in model file..."),"PLY file\0*.ply\0All\0*.*\0",true))
 	{
 		vtkSmartPointer<vtkPolyData> polydata =  vtkSmartPointer<vtkPolyData>::New();
 		polydata->DeepCopy(diskTopology);
-
+		
 		for (vtkIdType vid = 0; vid < polydata->GetNumberOfPoints(); vid++)
 		{
 			double *tex = texCoord->GetTuple2(vid);
 			polydata->GetPoints()->SetPoint(vid,tex[0],tex[1],0.0);
 		}
+		/*
+		vtkSmartPointer<vtkGlyph2D> glyph2d = vtkSmartPointer<vtkGlyph2D>::New();
+		glyph2d->SetInputData(polydata);
+		glyph2d->Update();
+		*/
+		vtkSmartPointer<vtkPLYWriter> plyWriter = vtkSmartPointer<vtkPLYWriter>::New();
+		plyWriter->SetFileName(filename.c_str());
+		plyWriter->SetInputData(polydata);
+		plyWriter->Write();
 
 	}
 }

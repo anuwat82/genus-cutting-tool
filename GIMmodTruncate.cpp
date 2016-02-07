@@ -951,8 +951,8 @@ void GIMmodTruncate::ShorthenRings(bool step)
 					continue;
 				}
 				modgraph->RemoveEdge(e.Id);
-				vtkIdType endofpathvid[2] ;
-				vtkIdType prev_endofpathvid[2];
+				vtkIdType endofpathvid[2] = {-1} ;
+				vtkIdType prev_endofpathvid[2] = {-1};
 				std::vector<vtkEdgeType> remEdges;
 				for (int i = 0 ; i < 2 ; i++)
 				{
@@ -1013,6 +1013,12 @@ void GIMmodTruncate::ShorthenRings(bool step)
 					}
 				}
 //#ifdef _DEBUG
+				if (endofpathvid[0]==-1)
+				{
+					cout << "already disk topology" << endl;
+					return;
+				}
+
 				if (graph->GetEdgeId(endofpathvid[0],prev_endofpathvid[0]) == graph->GetEdgeId(endofpathvid[1],prev_endofpathvid[1]))
 				{
 					//same edge?

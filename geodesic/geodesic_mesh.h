@@ -384,7 +384,7 @@ inline bool Mesh::verify()		//verifies connectivity of the mesh and prints some 
 		map[e->adjacent_vertices()[0]->id()] = true;
 		map[e->adjacent_vertices()[1]->id()] = true;
 	}
-	assert(std::find(map.begin(), map.end(), false) == map.end());
+	//assert(std::find(map.begin(), map.end(), false) == map.end());
 
 	//make sure that the mesh is connected trough its edges
 	//if mesh has more than one connected component, it is most likely a bug

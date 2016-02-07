@@ -8,7 +8,7 @@
 void keyPressCallbackFunc(vtkObject*, unsigned long eid, void* clientdata, void *calldata);
 void pickCallbackFunc(vtkObject*, unsigned long eid, void* clientdata, void *calldata);
 
-
+vtkWeakPointer<vtkTexture> checkboard_texture;
 int main(int argc, char* argv[])
 {
 	vtkObject::GlobalWarningDisplayOff();
@@ -16,6 +16,10 @@ int main(int argc, char* argv[])
 	vtkSmartPointer<vtkPNGReader> pngReader = vtkSmartPointer<vtkPNGReader>::New();
 	pngReader->SetFileName("./texture/square_texture.png");
 	pngReader->Update();
+
+	vtkSmartPointer<vtkJPEGReader> jpgReader = vtkSmartPointer<vtkJPEGReader>::New();
+	jpgReader->SetFileName("./texture/check_board.jpg");
+	jpgReader->Update();
 	std::string filename;
 	if (argc >= 2)
 	{
@@ -33,7 +37,7 @@ int main(int argc, char* argv[])
 	else
 	{
 		//open dialog for 
-		if (!GetFileName(filename,"PLY Files\0*.ply\0OFF files\0*.off\0All Files\0*.*\0"))
+		if (!GetFileName(filename,__T("Open model file..."),"PLY Files\0*.ply\0OFF files\0*.off\0All Files\0*.*\0"))
 		{
 			std::cout << "Exit due to no model file input." << endl;
 			return -1;
@@ -47,6 +51,12 @@ int main(int argc, char* argv[])
 	square_texture->SetInputConnection(pngReader->GetOutputPort());
 	square_texture->SetBlendingMode(vtkTexture::VTKTextureBlendingMode::VTK_TEXTURE_BLENDING_MODE_ADD  );
 	square_texture->PremultipliedAlphaOn(); 	
+
+	vtkSmartPointer<vtkTexture> _checkboard_texture = vtkSmartPointer<vtkTexture>::New();
+	_checkboard_texture->SetInputConnection(jpgReader->GetOutputPort());
+	_checkboard_texture->SetBlendingMode(vtkTexture::VTKTextureBlendingMode::VTK_TEXTURE_BLENDING_MODE_REPLACE  );
+	_checkboard_texture->PremultipliedAlphaOn(); 	
+	checkboard_texture = _checkboard_texture;
 	if (ext == "ply")
 	{
 		vtkSmartPointer<vtkPLYReader> PLYReader = vtkSmartPointer<vtkPLYReader>::New();
@@ -127,7 +137,7 @@ int main(int argc, char* argv[])
 	TrackballStyle->SetPickColor(1.0,0.0,0.0);
 	actorPoly1 = actor;
 	
-	actorPoly1->SetTexture(square_texture);
+	actorPoly1->SetTexture(checkboard_texture);
 	
 	
 	vtkSmartPointer<vtkCallbackCommand> keypressCallback = vtkSmartPointer<vtkCallbackCommand>::New();
@@ -174,7 +184,7 @@ int main(int argc, char* argv[])
 	renderer->AddActor(actorPoly1);
 	//renderer->AddActor(bedgeActor);
 	
-
+	renderer->SetBackground(.2, .2, .2);
 	//renderer->ResetCamera(-10,10,-10,10,-10,10);
 	renderWindow->Render(); 	
 
@@ -242,6 +252,8 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
  
 	
 	char *ch = iren->GetKeySym();
+	if (strlen(ch) == 1)
+	{
 	switch (*ch)
 	{
 		case 'r':
@@ -369,12 +381,18 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			}
 			break;
 			*/
+		case 'm':
+			if (actorPoly1->GetTexture()!= NULL)
+				actorPoly1->SetTexture(NULL);
+			else
+				actorPoly1->SetTexture(checkboard_texture);
+			break;
 		case 'c':
 			//cutting 
 			if (modTruncate.isReadyToCut())
 			{
 				std::string filename;
-				if (GetFileName(filename,"PLY File\0*.ply\0All Files\0*.*\0",true))
+				if (GetFileName(filename,__T("Save disk topology model file..."),"PLY File\0*.ply\0All Files\0*.*\0",true))
 				{
 					vtkSmartPointer<vtkPolyData> outputPropose = modTruncate.GetDiskTopologyPolydata();
 					vtkSmartPointer<vtkPolyData> outputOriginal = originalTruncate.GetDiskTopologyPolydata();
@@ -400,7 +418,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		
 			break;
 	}
-		
+	}	
 	std::string key(ch);
 	if (key == "F10")
 	{
@@ -483,7 +501,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		if (answer == 'y' ||answer == 'Y')
 		{
 			std::string filename;
-			if (GetFileName(filename,"PLY File\0*.ply\0All Files\0*.*\0",true))
+			if (GetFileName(filename,__T("Save optimal disk topology model file..."),"PLY File\0*.ply\0All Files\0*.*\0",true))
 			{
 				
 				vtkSmartPointer<vtkPLYWriter> plyWriter = vtkSmartPointer<vtkPLYWriter>::New();
@@ -549,10 +567,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			}
 			while (manual_case < 0 );
 			CPolygonsData polygon ;
-			polygon.InitailDiskTopology(inputPolydata);
-			double calTime;
-			unsigned int calCount;
-			
+			polygon.InitailDiskTopology(inputPolydata);			
 			polygon.SquareParameterizationManual(manual_case,&calTime,texCoord.GetPointer());
 		}
 		else
@@ -569,6 +584,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		cout << "total test cases examined: " << calCount << " times" << endl;
 		cout << "========================================" << endl;
 		AskForSaveSqp(texCoord);
+		//AskForSaveParameterizationPLY(inputPolydata,texCoord);
 		
 	}
 	else if (key == "F9")
@@ -630,11 +646,12 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		vtkSmartPointer<vtkFloatArray> texCoord = vtkSmartPointer<vtkFloatArray>::New();
 		polygon.SquareParameterizationOptimization(step_value,&calCount,&calTime,texCoord.GetPointer());
 		inputPolydata->GetPointData()->SetTCoords(texCoord);
+		
 		cout << "consuming time : " << calTime << " sec" << endl;
 		cout << "total test cases examined: " << calCount << " times" << endl;
 		cout << "========================================" << endl;
 		AskForSaveSqp(texCoord);
-			
+		AskForSaveParameterizationPLY(inputPolydata,texCoord);	
 	}
 	else if (key == "F3")
 	{
@@ -666,7 +683,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		cout << "time consume: " << calTime << " sec" << endl;		
 		
 		cout << "========================================" << endl;
-		
+		AskForSaveParameterizationPLY(inputPolydata,texCoord);
 	}
 	else if (key == "plus")
 	{
