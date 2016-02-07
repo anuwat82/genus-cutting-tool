@@ -9,6 +9,7 @@ void keyPressCallbackFunc(vtkObject*, unsigned long eid, void* clientdata, void 
 void pickCallbackFunc(vtkObject*, unsigned long eid, void* clientdata, void *calldata);
 
 vtkWeakPointer<vtkTexture> checkboard_texture;
+vtkWeakPointer<vtkTexture> image_texture;
 int main(int argc, char* argv[])
 {
 	vtkObject::GlobalWarningDisplayOff();
@@ -51,7 +52,7 @@ int main(int argc, char* argv[])
 	square_texture->SetInputConnection(pngReader->GetOutputPort());
 	square_texture->SetBlendingMode(vtkTexture::VTKTextureBlendingMode::VTK_TEXTURE_BLENDING_MODE_ADD  );
 	square_texture->PremultipliedAlphaOn(); 	
-
+	image_texture = square_texture;
 	vtkSmartPointer<vtkTexture> _checkboard_texture = vtkSmartPointer<vtkTexture>::New();
 	_checkboard_texture->SetInputConnection(jpgReader->GetOutputPort());
 	_checkboard_texture->SetBlendingMode(vtkTexture::VTKTextureBlendingMode::VTK_TEXTURE_BLENDING_MODE_REPLACE  );
@@ -382,10 +383,15 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			break;
 			*/
 		case 'm':
-			if (actorPoly1->GetTexture()!= NULL)
-				actorPoly1->SetTexture(NULL);
-			else
+			{
+			vtkTexture *currentTexture = actorPoly1->GetTexture();
+			if (currentTexture == NULL)
 				actorPoly1->SetTexture(checkboard_texture);
+			else if (currentTexture == checkboard_texture)
+				actorPoly1->SetTexture(image_texture);
+			else if (currentTexture == image_texture)
+				actorPoly1->SetTexture(NULL);
+			}
 			break;
 		case 'c':
 			//cutting 
