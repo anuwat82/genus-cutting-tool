@@ -976,7 +976,42 @@ vtkSmartPointer<vtkPolyData> CreateSurroundGraphPolydata(vtkSmartPointer<vtkMuta
 
 }
 
+vtkSmartPointer<vtkMutableUndirectedGraph> CreateBoundaryGraph(vtkSmartPointer<vtkPolyData> polydata)
+{
+	vtkSmartPointer<vtkMutableUndirectedGraph> graph = vtkSmartPointer<vtkMutableUndirectedGraph>::New();
+	for(vtkIdType i = 0; i < polydata->GetNumberOfPoints(); i++)
+    {
+		graph->AddVertex();
+    }
+  
+	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+	points->ShallowCopy(polydata->GetPoints());
+	graph->SetPoints(points);
 
+	
+	vtkSmartPointer<vtkFeatureEdgesEx> borderEdges = vtkSmartPointer<vtkFeatureEdgesEx>::New();
+	borderEdges->SetInputData(polydata);
+	borderEdges->FeatureEdgesOff();
+	borderEdges->BoundaryEdgesOn();
+	borderEdges->ManifoldEdgesOff();
+	borderEdges->NonManifoldEdgesOff();
+	borderEdges->Update();	
+	
+	vtkSmartPointer<vtkPolyData> borderpoly = borderEdges->GetOutput();
+	vtkIdType numEdge = borderpoly->GetNumberOfLines();
+	vtkIdList *borderPointID = borderEdges->GetOldIdList();
+	for (vtkIdType cellID = 0; cellID < numEdge; cellID++)
+	{
+		vtkIdType npts = 0;;
+		vtkIdType *pts = NULL;
+		borderpoly->GetLines()->GetNextCell(npts,pts);
+		if (npts == 2)
+		{
+			graph->AddEdge( borderPointID->GetId( pts[0]) ,borderPointID->GetId( pts[1]));
+		}
+	}
+	return graph;
+}
 
 bool seedRemoved = false;
 struct hedge_data

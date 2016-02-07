@@ -80,6 +80,7 @@
 #include <vtkColorTransferFunction.h>
 #include <vtkDelimitedTextWriter.h>
 #include <vtkPoints.h>
-#include <vtkGlyph2D.h>
+//#include <vtkGlyph2D.h>
 #include "vtkOFFReader.h"
+#include "vtkFeatureEdgesEx.h"
 #include "MouseInteractorStylePP.h"

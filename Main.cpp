@@ -137,7 +137,7 @@ int main(int argc, char* argv[])
 	TrackballStyle->SetPickColor(1.0,0.0,0.0);
 	actorPoly1 = actor;
 	
-	actorPoly1->SetTexture(checkboard_texture);
+	actorMainPoly->SetTexture(checkboard_texture);
 	
 	
 	vtkSmartPointer<vtkCallbackCommand> keypressCallback = vtkSmartPointer<vtkCallbackCommand>::New();
@@ -469,6 +469,33 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			polygon.InitailDiskTopology(diskOriginal);
 			polygon.IteratedAugmentCutOriginal(&time_original,outputOptimumOriginal.GetPointer());
 			cout << "Original Iterated Augment Cutting Finished..."<< endl;
+
+			//adjust edge
+			vtkSmartPointer<vtkMutableUndirectedGraph> newGraph = CreateBoundaryGraph(outputOptimumOriginal);
+			
+			vtkSmartPointer<vtkGraphToPolyData> g2pAT = vtkSmartPointer<vtkGraphToPolyData>::New(); 
+			g2pAT->SetInputData(newGraph);
+			g2pAT->Update();
+
+			vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+			colors->SetNumberOfComponents(3);
+			colors->SetName("Colors");
+			// Setup two colors 
+			unsigned char red[3] = {255, 0, 0};
+			unsigned char yellow[3] = {255, 255, 0};
+			int numEdge = g2pAT->GetOutput()->GetLines()->GetNumberOfCells();
+			for (int cellID = 0 ; cellID < numEdge; cellID++)
+			{
+				colors->InsertNextTupleValue(yellow);		
+			}
+			g2pAT->GetOutput()->GetCellData()->SetScalars(colors);
+
+			vtkSmartPointer<vtkPolyDataMapper> __edge_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+			__edge_mapper->SetInputData(g2pAT->GetOutput());
+			actorEdge4->SetMapper(__edge_mapper);
+			
+
+
 		}
 		
 		double time_proposed = 0;
@@ -483,6 +510,31 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			polygon.IteratedAugmentCut(&time_proposed,outputOptimumPropose.GetPointer());
 
 			cout << "Proposed Iterated Augment Cutting Finished..."<< endl;
+
+			vtkSmartPointer<vtkMutableUndirectedGraph> newGraph = CreateBoundaryGraph(outputOptimumPropose);
+			vtkSmartPointer<vtkGraphToPolyData> g2pAT = vtkSmartPointer<vtkGraphToPolyData>::New(); 
+			g2pAT->SetInputData(newGraph);
+			g2pAT->Update();
+
+			vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+			colors->SetNumberOfComponents(3);
+			colors->SetName("Colors");
+			// Setup two colors 
+			unsigned char red[3] = {255, 0, 0};
+			unsigned char yellow[3] = {255, 255, 0};
+			int numEdge = g2pAT->GetOutput()->GetLines()->GetNumberOfCells();
+			for (int cellID = 0 ; cellID < numEdge; cellID++)
+			{
+				colors->InsertNextTupleValue(red);		
+			}
+			g2pAT->GetOutput()->GetCellData()->SetScalars(colors);
+
+
+			vtkSmartPointer<vtkPolyDataMapper> __edge_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+			__edge_mapper->SetInputData(g2pAT->GetOutput());
+			actorEdge3->SetMapper(__edge_mapper);
+
+
 			disk_polydata = vtkSmartPointer<vtkPolyData>::New();
 			disk_polydata->ShallowCopy(outputOptimumPropose);
 		}
@@ -538,7 +590,12 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		if (disk_polydata.GetPointer() != NULL && disk_polydata->GetNumberOfPoints() > 0)
 		{
 			//use  disk_polydata as input
-			inputPolydata = disk_polydata;			
+			vtkSmartPointer<vtkPolyDataMapper> diskPolyDataMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+			diskPolyDataMapper->SetInputData(disk_polydata);
+			actorMainPoly->SetMapper(diskPolyDataMapper);
+			inputPolydata = disk_polydata;		
+			
+
 		}
 		else
 		{
@@ -595,7 +652,10 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		if (disk_polydata.GetPointer() != NULL && disk_polydata->GetNumberOfPoints() > 0)
 		{
 			//use  disk_polydata as input
-			inputPolydata = disk_polydata;			
+			vtkSmartPointer<vtkPolyDataMapper> diskPolyDataMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+			diskPolyDataMapper->SetInputData(disk_polydata);
+			actorMainPoly->SetMapper(diskPolyDataMapper);
+			inputPolydata = disk_polydata;	
 		}
 		else
 		{
@@ -661,7 +721,10 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		if (disk_polydata.GetPointer() != NULL && disk_polydata->GetNumberOfPoints() > 0)
 		{
 			//use  disk_polydata as input
-			inputPolydata = disk_polydata;			
+			vtkSmartPointer<vtkPolyDataMapper> diskPolyDataMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+			diskPolyDataMapper->SetInputData(disk_polydata);
+			actorMainPoly->SetMapper(diskPolyDataMapper);
+			inputPolydata = disk_polydata;		
 		}
 		else
 		{

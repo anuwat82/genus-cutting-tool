@@ -50,6 +50,8 @@ vtkSmartPointer<vtkActor> CreateAfterTruncatePipeline(vtkSmartPointer<vtkMutable
 vtkSmartPointer<vtkActor> CreateStrightUpPipeline(vtkSmartPointer<vtkMutableUndirectedGraph> SUGraph);
 vtkSmartPointer<vtkActor> CreateCleanPipeline(vtkSmartPointer<vtkMutableUndirectedGraph> CleanGraph);
 vtkSmartPointer<vtkActor> CreateFinalPipeline(vtkSmartPointer<vtkMutableUndirectedGraph> FinalGraph);
+vtkSmartPointer<vtkMutableUndirectedGraph> CreateBoundaryGraph(vtkSmartPointer<vtkPolyData> polydata);
+
 void InitialGeodesic(vtkSmartPointer<vtkPolyData> polydata ,int sourceVertexID);
 void ScreenShot(vtkRenderWindow* renderWindow);
 void AskForSaveSqp(vtkFloatArray *texCoord);
