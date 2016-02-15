@@ -36,13 +36,13 @@ vtkStandardNewMacro(vtkFeatureEdgesEx);
 // manifold edges, are extracted and colored.
 vtkFeatureEdgesEx::vtkFeatureEdgesEx()
 {
-	this->OldIdList = NULL;
-	OldIdList = vtkIdList::New();
+	this->oldIdList = NULL;
+	oldIdList = vtkIdList::New();
 }
 
 vtkFeatureEdgesEx::~vtkFeatureEdgesEx()
 {
-	OldIdList->Delete();
+	oldIdList->Delete();
 }
 
 // Generate feature edges for mesh
@@ -81,16 +81,13 @@ int vtkFeatureEdgesEx::RequestData(
   vtkIdType p1, p2, newId;
   vtkPointData *pd=input->GetPointData(), *outPD=output->GetPointData();
   vtkCellData *cd=input->GetCellData(), *outCD=output->GetCellData();
-  unsigned char* ghostLevels=0;
-  unsigned char  updateLevel = static_cast<unsigned char>(
-    outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS()));
-
+  unsigned char* ghosts=0;
   vtkDebugMacro(<<"Executing feature edges");
 
   vtkDataArray* temp = 0;
   if (cd)
     {
-    temp = cd->GetArray("vtkGhostLevels");
+    temp = cd->GetArray(vtkDataSetAttributes::GhostArrayName());
     }
   if ( (!temp) || (temp->GetDataType() != VTK_UNSIGNED_CHAR)
        || (temp->GetNumberOfComponents() != 1))
@@ -99,7 +96,7 @@ int vtkFeatureEdgesEx::RequestData(
     }
   else
     {
-    ghostLevels = static_cast<vtkUnsignedCharArray *>(temp)->GetPointer(0);
+    ghosts = static_cast<vtkUnsignedCharArray *>(temp)->GetPointer(0);
     }
 
   //  Check input
@@ -154,7 +151,7 @@ int vtkFeatureEdgesEx::RequestData(
   // Allocate storage for lines/points (arbitrary allocation sizes)
   //
   newPts = vtkPoints::New();
-  
+
   // Set the desired precision for the points in the output.
   if(this->OutputPointsPrecision == vtkAlgorithm::DEFAULT_PRECISION)
     {
@@ -235,7 +232,8 @@ int vtkFeatureEdgesEx::RequestData(
 
       if ( this->BoundaryEdges && numNei < 1 )
         {
-        if (ghostLevels && ghostLevels[cellId] > updateLevel)
+        if (ghosts &&
+            ghosts[cellId] & vtkDataSetAttributes::DUPLICATECELL)
           {
           continue;
           }
@@ -258,7 +256,8 @@ int vtkFeatureEdgesEx::RequestData(
           }
         if ( j >= numNei )
           {
-          if (ghostLevels && ghostLevels[cellId] > updateLevel)
+          if (ghosts &&
+              ghosts[cellId]  & vtkDataSetAttributes::DUPLICATECELL)
             {
             continue;
             }
@@ -282,7 +281,8 @@ int vtkFeatureEdgesEx::RequestData(
         polyNormals->GetTuple(cellId, cellTuple);
         if ( vtkMath::Dot(neiTuple, cellTuple) <= cosAngle )
           {
-          if (ghostLevels && ghostLevels[cellId] > updateLevel)
+          if (ghosts &&
+              ghosts[cellId] & vtkDataSetAttributes::DUPLICATECELL)
             {
             continue;
             }
@@ -300,7 +300,8 @@ int vtkFeatureEdgesEx::RequestData(
       else if ( this->ManifoldEdges &&
                 numNei == 1 && neighbors->GetId(0) > cellId )
         {
-        if (ghostLevels && ghostLevels[cellId] > updateLevel)
+        if (ghosts &&
+            ghosts[cellId] & vtkDataSetAttributes::DUPLICATECELL)
           {
           continue;
           }
@@ -322,13 +323,13 @@ int vtkFeatureEdgesEx::RequestData(
       if ( this->Locator->InsertUniquePoint(x1, lineIds[0]) )
         {
         outPD->CopyData (pd,p1,lineIds[0]);
-		OldIdList->InsertUniqueId (p1);
+		oldIdList->InsertUniqueId (p1);
         }
 
       if ( this->Locator->InsertUniquePoint(x2, lineIds[1]) )
         {
         outPD->CopyData (pd,p2,lineIds[1]);
-		OldIdList->InsertUniqueId (p2);
+		oldIdList->InsertUniqueId (p2);
         }
 
       newId = newLines->InsertNextCell(2,lineIds);
@@ -370,8 +371,7 @@ int vtkFeatureEdgesEx::RequestData(
 
   return 1;
 }
-
 vtkIdType vtkFeatureEdgesEx::GetOldIdFromCurrentID(vtkIdType currentID)
 {
-	return OldIdList->GetId(currentID);
+	return oldIdList->GetId(currentID);
 }

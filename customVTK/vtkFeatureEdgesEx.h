@@ -38,7 +38,7 @@
 #include "vtkFiltersCoreModule.h" // For export macro
 #include "vtkFeatureEdges.h"
 
-class VTKFILTERSCORE_NO_EXPORT vtkFeatureEdgesEx : public vtkFeatureEdges
+class VTKFILTERSCORE_EXPORT vtkFeatureEdgesEx : public vtkFeatureEdges
 {
 public:
   vtkTypeMacro(vtkFeatureEdgesEx,vtkFeatureEdges);
@@ -47,14 +47,14 @@ public:
   // and colored.
   static vtkFeatureEdgesEx *New();
   vtkIdType GetOldIdFromCurrentID(vtkIdType currentID);
-  vtkGetMacro(OldIdList,vtkIdList *);
+  vtkIdList * GetOldIdList() {return oldIdList; }
 protected:
   vtkFeatureEdgesEx();
   ~vtkFeatureEdgesEx();
   int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
   
 
-  vtkIdList *OldIdList;
+  vtkIdList *oldIdList;
 private:
   vtkFeatureEdgesEx(const vtkFeatureEdgesEx&);  // Not implemented.
   void operator=(const vtkFeatureEdgesEx&);  // Not implemented.
