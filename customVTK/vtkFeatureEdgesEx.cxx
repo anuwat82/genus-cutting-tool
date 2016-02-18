@@ -1,16 +1,5 @@
 /*=========================================================================
-
-  Program:   Visualization Toolkit
-  Module:    vtkFeatureEdges.cxx
-
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-  All rights reserved.
-  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
-
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
-
+Copied and modified from vtkFeatureEdges.cxx
 =========================================================================*/
 #include "vtkFeatureEdgesEx.h"
 
@@ -32,8 +21,6 @@
 
 vtkStandardNewMacro(vtkFeatureEdgesEx);
 
-// Construct object with feature angle = 30; all types of edges, except
-// manifold edges, are extracted and colored.
 vtkFeatureEdgesEx::vtkFeatureEdgesEx()
 {
 	this->oldIdList = NULL;
@@ -323,13 +310,13 @@ int vtkFeatureEdgesEx::RequestData(
       if ( this->Locator->InsertUniquePoint(x1, lineIds[0]) )
         {
         outPD->CopyData (pd,p1,lineIds[0]);
-		oldIdList->InsertUniqueId (p1);
+		oldIdList->InsertUniqueId (p1); //save old ID 
         }
 
       if ( this->Locator->InsertUniquePoint(x2, lineIds[1]) )
         {
         outPD->CopyData (pd,p2,lineIds[1]);
-		oldIdList->InsertUniqueId (p2);
+		oldIdList->InsertUniqueId (p2); //save old ID 
         }
 
       newId = newLines->InsertNextCell(2,lineIds);

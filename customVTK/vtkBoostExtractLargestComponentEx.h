@@ -1,24 +1,8 @@
-/*=========================================================================
-
-  Program:   Visualization Toolkit
-  Module:    vtkBoostExtractLargestComponent.h
-
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-  All rights reserved.
-  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
-
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
-// .NAME vtkBoostExtractLargestComponent - Extract the largest connected
-// component of a graph
-//
-// .SECTION Description
-// vtkBoostExtractLargestComponent finds the largest connected region of a
-// vtkGraph. For directed graphs, this returns the largest biconnected component.
-// See vtkBoostConnectedComponents for details.
+/** This is custom vtkBoostExtractLargestComponentEx
+   Purpose of this class is to save IDList of input ID.
+   Because, vtkBoostExtractLargestComponent will create new IDList and we cannot know how new IDList from vtkBoostExtractLargestComponent represent which IDs in input graph
+   And store number of non-isolate component for easier to check.
+*/
 
 #ifndef vtkBoostExtractLargestComponentEx_h
 #define vtkBoostExtractLargestComponentEx_h
@@ -55,7 +39,7 @@ protected:
   // Description:
   // Store the choice of whether or not to invert the selection.
   
-  vtkIdTypeArray*  OldIdsArray;
+  vtkIdTypeArray*  OldIdsArray; //To store ID of input polydata
   int NumberOfNonIsoComponents;
 private:
   vtkBoostExtractLargestComponentEx(const vtkBoostExtractLargestComponentEx&);  // Not implemented.
