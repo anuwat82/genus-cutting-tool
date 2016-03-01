@@ -1997,8 +1997,13 @@ void MyParameterization::MyBoundaryMap()
 			length += PT->Distance(point[now->ID],point[back(now)->ID]);
 			//pU[now->ID] = 0.5*cos(2.0*PI*(((double)(i))/((double)(numboundary))));
 			//pV[now->ID] = 0.5*sin(2.0*PI*(((double)(i))/((double)(numboundary))));
+#ifdef CCW_PLANAR
 			pU[now->ID] = 0.5*cos(unitArc*length);
 			pV[now->ID] = 0.5*sin(unitArc*length);
+#else
+			pU[now->ID] = 0.5*cos(unitArc*length);
+			pV[now->ID] = 0.5*-sin(unitArc*length);
+#endif
 			i++;
 		}
 	}
@@ -2140,13 +2145,23 @@ void MyParameterization::MyBoundaryMap()
 				case 0:
 					if (clen < 1.0)
 					{
+						#ifdef CCW_PLANAR
 						pU[now->ID] = clen; 
 						pV[now->ID] = 0.0;
+						#else
+						pV[now->ID] = clen; 
+						pU[now->ID] = 0.0;
+						#endif
 					}
 					else
 					{
+						#ifdef CCW_PLANAR
 						pU[now->ID] = 1.0;
 						pV[now->ID] = 0.0;
+						#else
+						pV[now->ID] = 1.0;
+						pU[now->ID] = 0.0;
+						#endif
 						sum_length = 0.0;
 						state=1;
 						printf("%d ",now->ID);
@@ -2156,13 +2171,23 @@ void MyParameterization::MyBoundaryMap()
 				case 1:
 					if (clen < 1.0)
 					{
+						#ifdef CCW_PLANAR
 						pU[now->ID] = 1.0; 
 						pV[now->ID] = clen;
+						#else
+						pV[now->ID] = 1.0; 
+						pU[now->ID] = clen;
+						#endif
 					}
 					else
 					{
+						#ifdef CCW_PLANAR
 						pU[now->ID] = 1.0;
 						pV[now->ID] = 1.0;
+						#else
+						pV[now->ID] = 1.0;
+						pU[now->ID] = 1.0;
+						#endif
 						sum_length = 0.0;
 						state=2;
 						printf("%d ",now->ID);
@@ -2172,13 +2197,23 @@ void MyParameterization::MyBoundaryMap()
 				case 2:
 					if (clen < 1.0)
 					{
+						#ifdef CCW_PLANAR
 						pU[now->ID] = 1.0-clen; 
 						pV[now->ID] = 1.0;
+						#else
+						pV[now->ID] = 1.0-clen; 
+						pU[now->ID] = 1.0;
+						#endif
 					}
 					else
 					{
+						#ifdef CCW_PLANAR
 						pU[now->ID] = 0.0;
 						pV[now->ID] = 1.0;
+						#else
+						pV[now->ID] = 0.0;
+						pU[now->ID] = 1.0;
+						#endif
 						sum_length = 0.0;
 						state=3;
 						printf("%d\n",now->ID);
@@ -2188,8 +2223,13 @@ void MyParameterization::MyBoundaryMap()
 				case 3:
 					if (clen < 1.0)
 					{
+						#ifdef CCW_PLANAR
 						pU[now->ID] = 0.0; 
 						pV[now->ID] = 1.0-clen;
+						#else
+						pV[now->ID] = 0.0; 
+						pU[now->ID] = 1.0-clen;
+						#endif
 					}
 					else
 					{
@@ -2199,7 +2239,7 @@ void MyParameterization::MyBoundaryMap()
 				default:
 					break;
 
-			}		
+			}	
 			sum_length += PT->Distance(point[now->ID],point[next(now)->ID]);
 			clen = sum_length/this_side_length[state];			
 			//sum_length += 1.0;
@@ -2623,6 +2663,392 @@ void	MyParameterization::ResetInnerLambda()
 			}
 		}
 	}
+}
+#if  0
+double    MyParameterization::PARAM_MYEXPER(PolarVertex *pIPV,
+										int num_PV,
+										FILE* logFile)
+{
+	iteNum = (pow((double)((numberV/20000) + 1),2)) *2000;	
+    boundarytype=0;
+	MyBoundaryMap();
+	//BoundaryMap();
+	setPolarMap();
+
+
+	//setPolarMap_EX();
+
+	double *UaXY = new double[2*(numberV)+1];
+    double *vecb = new double[2*(numberV)+1];
+  
+	int i;
+	IDList *now;
+	IDList *now2;
+	PolarList *nowp;
+	level=0;
+  
+	int nonzero=(numberV);
+	for(i=0;i<numberV;i++)
+	{
+		vecb[i+1]=0.0;
+		if(boundary[i]!=1)
+		{
+			now = IHead[i];
+			while(next(now)!=ITail[i])
+			{
+				now = next(now);
+				nonzero++;
+			}
+		}
+	}
+
+	int iter=0;
+	double linerr=0.0;
+	double weight=0.0;
+  
+	PCBCGSolver *mybcg = new PCBCGSolver(2*nonzero);
+	double *sigsum = new double[numberV];
+	double *sigsumU = new double[numberV];
+	double *sigsumV = new double[numberV];
+	setFloaterC();
+
+    
+  
+	SortIndexP();
+  
+  
+
+	for(i=0;i<numberV;i++)
+	{    
+		if(boundary[i]!=1)
+		{
+			mybcg->sa[i+1] = 1.0;
+			mybcg->sa[i+1+numberV] = 1.0;
+			vecb[i+1] = 0.0;
+			vecb[i+1+numberV] = 0.0;
+		}
+		else
+		{
+			mybcg->sa[i+1] = 1.0;
+			vecb[i+1] = pU[i];
+			mybcg->sa[i+1+numberV] = 1.0;
+			vecb[i+1+numberV] = pV[i];
+		}
+	}
+
+	mybcg->ija[1] = 2*(numberV)+2;
+	int dlk=2*(numberV)+1;
+  
+	for(i=0;i<numberV;i++)
+	{
+		if(boundary[i]!=1)
+		{
+			nowp = PHead[i];      
+			while(next(nowp)!=PTail[i])
+			{
+				nowp = next(nowp);
+				++dlk;
+				nowp->lambdaU = nowp->lambda;
+				nowp->lambdaV = nowp->lambda;
+				mybcg->sa[dlk] = -nowp->lambda;
+				mybcg->ija[dlk]=nowp->ID+1;
+			}
+		}
+		mybcg->ija[i+1+1]=dlk+1;
+	}
+	for(i=0;i<numberV;i++)
+	{
+		if(boundary[i]!=1)
+		{
+			nowp = PHead[i];
+			while(next(nowp)!=PTail[i])
+			{
+				nowp = next(nowp);
+				++dlk;
+				mybcg->sa[dlk] = -nowp->lambda;
+				mybcg->ija[dlk]=nowp->ID+numberV+1;
+			}
+		}
+		mybcg->ija[i+numberV+1+1]=dlk+1;
+	}
+  
+	for(i=0;i<numberV;i++)
+	{
+		UaXY[i+1] = pU[i];
+		UaXY[i+numberV+1] = pV[i];
+	}
+	mybcg->linbcg(((unsigned long)(2*(numberV))),vecb,UaXY,1,PCBCGerror,iteNum,&iter,&linerr);
+  
+	for(i=0;i<numberV;i++)
+	{
+		if(boundary[i]!=1)
+		{
+			pU[i] = UaXY[i+1];
+			pV[i] = UaXY[i+numberV+1];
+		}
+	}
+  
+	// Re-solving linear system
+	//double initialstrech=0.0;
+	//double currentstrech=0.0;
+	double initialstrechU=0.0;
+	double currentstrechU=0.0;
+	double initialstrechV=0.0;
+	double currentstrechV=0.0;
+	Point2d *prevUV = new Point2d[numberV];	
+
+	initialstrechU = getCurrentE_U();
+	int kk = 0;  
+
+	printf("R%d  STRETCH U: %f\n",kk,initialstrechU); //u0
+	if (logFile)
+	{
+		fprintf(logFile,"R%d  STRETCH U: %f\n",kk,initialstrechU); //u0
+	}
+	initialstrechV = getCurrentE_V();
+	printf("R%d  STRETCH V: %f\n",kk,initialstrechV); //u0
+	if (logFile)
+	{
+		fprintf(logFile,"R%d  STRETCH V: %f\n",kk,initialstrechV); //u0
+	}
+
+	//solve for UV
+	//for(kk=0;kk<iteNum;kk++)
+	{    
+		
+		while (gammaU >= 1.0/16.0)	
+		{
+			setSigmaU();
+			//U section
+			for(i=0;i<numberV;i++)
+			{      
+				if(boundary[i]!=1)
+				{
+					//sigsum[i]=0.0;
+					sigsumU[i] = 0.0;					
+					nowp = PHead[i];
+					while(next(nowp)!=PTail[i])
+					{
+						nowp = next(nowp);
+						nowp->old_lambdaU = nowp->lambdaU;						
+						nowp->lambdaU /= sigmaU[nowp->ID];						
+						sigsumU[i] += nowp->lambdaU;						
+					}
+					mybcg->sa[i+1] = 1.0;
+					
+				}
+				else
+				{
+					mybcg->sa[i+1] = 1.0;
+					
+				}
+			}
+			dlk=(numberV)+1;
+    
+			for(i=0;i<numberV;i++)
+			{
+				if(boundary[i]!=1)
+				{
+					nowp = PHead[i];
+	
+					while(next(nowp)!=PTail[i])
+					{
+						nowp = next(nowp);
+						++dlk;
+						//mybcg->sa[dlk] = -nowp->lambda/sigsum[i];
+						mybcg->sa[dlk] = -nowp->lambdaU/sigsumU[i];
+						mybcg->ija[dlk] = nowp->ID+1;
+					}
+				}
+				mybcg->ija[i+1+1]=dlk+1;
+			}
+		
+			for(i=0;i<numberV;i++)
+			{
+				UaXY[i+1] = pU[i];
+				//UaXY[i+numberV+1] = pV[i];
+			}
+
+			//mybcg->linbcg(((unsigned long)(2*(numberV))),vecb,UaXY,1,PCBCGerror,iteNum,&iter,&linerr); 
+			mybcg->ija[1] = (numberV)+2;
+			mybcg->linbcg(((unsigned long)((numberV))),vecb,UaXY,1,PCBCGerror,iteNum,&iter,&linerr);
+			bool failToSolve = false;
+			if (iter > iteNum)
+			{
+				failToSolve = true;				
+			}
+		
+			for(i=0;i<numberV;i++)
+			{
+				if(boundary[i]!=1)
+				{
+					prevUV[i].x = pU[i];
+					//prevU[i]->y = pV[i];
+	
+					pU[i] = UaXY[i+1];
+					//pV[i] = UaXY[i+numberV+1];
+				}
+			}
+			currentstrechU = getCurrentE_U();
+			//printf("currentstrech U%d= %lf\n",kk+1,currentstrech);
+			printf("R%d  STRETCH U: %f\n",kk+1,currentstrechU); 
+
+			if (logFile)
+			{
+				fprintf(logFile,"R%d  STRETCH U: %f\n",kk+1,currentstrechU); 
+			}
+
+			if(initialstrechU<=currentstrechU || failToSolve)
+			{
+			
+				for(i=0;i<numberV;i++)
+				{
+					if(boundary[i]!=1)
+					{
+						pU[i] = prevUV[i].x;					
+						nowp = PHead[i];
+						while(next(nowp)!=PTail[i])
+						{
+							nowp = next(nowp);
+							nowp->lambdaU = nowp->old_lambdaU;
+						}
+					}
+				}
+				gammaU /= 2.0;
+			}
+			else
+			{
+				initialstrechU = currentstrechU;
+			}
+		}
+		
+		
+		while (gammaV >= 1.0/16.0)	
+		{
+			setSigmaV();
+			//V section
+			for(i=0;i<numberV;i++)
+			{      
+				if(boundary[i]!=1)
+				{
+					//sigsum[i]=0.0;
+					//sigsumU[i] = 0.0;
+					  
+  
+					sigsumV[i] = 0.0;
+					nowp = PHead[i];
+					while(next(nowp)!=PTail[i])
+					{
+						nowp = next(nowp);					
+						nowp->old_lambdaV = nowp->lambdaV ; 
+						nowp->lambdaV /= sigmaV[nowp->ID];					
+						sigsumV[i] += nowp->lambdaV;
+					}
+					mybcg->sa[i+1] = 1.0;
+					
+				}
+				else
+				{
+					mybcg->sa[i+1] = 1.0;
+					
+				}
+			}
+			dlk=(numberV)+1;
+    
+			for(i=0;i<numberV;i++)
+			{
+				if(boundary[i]!=1)
+				{
+					nowp = PHead[i];
+	
+					while(next(nowp)!=PTail[i])
+					{
+						nowp = next(nowp);
+						++dlk;						
+						mybcg->sa[dlk] = -nowp->lambdaV/sigsumV[i];
+						mybcg->ija[dlk] = nowp->ID+1;
+					}
+				}
+				mybcg->ija[i+1+1]=dlk+1;
+			}		
+			for(i=0;i<numberV;i++)
+			{
+				UaXY[i+1] = pV[i];				
+			}
+
+			//mybcg->linbcg(((unsigned long)(2*(numberV))),vecb,UaXY,1,PCBCGerror,iteNum,&iter,&linerr); 
+			mybcg->ija[1] = (numberV)+2;
+			mybcg->linbcg(((unsigned long)((numberV))),vecb,UaXY,1,PCBCGerror,iteNum,&iter,&linerr); 
+			bool failToSolve = false;
+			if (iter > iteNum)
+			{
+				failToSolve = true;
+			}
+		
+			for(i=0;i<numberV;i++)
+			{
+				if(boundary[i]!=1)
+				{
+					prevUV[i].y = pV[i];	
+					pV[i] = UaXY[i+1];
+				}
+			}
+			currentstrechV = getCurrentE_V();
+			//printf("currentstrech U%d= %lf\n",kk+1,currentstrech);
+			printf("R%d  STRETCH V: %f\n",kk+1,currentstrechV); 
+
+			if (logFile)
+			{
+				fprintf(logFile,"R%d  STRETCH V: %f\n",kk+1,currentstrechV); 
+			}
+
+			if(initialstrechV<=currentstrechV || failToSolve)
+			{
+			
+				for(i=0;i<numberV;i++)
+				{
+					if(boundary[i]!=1)
+					{
+						pV[i] = prevUV[i].y;
+						nowp = PHead[i];
+						while(next(nowp)!=PTail[i])
+						{
+							nowp = next(nowp);
+							nowp->lambdaV = nowp->old_lambdaV;
+						}
+					}
+				}
+				gammaV /= 2.0;			
+			}
+			else
+			{
+				initialstrechV = currentstrechV;
+			}
+		}
+		
+		//if (gammaU < 1.0/16.0 && gammaV < 1.0/16.0)
+		//	break;
+		
+	}
+
+
+	delete mybcg;	
+	
+	
+	delete [] prevUV;	
+	
+	delete [] vecb;
+	delete [] UaXY;
+	delete [] sigsum;
+	delete [] sigsumU;
+	delete [] sigsumV;
+	
+	for (int i=0;i<numberV;i++)
+	{
+		pIPV[i].u = pU[i];
+		pIPV[i].v = pV[i];
+	}	
+	return 0;
 }
 
 double    MyParameterization::PARAM_MYEXPER2(PolarVertex *pIPV,
@@ -3514,6 +3940,7 @@ double    MyParameterization::PARAM_MYEXPER4(PolarVertex *pIPV,
 	return resultStretch;
 }
 
+#endif
 void   MyParameterization::GetSurroundFace(unsigned int level , int vid , bool* checked_vid ,std::set<int> &opID)
 {
 	if (level == 0)
@@ -4129,14 +4556,24 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 					case 0:
 						if (clen < 1.0)
 						{
+							#ifdef CCW_PLANAR
 							pU[now->ID] = clen; 
 							pV[now->ID] = 0.0;
+							#else
+							pV[now->ID] = clen; 
+							pU[now->ID] = 0.0;
+							#endif
 							at_corner = false;
 						}
 						else
 						{
+							#ifdef CCW_PLANAR
 							pU[now->ID] = 1.0;
 							pV[now->ID] = 0.0;
+							#else
+							pV[now->ID] = 1.0;
+							pU[now->ID] = 0.0;
+							#endif
 							sum_length = 0.0;
 							clen = 0.0;
 							state=1;	
@@ -4148,14 +4585,24 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 					case 1:
 						if (clen < 1.0)
 						{
+							#ifdef CCW_PLANAR
 							pU[now->ID] = 1.0; 
 							pV[now->ID] = clen;
+							#else
+							pV[now->ID] = 1.0; 
+							pU[now->ID] = clen;
+							#endif
 							at_corner = false;
 						}
 						else
 						{
+							#ifdef CCW_PLANAR
 							pU[now->ID] = 1.0;
 							pV[now->ID] = 1.0;
+							#else
+							pV[now->ID] = 1.0;
+							pU[now->ID] = 1.0;
+							#endif
 							sum_length = 0.0;
 							clen = 0.0;
 							state=2;
@@ -4167,14 +4614,24 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 					case 2:
 						if (clen < 1.0)
 						{
+							#ifdef CCW_PLANAR
 							pU[now->ID] = 1.0-clen; 
 							pV[now->ID] = 1.0;
+							#else
+							pV[now->ID] = 1.0-clen; 
+							pU[now->ID] = 1.0;
+							#endif
 							at_corner = false;
 						}
 						else
 						{
+							#ifdef CCW_PLANAR
 							pU[now->ID] = 0.0;
 							pV[now->ID] = 1.0;
+							#else
+							pV[now->ID] = 0.0;
+							pU[now->ID] = 1.0;
+							#endif
 							sum_length = 0.0;
 							clen = 0.0;
 							state=3;
@@ -4187,8 +4644,13 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 					case 3:
 						if (clen < 1.0)
 						{
+							#ifdef CCW_PLANAR
 							pU[now->ID] = 0.0; 
 							pV[now->ID] = 1.0-clen;
+							#else
+							pV[now->ID] = 0.0; 
+							pU[now->ID] = 1.0-clen;
+							#endif
 							at_corner = false;
 						}
 						else
@@ -4352,391 +4814,8 @@ void   MyParameterization::StretchAtBoundary(PolarVertex *pIPV, int num_PV,std::
 	delete [] face_stretch_array;
 
 }
-double    MyParameterization::PARAM_MYEXPER(PolarVertex *pIPV,
-										int num_PV,
-										FILE* logFile)
-{
-	iteNum = (pow((double)((numberV/20000) + 1),2)) *2000;	
-    boundarytype=0;
-	MyBoundaryMap();
-	//BoundaryMap();
-	setPolarMap();
 
 
-	//setPolarMap_EX();
-
-	double *UaXY = new double[2*(numberV)+1];
-    double *vecb = new double[2*(numberV)+1];
-  
-	int i;
-	IDList *now;
-	IDList *now2;
-	PolarList *nowp;
-	level=0;
-  
-	int nonzero=(numberV);
-	for(i=0;i<numberV;i++)
-	{
-		vecb[i+1]=0.0;
-		if(boundary[i]!=1)
-		{
-			now = IHead[i];
-			while(next(now)!=ITail[i])
-			{
-				now = next(now);
-				nonzero++;
-			}
-		}
-	}
-
-	int iter=0;
-	double linerr=0.0;
-	double weight=0.0;
-  
-	PCBCGSolver *mybcg = new PCBCGSolver(2*nonzero);
-	double *sigsum = new double[numberV];
-	double *sigsumU = new double[numberV];
-	double *sigsumV = new double[numberV];
-	setFloaterC();
-
-    
-  
-	SortIndexP();
-  
-  
-
-	for(i=0;i<numberV;i++)
-	{    
-		if(boundary[i]!=1)
-		{
-			mybcg->sa[i+1] = 1.0;
-			mybcg->sa[i+1+numberV] = 1.0;
-			vecb[i+1] = 0.0;
-			vecb[i+1+numberV] = 0.0;
-		}
-		else
-		{
-			mybcg->sa[i+1] = 1.0;
-			vecb[i+1] = pU[i];
-			mybcg->sa[i+1+numberV] = 1.0;
-			vecb[i+1+numberV] = pV[i];
-		}
-	}
-
-	mybcg->ija[1] = 2*(numberV)+2;
-	int dlk=2*(numberV)+1;
-  
-	for(i=0;i<numberV;i++)
-	{
-		if(boundary[i]!=1)
-		{
-			nowp = PHead[i];      
-			while(next(nowp)!=PTail[i])
-			{
-				nowp = next(nowp);
-				++dlk;
-				nowp->lambdaU = nowp->lambda;
-				nowp->lambdaV = nowp->lambda;
-				mybcg->sa[dlk] = -nowp->lambda;
-				mybcg->ija[dlk]=nowp->ID+1;
-			}
-		}
-		mybcg->ija[i+1+1]=dlk+1;
-	}
-	for(i=0;i<numberV;i++)
-	{
-		if(boundary[i]!=1)
-		{
-			nowp = PHead[i];
-			while(next(nowp)!=PTail[i])
-			{
-				nowp = next(nowp);
-				++dlk;
-				mybcg->sa[dlk] = -nowp->lambda;
-				mybcg->ija[dlk]=nowp->ID+numberV+1;
-			}
-		}
-		mybcg->ija[i+numberV+1+1]=dlk+1;
-	}
-  
-	for(i=0;i<numberV;i++)
-	{
-		UaXY[i+1] = pU[i];
-		UaXY[i+numberV+1] = pV[i];
-	}
-	mybcg->linbcg(((unsigned long)(2*(numberV))),vecb,UaXY,1,PCBCGerror,iteNum,&iter,&linerr);
-  
-	for(i=0;i<numberV;i++)
-	{
-		if(boundary[i]!=1)
-		{
-			pU[i] = UaXY[i+1];
-			pV[i] = UaXY[i+numberV+1];
-		}
-	}
-  
-	// Re-solving linear system
-	//double initialstrech=0.0;
-	//double currentstrech=0.0;
-	double initialstrechU=0.0;
-	double currentstrechU=0.0;
-	double initialstrechV=0.0;
-	double currentstrechV=0.0;
-	Point2d *prevUV = new Point2d[numberV];	
-
-	initialstrechU = getCurrentE_U();
-	int kk = 0;  
-
-	printf("R%d  STRETCH U: %f\n",kk,initialstrechU); //u0
-	if (logFile)
-	{
-		fprintf(logFile,"R%d  STRETCH U: %f\n",kk,initialstrechU); //u0
-	}
-	initialstrechV = getCurrentE_V();
-	printf("R%d  STRETCH V: %f\n",kk,initialstrechV); //u0
-	if (logFile)
-	{
-		fprintf(logFile,"R%d  STRETCH V: %f\n",kk,initialstrechV); //u0
-	}
-
-	//solve for UV
-	//for(kk=0;kk<iteNum;kk++)
-	{    
-		
-		while (gammaU >= 1.0/16.0)	
-		{
-			setSigmaU();
-			//U section
-			for(i=0;i<numberV;i++)
-			{      
-				if(boundary[i]!=1)
-				{
-					//sigsum[i]=0.0;
-					sigsumU[i] = 0.0;					
-					nowp = PHead[i];
-					while(next(nowp)!=PTail[i])
-					{
-						nowp = next(nowp);
-						nowp->old_lambdaU = nowp->lambdaU;						
-						nowp->lambdaU /= sigmaU[nowp->ID];						
-						sigsumU[i] += nowp->lambdaU;						
-					}
-					mybcg->sa[i+1] = 1.0;
-					
-				}
-				else
-				{
-					mybcg->sa[i+1] = 1.0;
-					
-				}
-			}
-			dlk=(numberV)+1;
-    
-			for(i=0;i<numberV;i++)
-			{
-				if(boundary[i]!=1)
-				{
-					nowp = PHead[i];
-	
-					while(next(nowp)!=PTail[i])
-					{
-						nowp = next(nowp);
-						++dlk;
-						//mybcg->sa[dlk] = -nowp->lambda/sigsum[i];
-						mybcg->sa[dlk] = -nowp->lambdaU/sigsumU[i];
-						mybcg->ija[dlk] = nowp->ID+1;
-					}
-				}
-				mybcg->ija[i+1+1]=dlk+1;
-			}
-		
-			for(i=0;i<numberV;i++)
-			{
-				UaXY[i+1] = pU[i];
-				//UaXY[i+numberV+1] = pV[i];
-			}
-
-			//mybcg->linbcg(((unsigned long)(2*(numberV))),vecb,UaXY,1,PCBCGerror,iteNum,&iter,&linerr); 
-			mybcg->ija[1] = (numberV)+2;
-			mybcg->linbcg(((unsigned long)((numberV))),vecb,UaXY,1,PCBCGerror,iteNum,&iter,&linerr);
-			bool failToSolve = false;
-			if (iter > iteNum)
-			{
-				failToSolve = true;				
-			}
-		
-			for(i=0;i<numberV;i++)
-			{
-				if(boundary[i]!=1)
-				{
-					prevUV[i].x = pU[i];
-					//prevU[i]->y = pV[i];
-	
-					pU[i] = UaXY[i+1];
-					//pV[i] = UaXY[i+numberV+1];
-				}
-			}
-			currentstrechU = getCurrentE_U();
-			//printf("currentstrech U%d= %lf\n",kk+1,currentstrech);
-			printf("R%d  STRETCH U: %f\n",kk+1,currentstrechU); 
-
-			if (logFile)
-			{
-				fprintf(logFile,"R%d  STRETCH U: %f\n",kk+1,currentstrechU); 
-			}
-
-			if(initialstrechU<=currentstrechU || failToSolve)
-			{
-			
-				for(i=0;i<numberV;i++)
-				{
-					if(boundary[i]!=1)
-					{
-						pU[i] = prevUV[i].x;					
-						nowp = PHead[i];
-						while(next(nowp)!=PTail[i])
-						{
-							nowp = next(nowp);
-							nowp->lambdaU = nowp->old_lambdaU;
-						}
-					}
-				}
-				gammaU /= 2.0;
-			}
-			else
-			{
-				initialstrechU = currentstrechU;
-			}
-		}
-		
-		
-		while (gammaV >= 1.0/16.0)	
-		{
-			setSigmaV();
-			//V section
-			for(i=0;i<numberV;i++)
-			{      
-				if(boundary[i]!=1)
-				{
-					//sigsum[i]=0.0;
-					//sigsumU[i] = 0.0;
-					  
-  
-					sigsumV[i] = 0.0;
-					nowp = PHead[i];
-					while(next(nowp)!=PTail[i])
-					{
-						nowp = next(nowp);					
-						nowp->old_lambdaV = nowp->lambdaV ; 
-						nowp->lambdaV /= sigmaV[nowp->ID];					
-						sigsumV[i] += nowp->lambdaV;
-					}
-					mybcg->sa[i+1] = 1.0;
-					
-				}
-				else
-				{
-					mybcg->sa[i+1] = 1.0;
-					
-				}
-			}
-			dlk=(numberV)+1;
-    
-			for(i=0;i<numberV;i++)
-			{
-				if(boundary[i]!=1)
-				{
-					nowp = PHead[i];
-	
-					while(next(nowp)!=PTail[i])
-					{
-						nowp = next(nowp);
-						++dlk;						
-						mybcg->sa[dlk] = -nowp->lambdaV/sigsumV[i];
-						mybcg->ija[dlk] = nowp->ID+1;
-					}
-				}
-				mybcg->ija[i+1+1]=dlk+1;
-			}		
-			for(i=0;i<numberV;i++)
-			{
-				UaXY[i+1] = pV[i];				
-			}
-
-			//mybcg->linbcg(((unsigned long)(2*(numberV))),vecb,UaXY,1,PCBCGerror,iteNum,&iter,&linerr); 
-			mybcg->ija[1] = (numberV)+2;
-			mybcg->linbcg(((unsigned long)((numberV))),vecb,UaXY,1,PCBCGerror,iteNum,&iter,&linerr); 
-			bool failToSolve = false;
-			if (iter > iteNum)
-			{
-				failToSolve = true;
-			}
-		
-			for(i=0;i<numberV;i++)
-			{
-				if(boundary[i]!=1)
-				{
-					prevUV[i].y = pV[i];	
-					pV[i] = UaXY[i+1];
-				}
-			}
-			currentstrechV = getCurrentE_V();
-			//printf("currentstrech U%d= %lf\n",kk+1,currentstrech);
-			printf("R%d  STRETCH V: %f\n",kk+1,currentstrechV); 
-
-			if (logFile)
-			{
-				fprintf(logFile,"R%d  STRETCH V: %f\n",kk+1,currentstrechV); 
-			}
-
-			if(initialstrechV<=currentstrechV || failToSolve)
-			{
-			
-				for(i=0;i<numberV;i++)
-				{
-					if(boundary[i]!=1)
-					{
-						pV[i] = prevUV[i].y;
-						nowp = PHead[i];
-						while(next(nowp)!=PTail[i])
-						{
-							nowp = next(nowp);
-							nowp->lambdaV = nowp->old_lambdaV;
-						}
-					}
-				}
-				gammaV /= 2.0;			
-			}
-			else
-			{
-				initialstrechV = currentstrechV;
-			}
-		}
-		
-		//if (gammaU < 1.0/16.0 && gammaV < 1.0/16.0)
-		//	break;
-		
-	}
-
-
-	delete mybcg;	
-	
-	
-	delete [] prevUV;	
-	
-	delete [] vecb;
-	delete [] UaXY;
-	delete [] sigsum;
-	delete [] sigsumU;
-	delete [] sigsumV;
-	
-	for (int i=0;i<numberV;i++)
-	{
-		pIPV[i].u = pU[i];
-		pIPV[i].v = pV[i];
-	}	
-	return 0;
-}
 
 void MyParameterization::createMirrorFaceData()
 {
@@ -6642,13 +6721,23 @@ void MyParameterization::SquareParametrizationCPU(int bottomleftIDvertex,IDList 
 			case 0:
 				if (clen < 1.0)
 				{
+					#ifdef CCW_PLANAR
 					ioU[*bv_iter] = clen; 
 					ioV[*bv_iter] = 0.0;
+					#else
+					ioV[*bv_iter] = clen; 
+					ioU[*bv_iter] = 0.0;
+					#endif
 				}
 				else
 				{
+					#ifdef CCW_PLANAR
 					ioU[*bv_iter] = 1.0;
 					ioV[*bv_iter] = 0.0;
+					#else
+					ioV[*bv_iter] = 1.0;
+					ioU[*bv_iter] = 0.0;
+					#endif
 					sum_length = 0.0;
 					state=1;
 					if (reportlog)	
@@ -6662,13 +6751,23 @@ void MyParameterization::SquareParametrizationCPU(int bottomleftIDvertex,IDList 
 			case 1:
 				if (clen < 1.0)
 				{
+					#ifdef CCW_PLANAR
 					ioU[*bv_iter] = 1.0; 
 					ioV[*bv_iter] = clen;
+					#else
+					ioV[*bv_iter] = 1.0; 
+					ioU[*bv_iter] = clen;
+					#endif
 				}
 				else
 				{
+					#ifdef CCW_PLANAR
 					ioU[*bv_iter] = 1.0;
 					ioV[*bv_iter] = 1.0;
+					#else
+					ioV[*bv_iter] = 1.0;
+					ioU[*bv_iter] = 1.0;
+					#endif
 					sum_length = 0.0;
 					state=2;
 					if (reportlog)	
@@ -6683,13 +6782,23 @@ void MyParameterization::SquareParametrizationCPU(int bottomleftIDvertex,IDList 
 			case 2:
 				if (clen < 1.0)
 				{
+					#ifdef CCW_PLANAR
 					ioU[*bv_iter] = 1.0-clen; 
 					ioV[*bv_iter] = 1.0;
+					#else
+					ioV[*bv_iter] = 1.0-clen; 
+					ioU[*bv_iter] = 1.0;
+					#endif
 				}
 				else
 				{
+					#ifdef CCW_PLANAR
 					ioU[*bv_iter] = 0.0;
 					ioV[*bv_iter] = 1.0;
+					#else
+					ioV[*bv_iter] = 0.0;
+					ioU[*bv_iter] = 1.0;
+					#endif
 					sum_length = 0.0;
 					state=3;
 					if (reportlog)
@@ -6704,8 +6813,13 @@ void MyParameterization::SquareParametrizationCPU(int bottomleftIDvertex,IDList 
 			case 3:
 				if (clen < 1.0)
 				{
+					#ifdef CCW_PLANAR
 					ioU[*bv_iter] = 0.0; 
 					ioV[*bv_iter] = 1.0-clen;
+					#else
+					ioV[*bv_iter] = 0.0; 
+					ioU[*bv_iter] = 1.0-clen;
+					#endif
 				}
 				else
 				{	
@@ -8399,8 +8513,13 @@ void MyParameterization::CircleParametrizationCPU(IDList *borderH,IDList *border
 		length += PT->Distance(point[now->ID],point[back(now)->ID]);
 		//pU[now->ID] = 0.5*cos(2.0*PI*(((double)(i))/((double)(numboundary))));
 		//pV[now->ID] = 0.5*sin(2.0*PI*(((double)(i))/((double)(numboundary))));
+#ifdef CCW_PLANAR
 		ioU[now->ID] = 0.5*cos(unitArc*length);
-		ioV[now->ID] = 0.5*sin(unitArc*length);		
+		ioV[now->ID] = 0.5*sin(unitArc*length);	
+#else
+		ioU[now->ID] = 0.5*cos(unitArc*length);
+		ioV[now->ID] = 0.5*-sin(unitArc*length);	
+#endif
 	}
 
 	

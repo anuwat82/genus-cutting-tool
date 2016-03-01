@@ -100,6 +100,7 @@ public:
 	void	setSigmaArea();
 
 	void	createMirrorFaceData();
+#if  0
 	double    PARAM_MYEXPER(PolarVertex *pIPV,
 									 int num_PV,
 									 FILE* logFile= NULL);
@@ -114,6 +115,7 @@ public:
 	double    PARAM_MYEXPER4(PolarVertex *pIPV,
 							 int num_PV,
 							 FILE* logFile= NULL);
+#endif
 	/*
 	double    PARAM_VIENNA_CL(PolarVertex *pIPV,
 							 int num_PV,

@@ -8,6 +8,25 @@
 void keyPressCallbackFunc(vtkObject*, unsigned long eid, void* clientdata, void *calldata);
 void pickCallbackFunc(vtkObject*, unsigned long eid, void* clientdata, void *calldata);
 
+void PrintOutInstruction()
+{
+		cout << "===============================" << endl <<
+		"CTRL + Left click to change starting point" <<endl <<
+		"Function Key:" << endl <<
+		"F6 = homotopy cutting" << endl <<
+			"  1 = display both kind of crossing edges" << endl <<
+			"  2 = display edges after removing dangling ones" << endl <<
+			"  3 = display our final cutting path (red)" << endl <<
+			"  4 = display original final cutting path (yellow)" << endl <<
+		"F7 = iterative augmented cutting" << endl <<
+		"F8 = square parameterizations (25% brute force)" << endl <<
+		"F9 = square parameterizations (step sampling)" << endl << endl <<
+		
+		"F10 = save screenshot" << endl << 
+		"+/- = increase/decrease opacity" << endl << 
+
+		"===============================" << endl;
+}
 vtkWeakPointer<vtkTexture> checkboard_texture;
 vtkWeakPointer<vtkTexture> image_texture;
 int main(int argc, char* argv[])
@@ -189,22 +208,7 @@ int main(int argc, char* argv[])
 	//renderer->ResetCamera(-10,10,-10,10,-10,10);
 	renderWindow->Render(); 	
 
-	cout << "===============================" << endl <<
-		"CTRL + Left click to change starting point" <<endl <<
-		"Function Key:" << endl <<
-		"F6 = homotopy cutting" << endl <<
-			"  1 = display both kind of crossing edges" << endl <<
-			"  2 = display edges after removing dangling ones" << endl <<
-			"  3 = display our final cutting path (red)" << endl <<
-			"  4 = display original final cutting path (yellow)" << endl <<
-		"F7 = iterative augmented cutting" << endl <<
-		"F8 = square parameterizations (25% brute force)" << endl <<
-		"F9 = square parameterizations (step sampling)" << endl << endl <<
-		
-		"F10 = save screenshot" << endl << 
-		"+/- = increase/decrease opacity" << endl << 
-
-		"===============================" << endl;
+	PrintOutInstruction();
 
 
 	renderWindowInteractor->Start();
@@ -459,6 +463,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		//cout << "time consume proposed:" << time_proposed << "sec" << endl;
 		cout << "========================================" << endl;
 		printf("Do not forget to call iterated augment cutting (F7) before perform any parameterization!\n");
+		PrintOutInstruction();
 	}
 	else if (key == "F7")
 	{
@@ -583,7 +588,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		{
 			cout << "No save" << endl;
 		}
-
+		PrintOutInstruction();
 		
 	}
 	else if (key == "F8")
@@ -648,7 +653,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		cout << "========================================" << endl;
 		AskForSaveSqp(texCoord);
 		//AskForSaveParameterizationPLY(inputPolydata,texCoord);
-		
+		PrintOutInstruction();
 	}
 	else if (key == "F9")
 	{
@@ -718,6 +723,8 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		cout << "========================================" << endl;
 		AskForSaveSqp(texCoord);
 		AskForSaveParameterizationPLY(inputPolydata,texCoord);	
+
+		PrintOutInstruction();
 	}
 	else if (key == "F3")
 	{
@@ -753,6 +760,8 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		
 		cout << "========================================" << endl;
 		AskForSaveParameterizationPLY(inputPolydata,texCoord);
+
+		PrintOutInstruction();
 	}
 	else if (key == "plus")
 	{
