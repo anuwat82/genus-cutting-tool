@@ -1,16 +1,5 @@
 /*=========================================================================
-
-  Program:   Visualization Toolkit
-  Module:  vtkDijkstraGraphGeodesicPath.cxx
-  Language:  C++
-  Date:    $Date$
-  Version:   $Revision$
-
-  Made by Rasmus Paulsen
-  email:  rrp(at)imm.dtu.dk
-  web:    www.imm.dtu.dk/~rrp/VTK
-
-  This class is not mature enough to enter the official VTK release.
+Copied and modified from vtkDijkstraGraphGeodesicPath.cxx
 =========================================================================*/
 #include "vtkDijkstraGraphGeodesicPathMultiStartEndPoints.h"
 
@@ -105,7 +94,7 @@ void vtkDijkstraGraphGeodesicPathMultiStartEndPoints::ShortestPath( vtkDataSet *
       {
         double* pt = this->RepelVertices->GetPoint( i );
         u = inData->FindPoint( pt );
-		if ( u < 0 || _startPointsIdList->IsId(u) >=0  || _endPointsIdList->IsId(u) >= 0 )
+		if ( u < 0 || _startPointsIdList->IsId(u) >=0  || _endPointsIdList->IsId(u) >= 0 )  //check target here
           {
           continue;
           }
