@@ -62,6 +62,11 @@ public:
 	double	CircularParameterize(PolarVertex *pIPV,
 								 int num_PV,
 								 FILE* logFile= NULL);
+
+	double	NaturalParameterize(PolarVertex *pIPV,
+								 int num_PV,
+								 FILE* logFile= NULL);
+
 	double	CircularParameterizeOptimalEx(PolarVertex *pIPV,
 										 int num_PV,
 										 FILE* logFile= NULL);

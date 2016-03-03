@@ -1306,6 +1306,64 @@ int CPolygonsData::CircleParameterizationOptimization(double *op_calTime, vtkFlo
 	return 0;
 }
 
+#include "Natural_Param_API.h"
+
+int CPolygonsData::NaturalParameterization(double *op_calTime,vtkPolyData* polydata, vtkFloatArray *texCoord)
+{
+	clock_t calTime = 0;
+	calTime = clock();
+	vtkIdType numOfPoints =polydata->GetNumberOfPoints();
+	vtkIdType numOfFaces = polydata->GetPolys()->GetNumberOfCells();
+	double *vertices = new double[numOfPoints*3];
+	int *indices =  new int[numOfFaces *3];
+	
+	for (vtkIdType vid = 0  ; vid < numOfPoints; vid++)
+	{
+		memcpy_s(&vertices[vid*3 + 0], sizeof(double)*3, polydata->GetPoint(vid),sizeof(double)*3);
+	}
+
+	polydata->GetPolys()->InitTraversal();
+	vtkIdType npts;
+	vtkIdType *pointID;
+	int fcount = 0;
+	while(polydata->GetPolys()->GetNextCell(npts,pointID) != 0)
+	{
+		if (npts != 3)
+			throw;
+		indices[fcount*3 + 0] = pointID[0];
+		indices[fcount*3 + 1] = pointID[1];
+		indices[fcount*3 + 2] = pointID[2];
+		fcount++;
+	}
+
+	double *opU =  new double[numOfPoints];
+	double *opV =  new double[numOfPoints];
+	double error = NaturalParameterizationOptimal(vertices, numOfPoints, indices , numOfFaces, opU, opV);
+
+	calTime = clock() - calTime;
+	if (op_calTime)
+		*op_calTime = static_cast<double>(calTime)/CLOCKS_PER_SEC;
+
+	if (texCoord)
+	{
+		vtkSmartPointer<vtkFloatArray> tc = vtkSmartPointer<vtkFloatArray>::New(); 
+		tc->SetNumberOfComponents( 2 ); 
+		
+		tc->SetName("TextureCoordinates");
+		for (int i = 0; i < numOfPoints; i++)
+			tc->InsertNextTuple2((float )opU[i],(float )opV[i]);
+
+		texCoord->DeepCopy(tc);
+		
+	}
+	delete [] opU;
+	delete [] opV;
+	delete [] indices;
+	delete [] vertices;
+	return 0;
+
+}
+
 int CPolygonsData::Parameterize()
 {	
 

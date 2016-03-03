@@ -48,6 +48,7 @@ public:
 	int SquareParameterizationManual( int mycase,double *calTime, vtkFloatArray *texCoord);  
 	int SquareParameterizationExperiment(double *calTime, vtkFloatArray *texCoord);  
 	int CircleParameterizationOptimization(double *calTime, vtkFloatArray *texCoord, vtkDoubleArray *face_stretch); 
+	int NaturalParameterization(double *calTime,vtkPolyData* mesh, vtkFloatArray *texCoord); 
 	int CheckBoundaryMapping(vtkDoubleArray *face_stretch);
 private:
 	

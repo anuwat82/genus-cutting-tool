@@ -19,8 +19,11 @@ void PrintOutInstruction()
 			"  3 = display our final cutting path (red)" << endl <<
 			"  4 = display original final cutting path (yellow)" << endl <<
 		"F7 = iterative augmented cutting" << endl <<
-		"F8 = square parameterizations (25% brute force)" << endl <<
-		"F9 = square parameterizations (step sampling)" << endl << endl <<
+		
+		"F2 = square parameterizations (25% brute force)" << endl <<
+		"F3 = square parameterizations (step sampling)" << endl << endl <<
+		"F4 = circular parameterizations " << endl << endl <<
+		"F5 = natural parameterizations" << endl << endl <<
 		
 		"F10 = save screenshot" << endl << 
 		"+/- = increase/decrease opacity" << endl << 
@@ -591,7 +594,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		PrintOutInstruction();
 		
 	}
-	else if (key == "F8")
+	else if (key == "F2")
 	{
 		//Sqaure Parameterization brute force
 
@@ -655,7 +658,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		//AskForSaveParameterizationPLY(inputPolydata,texCoord);
 		PrintOutInstruction();
 	}
-	else if (key == "F9")
+	else if (key == "F3")
 	{
 		//Sqaure Parameterization step sampling
 		
@@ -726,7 +729,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 
 		PrintOutInstruction();
 	}
-	else if (key == "F3")
+	else if (key == "F4")
 	{
 		
 		cout << "Perform Circular Parameterization ..."<< endl;
@@ -754,6 +757,43 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		//ColorMeshFace(stretch);
 		//polygon.CheckBoundaryMapping(NULL);
 		polygon.SquareParameterizationExperiment(&calTime,texCoord.GetPointer());
+		inputPolydata->GetPointData()->SetTCoords(texCoord);
+		//ColorMeshFace(stretch);
+		cout << "time consume: " << calTime << " sec" << endl;		
+		
+		cout << "========================================" << endl;
+		AskForSaveParameterizationPLY(inputPolydata,texCoord);
+
+		PrintOutInstruction();
+	}
+	else if (key == "F5")
+	{
+		
+		cout << "Perform Natural Parameterization ..."<< endl;
+		vtkSmartPointer<vtkPolyData> inputPolydata;
+		if (disk_polydata.GetPointer() != NULL && disk_polydata->GetNumberOfPoints() > 0)
+		{
+			//use  disk_polydata as input
+			vtkSmartPointer<vtkPolyDataMapper> diskPolyDataMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+			diskPolyDataMapper->SetInputData(disk_polydata);
+			actorMainPoly->SetMapper(diskPolyDataMapper);
+			inputPolydata = disk_polydata;		
+		}
+		else
+		{
+			//use polydata as input (load disk topolopy file directly)
+			inputPolydata = polydata;			
+		}
+		
+		double calTime;
+		unsigned int calCount;
+		vtkSmartPointer<vtkDoubleArray> stretch = vtkSmartPointer<vtkDoubleArray>::New();
+		vtkSmartPointer<vtkFloatArray> texCoord = vtkSmartPointer<vtkFloatArray>::New();
+		//polygon.CircleParameterizationOptimization(&calTime,NULL,stretch.GetPointer());
+		//ColorMeshFace(stretch);
+		//polygon.CheckBoundaryMapping(NULL);
+		CPolygonsData polygon;
+		polygon.NaturalParameterization(&calTime , inputPolydata,texCoord);
 		inputPolydata->GetPointData()->SetTCoords(texCoord);
 		//ColorMeshFace(stretch);
 		cout << "time consume: " << calTime << " sec" << endl;		

@@ -141,6 +141,9 @@
     <ClInclude Include="GeodesicVTK.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Parameterization\Original_Polyhedron.h">
+      <Filter>Parameterization</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

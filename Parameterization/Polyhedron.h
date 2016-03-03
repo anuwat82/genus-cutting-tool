@@ -1544,11 +1544,13 @@ void ParametrizationOptimal(int itenum,double error,FILE* logFile = NULL)
 				UaXY[i+1] = pU[i];
 				UaXY[i+numberV+1] = pV[i];
 			}
+			/*
 			else
 			{
 				UaXY[i+1] = 0.5;
 				UaXY[i+numberV+1] = 0.5;
 			}
+			*/
 		}
 
 		mybcg->linbcg(((unsigned long)(2*(numberV))),vecb,UaXY,1,error,itenum,&iter,&linerr); 
@@ -2441,7 +2443,8 @@ double getMVCTerm(int i,int backID,int nowID,int nextID){
  
 void SortIndexP()
 {
-	return;
+	if (boundarytype != 2)
+		return;
 	int i;
 	//IDList *now=NULL;
 	//PolarList *nowp=NULL;

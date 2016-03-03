@@ -764,6 +764,34 @@ double	MyParameterization::CircularParameterize(PolarVertex *pIPV,
 	return resultStretch;
 }
 
+double	MyParameterization::NaturalParameterize(PolarVertex *pIPV,
+											 int num_PV,
+											 FILE* logFile)
+{
+	weighttype = 0;
+	iteNum = (pow((double)((numberV/20000) + 1),2)) *2000;	
+    boundarytype=2;	
+
+
+	//param(logFile);
+
+	MyBoundaryMap();
+	if(boundarytype==2){
+      setNaturalB(iteNum,PCBCGerror); 
+      //make local parameterization via polar map 
+      setPolarMap(); 
+    }
+	ParametrizationOptimal(iteNum,PCBCGerror,logFile);	
+
+	for (int i=0;i<numberV;i++)
+	{
+		pIPV[i].u = pU[i];
+		pIPV[i].v = pV[i];		
+	}
+	getCurrentE();
+	return resultStretch;
+}
+
 
 double	MyParameterization::CircularParameterizeOptimalEx(PolarVertex *pIPV,
 										int num_PV,
@@ -2247,19 +2275,19 @@ void MyParameterization::MyBoundaryMap()
 		}		
 		
 	}
-double init_uncontraintsU;
-double init_uncontraintsV;
+	double init_uncontraintsU;
+	double init_uncontraintsV;
 
-if(boundarytype==1)
-{
-	init_uncontraintsU = 0.5;
-	init_uncontraintsV = 0.5;
-}
-else
-{
-	init_uncontraintsU = 0.0;
-	init_uncontraintsV = 0.0;
-}
+	if(boundarytype==1)
+	{
+		init_uncontraintsU = 0.5;
+		init_uncontraintsV = 0.5;
+	}
+	else
+	{
+		init_uncontraintsU = 0.0;
+		init_uncontraintsV = 0.0;
+	}
 
 //#pragma omp parallel for
 	for(i=0;i<numberV;i++)
