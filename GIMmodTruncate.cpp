@@ -1403,6 +1403,14 @@ vtkSmartPointer<vtkPolyData> GIMmodTruncate::GetDiskTopologyPolydata()
 	}
 
 	*/
+	vtkIdType numPtsBeforeClean = output->GetNumberOfPoints();
+	vtkSmartPointer<vtkCleanPolyData> cleaner = vtkSmartPointer<vtkCleanPolyData>::New();
+	cleaner->SetInputData(output);
+	cleaner->PointMergingOff();
+	cleaner->Update();
+	output = cleaner->GetOutput();
+	vtkIdType numPtsAfterClean = output->GetNumberOfPoints();
+	
 	return output;
 }
 

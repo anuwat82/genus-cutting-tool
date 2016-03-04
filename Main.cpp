@@ -24,7 +24,8 @@ void PrintOutInstruction()
 		"F2 = square parameterizations (25% brute force)" << endl <<
 		"F3 = square parameterizations (step sampling)" << endl << 
 		"F4 = circular parameterizations " << endl << 
-		"F5 = natural parameterizations" << endl << endl <<
+		"F5 = natural parameterizations" << endl << 
+		"F9 = natural parameterizations UVAtlas" << endl << endl <<
 		
 		"F10 = save screenshot" << endl << 
 		"+/- = increase/decrease opacity" << endl << 
@@ -480,6 +481,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		{
 			cout << "Original Iterated Augment Cutting Started..."<< endl;
 			vtkSmartPointer<vtkPolyData> diskOriginal = originalTruncate.GetDiskTopologyPolydata();
+			
 			CPolygonsData polygon ;
 			polygon.InitailDiskTopology(diskOriginal);
 			polygon.IteratedAugmentCutOriginal(&time_original,outputOptimumOriginal.GetPointer());
@@ -740,6 +742,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			//use polydata as input (load disk topolopy file directly)
 			inputPolydata = polydata;			
 		}
+		inputPolydata = CleanForUnrefVertex(inputPolydata);
 		double calTime;
 		unsigned int calCount;
 		char answer;
@@ -800,7 +803,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			//use polydata as input (load disk topolopy file directly)
 			inputPolydata = polydata;			
 		}
-
+		inputPolydata = CleanForUnrefVertex(inputPolydata);
 		unsigned int step_value = 0;  // 0 means using formula
 		char answer;
 		cout << "Do you want to manually set step value? (y/n):";
@@ -871,6 +874,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			//use polydata as input (load disk topolopy file directly)
 			inputPolydata = polydata;			
 		}
+		inputPolydata = CleanForUnrefVertex(inputPolydata);
 		CPolygonsData polygon ;
 		polygon.InitailDiskTopology(inputPolydata);
 		double calTime;
@@ -908,7 +912,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			//use polydata as input (load disk topolopy file directly)
 			inputPolydata = polydata;			
 		}
-		
+		inputPolydata = CleanForUnrefVertex(inputPolydata);
 		double calTime;
 		unsigned int calCount;
 		vtkSmartPointer<vtkDoubleArray> stretch = vtkSmartPointer<vtkDoubleArray>::New();
@@ -918,6 +922,43 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		//polygon.CheckBoundaryMapping(NULL);
 		CPolygonsData polygon;
 		polygon.NaturalParameterization(&calTime , inputPolydata,texCoord);
+		inputPolydata->GetPointData()->SetTCoords(texCoord);
+		//ColorMeshFace(stretch);
+		cout << "time consume: " << calTime << " sec" << endl;		
+		
+		cout << "========================================" << endl;
+		AskForSaveParameterizationPLY(inputPolydata,texCoord);
+
+		PrintOutInstruction();
+	}
+	else if (key == "F9")
+	{
+		
+		cout << "Perform Natural Parameterization UVatlas ..."<< endl;
+		vtkSmartPointer<vtkPolyData> inputPolydata;
+		if (disk_polydata.GetPointer() != NULL && disk_polydata->GetNumberOfPoints() > 0)
+		{
+			//use  disk_polydata as input
+			vtkSmartPointer<vtkPolyDataMapper> diskPolyDataMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+			diskPolyDataMapper->SetInputData(disk_polydata);
+			actorMainPoly->SetMapper(diskPolyDataMapper);
+			inputPolydata = disk_polydata;		
+		}
+		else
+		{
+			//use polydata as input (load disk topolopy file directly)
+			inputPolydata = polydata;			
+		}
+		inputPolydata = CleanForUnrefVertex(inputPolydata);
+		double calTime;
+		unsigned int calCount;
+		vtkSmartPointer<vtkDoubleArray> stretch = vtkSmartPointer<vtkDoubleArray>::New();
+		vtkSmartPointer<vtkFloatArray> texCoord = vtkSmartPointer<vtkFloatArray>::New();
+		//polygon.CircleParameterizationOptimization(&calTime,NULL,stretch.GetPointer());
+		//ColorMeshFace(stretch);
+		//polygon.CheckBoundaryMapping(NULL);
+		CPolygonsData polygon;
+		polygon.NaturalParameterizationUVAtlas(&calTime , inputPolydata,texCoord);
 		inputPolydata->GetPointData()->SetTCoords(texCoord);
 		//ColorMeshFace(stretch);
 		cout << "time consume: " << calTime << " sec" << endl;		

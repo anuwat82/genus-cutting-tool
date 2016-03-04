@@ -56,3 +56,4 @@ void InitialGeodesic(vtkSmartPointer<vtkPolyData> polydata ,int sourceVertexID);
 void ScreenShot(vtkRenderWindow* renderWindow);
 void AskForSaveSqp(vtkFloatArray *texCoord);
 void AskForSaveParameterizationPLY(vtkPolyData* diskTopology, vtkFloatArray *texCoord);
+vtkSmartPointer<vtkPolyData> CleanForUnrefVertex(vtkSmartPointer<vtkPolyData> input);

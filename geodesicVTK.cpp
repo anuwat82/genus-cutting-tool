@@ -1360,3 +1360,20 @@ void AskForSaveParameterizationPLY(vtkPolyData* diskTopology, vtkFloatArray *tex
 
 	}
 }
+
+vtkSmartPointer<vtkPolyData> CleanForUnrefVertex(vtkSmartPointer<vtkPolyData> input)
+{
+	vtkIdType numPtsBeforeClean = input->GetNumberOfPoints();
+	vtkSmartPointer<vtkCleanPolyData> cleaner = vtkSmartPointer<vtkCleanPolyData>::New();
+	cleaner->SetInputData(input);
+	cleaner->PointMergingOff();
+	cleaner->Update();
+	vtkSmartPointer<vtkPolyData> output = cleaner->GetOutput();
+	vtkIdType numPtsAfterClean = output->GetNumberOfPoints();
+	if (numPtsBeforeClean > numPtsAfterClean)
+	{
+		
+		cout << "unref vertex detected" << endl;
+	}
+	return output;
+}

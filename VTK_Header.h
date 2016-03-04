@@ -84,3 +84,4 @@
 #include "vtkOFFReader.h"
 #include "vtkFeatureEdgesEx.h"
 #include "MouseInteractorStylePP.h"
+#include <vtkCleanPolyData.h>

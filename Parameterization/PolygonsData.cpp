@@ -1445,6 +1445,7 @@ int CPolygonsData::NaturalParameterizationUVAtlas(double *op_calTime,vtkPolyData
 	std::vector<uint8_t> ib;
 	std::vector<uint32_t> remap;
 	std::vector<uint32_t> pa;
+	float output_stretch = 0.0f;
 	HRESULT hr = DirectX::UVAtlasPartition(	pos.get(), (size_t)numOfPoints, 
 											indices.get(), DXGI_FORMAT_R32_UINT, (size_t)numOfFaces,
 											1,1.0,adj.get(), nullptr,nullptr,nullptr,DirectX::UVATLAS_DEFAULT_CALLBACK_FREQUENCY,
