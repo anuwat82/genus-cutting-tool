@@ -21,8 +21,8 @@ void PrintOutInstruction()
 		"F7 = iterative augmented cutting" << endl <<
 		
 		"F2 = square parameterizations (25% brute force)" << endl <<
-		"F3 = square parameterizations (step sampling)" << endl << endl <<
-		"F4 = circular parameterizations " << endl << endl <<
+		"F3 = square parameterizations (step sampling)" << endl << 
+		"F4 = circular parameterizations " << endl << 
 		"F5 = natural parameterizations" << endl << endl <<
 		
 		"F10 = save screenshot" << endl << 

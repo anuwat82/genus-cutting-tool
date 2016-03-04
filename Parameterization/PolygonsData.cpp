@@ -8,6 +8,9 @@
 #include "stretch-minimizing.h"
 #include "MyParameterization.h"
 #include "customVTK\vtkFeatureEdgesEx.h"
+#include "UVAtlas.h"
+#include "DirectXMesh.h"
+#include <memory>
 
 /*
 #include <CGAL/Cartesian.h>
@@ -1362,6 +1365,75 @@ int CPolygonsData::NaturalParameterization(double *op_calTime,vtkPolyData* polyd
 	delete [] vertices;
 	return 0;
 
+}
+int CPolygonsData::NaturalParameterizationUVAtlas(double *op_calTime,vtkPolyData* polydata, vtkFloatArray *texCoord)
+{
+	clock_t calTime = 0;
+	calTime = clock();
+	vtkIdType numOfPoints =polydata->GetNumberOfPoints();
+	vtkIdType numOfFaces = polydata->GetPolys()->GetNumberOfCells();
+
+	std::unique_ptr<DirectX::XMFLOAT3[]> pos( new DirectX::XMFLOAT3[ numOfPoints ] );
+	for( size_t j = 0; j < numOfPoints; ++j )
+	{
+		double *vertex = polydata->GetPoint(j);
+		pos[ j ].x = vertex[0];
+		pos[ j ].y = vertex[1];
+		pos[ j ].z = vertex[2];
+	   
+	}
+	std::unique_ptr<uint32_t[]> indices( new uint32_t[ numOfFaces*3 ] );
+	polydata->GetPolys()->InitTraversal();
+	vtkIdType npts;
+	vtkIdType *pointID;
+	int fcount = 0;
+	while(polydata->GetPolys()->GetNextCell(npts,pointID) != 0)
+	{
+		if (npts != 3)
+			throw;
+		indices[fcount*3 + 0] = pointID[0];
+		indices[fcount*3 + 1] = pointID[1];
+		indices[fcount*3 + 2] = pointID[2];
+		fcount++;
+	}
+	std::unique_ptr<uint32_t[]> adj( new uint32_t[ numOfFaces*3 ] );
+	if ( FAILED( GenerateAdjacencyAndPointReps( indices.get(), (size_t)numOfFaces,
+	   pos.get(), (size_t)numOfPoints, 0.f, nullptr, adj.get() ) ) )
+	{
+	   // Error
+	}
+	std::vector<DirectX::UVAtlasVertex> vb;
+	std::vector<uint8_t> ib;
+	std::vector<uint32_t> remap;
+	std::vector<uint32_t> pa;
+	HRESULT hr = DirectX::UVAtlasPartition(	pos.get(), (size_t)numOfPoints, 
+											indices.get(), DXGI_FORMAT_R32_UINT, (size_t)numOfFaces,
+											1,1.0,adj.get(), nullptr,nullptr,nullptr,DirectX::UVATLAS_DEFAULT_CALLBACK_FREQUENCY,
+											DirectX::UVATLAS_DEFAULT,
+											vb,ib,nullptr,&remap,pa);
+	size_t nTotalVerts = vb.size();
+
+	calTime = clock() - calTime;
+	if (op_calTime)
+		*op_calTime = static_cast<double>(calTime)/CLOCKS_PER_SEC;
+
+	if (texCoord)
+	{
+		vtkSmartPointer<vtkFloatArray> tc = vtkSmartPointer<vtkFloatArray>::New(); 
+		tc->SetNumberOfComponents( 2 ); 
+		
+		tc->SetName("TextureCoordinates");
+		for (int i = 0; i < numOfPoints; i++)
+		{
+		
+			tc->InsertNextTuple2(vb[ i ].uv.x,vb[ i ].uv.y);
+		}
+
+		texCoord->DeepCopy(tc);
+		
+	}
+
+	return 0;
 }
 
 int CPolygonsData::Parameterize()
