@@ -665,7 +665,7 @@ int CPolygonsData::GetHighestCurvatureFace()
 	return max1st;
 }
 
-int CPolygonsData::IteratedAugmentCut(double *op_calTime, vtkPolyData* op_mesh)
+int CPolygonsData::IteratedAugmentCut(double *op_calTime, vtkPolyData* op_mesh,bool forNaturalBoundary )
 {
 
 	IDSet tool;	
@@ -679,6 +679,13 @@ int CPolygonsData::IteratedAugmentCut(double *op_calTime, vtkPolyData* op_mesh)
 	double stopConst = 2.0;
 	double previousStretch = DBL_MAX;
 	degree_count = 0;
+
+
+	int *pPrev_boundarySurfaceFaceInfo = NULL;
+	int Prev_num_boundarySurfaceFaceInfo = 0;
+	PolarVertex* pPrev_boundarySurfacePolarVertexInfo = NULL;
+	int Prev_num_boundarySurfacePolarVertexInfo = 0;
+
 	while (1)
 	{
 		bool stopLoop = false;
@@ -688,7 +695,7 @@ int CPolygonsData::IteratedAugmentCut(double *op_calTime, vtkPolyData* op_mesh)
 		int *p_num_boundarySurfaceFaceInfo = &m_num_boundarySurfaceFace;
 		PolarVertex* p_boundarySurfacePolarVertexInfo = m_boundarySurfacePolarVertexInfo;
 		int *p_num_boundarySurfacePolarVertexInfo = &m_num_boundarySurfacePolarVertex;
-
+		
 		
 		if (degree_count == 0)
 			num_validPolarVertex = numVertex;
@@ -772,7 +779,20 @@ int CPolygonsData::IteratedAugmentCut(double *op_calTime, vtkPolyData* op_mesh)
 			double current_stretch = paramTool.CircularParameterize(	p_boundarySurfacePolarVertexInfo,*p_num_boundarySurfacePolarVertexInfo,NULL);
 			calTime = clock() - calTime; 
 			m_calTime += calTime;
-			break;
+
+
+			if (forNaturalBoundary)
+			{
+				//experiment
+				delete [] p_boundarySurfaceFaceInfo;
+				delete [] p_boundarySurfacePolarVertexInfo;
+				m_boundarySurfaceFaceInfo = pPrev_boundarySurfaceFaceInfo;
+				m_num_boundarySurfaceFace = Prev_num_boundarySurfaceFaceInfo;
+				m_boundarySurfacePolarVertexInfo = pPrev_boundarySurfacePolarVertexInfo;
+				m_num_boundarySurfacePolarVertex = Prev_num_boundarySurfacePolarVertexInfo;
+
+			}
+			break;//exit augmentation
 		}
 		
 		int new_num_boundarySurfaceFaceInfo = (*p_num_boundarySurfaceFaceInfo);		
@@ -785,8 +805,24 @@ int CPolygonsData::IteratedAugmentCut(double *op_calTime, vtkPolyData* op_mesh)
 		memcpy(new_p_boundarySurfacePolarVertexInfo,p_boundarySurfacePolarVertexInfo,sizeof(PolarVertex)*(*p_num_boundarySurfacePolarVertexInfo));
 
 		num_validPolarVertex = (*p_num_boundarySurfacePolarVertexInfo);
-		delete [] p_boundarySurfaceFaceInfo;
-		delete [] p_boundarySurfacePolarVertexInfo;
+
+		if (forNaturalBoundary)
+		{
+			if (pPrev_boundarySurfaceFaceInfo)
+				delete [] pPrev_boundarySurfaceFaceInfo;
+			if (pPrev_boundarySurfacePolarVertexInfo)
+				delete [] pPrev_boundarySurfacePolarVertexInfo;
+				
+			pPrev_boundarySurfaceFaceInfo = m_boundarySurfaceFaceInfo;
+			Prev_num_boundarySurfaceFaceInfo = m_num_boundarySurfaceFace;
+			pPrev_boundarySurfacePolarVertexInfo = m_boundarySurfacePolarVertexInfo;
+			Prev_num_boundarySurfacePolarVertexInfo = m_num_boundarySurfacePolarVertex;
+		}
+		else
+		{
+			delete [] p_boundarySurfaceFaceInfo;
+			delete [] p_boundarySurfacePolarVertexInfo;
+		}
 		m_boundarySurfaceFaceInfo = new_p_boundarySurfaceFaceInfo;
 		m_num_boundarySurfaceFace = new_num_boundarySurfaceFaceInfo;
 		m_boundarySurfacePolarVertexInfo = new_p_boundarySurfacePolarVertexInfo;
@@ -867,6 +903,9 @@ int CPolygonsData::IteratedAugmentCutOriginal(double *op_calTime, vtkPolyData* o
 	int Prev_num_boundarySurfaceFaceInfo = 0;
 	PolarVertex* pPrev_boundarySurfacePolarVertexInfo = NULL;
 	int Prev_num_boundarySurfacePolarVertexInfo = 0;
+
+
+
 	degree_count = 0;
 	m_calTime = 0;
 	while (1)

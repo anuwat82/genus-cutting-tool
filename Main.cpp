@@ -19,6 +19,7 @@ void PrintOutInstruction()
 			"  3 = display our final cutting path (red)" << endl <<
 			"  4 = display original final cutting path (yellow)" << endl <<
 		"F7 = iterative augmented cutting" << endl <<
+		"F8 = iterative augmented cutting for natural boundary (experiment)" << endl <<
 		
 		"F2 = square parameterizations (25% brute force)" << endl <<
 		"F3 = square parameterizations (step sampling)" << endl << 
@@ -593,6 +594,129 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		}
 		PrintOutInstruction();
 		
+	}
+	else if (key == "F8")
+	{
+		vtkSmartPointer<vtkPolyData> outputOptimumOriginal = vtkSmartPointer<vtkPolyData>::New();
+		double time_original = 0;
+		
+		if (originalTruncate.isReadyToCut())
+		{
+			cout << "Original Iterated Augment Cutting Started..."<< endl;
+			vtkSmartPointer<vtkPolyData> diskOriginal = originalTruncate.GetDiskTopologyPolydata();
+			CPolygonsData polygon ;
+			polygon.InitailDiskTopology(diskOriginal);
+			polygon.IteratedAugmentCutOriginal(&time_original,outputOptimumOriginal.GetPointer());
+			cout << "Original Iterated Augment Cutting Finished..."<< endl;
+
+			//adjust edge
+			vtkSmartPointer<vtkMutableUndirectedGraph> newGraph = CreateBoundaryGraph(outputOptimumOriginal);
+			
+			vtkSmartPointer<vtkGraphToPolyData> g2pAT = vtkSmartPointer<vtkGraphToPolyData>::New(); 
+			g2pAT->SetInputData(newGraph);
+			g2pAT->Update();
+
+			vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+			colors->SetNumberOfComponents(3);
+			colors->SetName("Colors");
+			// Setup two colors 
+			unsigned char red[3] = {255, 0, 0};
+			unsigned char yellow[3] = {255, 255, 0};
+			int numEdge = g2pAT->GetOutput()->GetLines()->GetNumberOfCells();
+			for (int cellID = 0 ; cellID < numEdge; cellID++)
+			{
+				colors->InsertNextTupleValue(yellow);		
+			}
+			g2pAT->GetOutput()->GetCellData()->SetScalars(colors);
+
+			vtkSmartPointer<vtkPolyDataMapper> __edge_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+			__edge_mapper->SetInputData(g2pAT->GetOutput());
+			actorEdge4->SetMapper(__edge_mapper);
+			
+
+
+		}
+		
+		double time_proposed = 0;
+		vtkSmartPointer<vtkPolyData> outputOptimumPropose = vtkSmartPointer<vtkPolyData>::New();
+		if (modTruncate.isReadyToCut())
+		{
+			cout << "Proposed Iterated Augment Cutting For Natural Boundary Started..."<< endl;
+			vtkSmartPointer<vtkPolyData> diskPropose = modTruncate.GetDiskTopologyPolydata();
+			CPolygonsData polygon ;
+			
+			polygon.InitailDiskTopology(diskPropose);
+			polygon.IteratedAugmentCut(&time_proposed,outputOptimumPropose.GetPointer(),true);
+
+			cout << "Proposed Iterated Augment Cutting Finished..."<< endl;
+
+			vtkSmartPointer<vtkMutableUndirectedGraph> newGraph = CreateBoundaryGraph(outputOptimumPropose);
+			vtkSmartPointer<vtkGraphToPolyData> g2pAT = vtkSmartPointer<vtkGraphToPolyData>::New(); 
+			g2pAT->SetInputData(newGraph);
+			g2pAT->Update();
+
+			vtkSmartPointer<vtkUnsignedCharArray> colors = vtkSmartPointer<vtkUnsignedCharArray>::New();
+			colors->SetNumberOfComponents(3);
+			colors->SetName("Colors");
+			// Setup two colors 
+			unsigned char red[3] = {255, 0, 0};
+			unsigned char yellow[3] = {255, 255, 0};
+			int numEdge = g2pAT->GetOutput()->GetLines()->GetNumberOfCells();
+			for (int cellID = 0 ; cellID < numEdge; cellID++)
+			{
+				colors->InsertNextTupleValue(red);		
+			}
+			g2pAT->GetOutput()->GetCellData()->SetScalars(colors);
+
+
+			vtkSmartPointer<vtkPolyDataMapper> __edge_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+			__edge_mapper->SetInputData(g2pAT->GetOutput());
+			actorEdge3->SetMapper(__edge_mapper);
+
+
+			disk_polydata = vtkSmartPointer<vtkPolyData>::New();
+			disk_polydata->ShallowCopy(outputOptimumPropose);
+		}
+
+		
+
+		cout << "Iterated Augment Cuttings finished..."<< endl;
+		cout << "time consume original:" << time_original << "sec" << endl;
+		cout << "time consume proposed:" << time_proposed << "sec" << endl;
+		cout << "========================================" << endl;
+
+		char answer;
+		cout << "Do you want to save optimum disk topology meshes? (y/n):";
+		cin >> answer;
+
+		if (answer == 'y' ||answer == 'Y')
+		{
+			std::string filename;
+			if (GetFileName(filename,__T("Save optimal disk topology model file..."),"PLY File\0*.ply\0All Files\0*.*\0",true))
+			{
+				
+				vtkSmartPointer<vtkPLYWriter> plyWriter = vtkSmartPointer<vtkPLYWriter>::New();
+					
+				std::string propose_filename = filename + std::string("_propose.ply");
+					std::string original_filename = filename +  std::string("_original.ply");
+					
+				plyWriter->SetInputData(outputOptimumPropose);
+				plyWriter->SetFileName(propose_filename.c_str());
+				plyWriter->Update();
+				cout << "Disk topology mesh export :" << propose_filename.c_str() << endl;
+
+				plyWriter->SetInputData(outputOptimumOriginal);
+				plyWriter->SetFileName(original_filename.c_str());
+				plyWriter->Update();					
+				cout << "Disk topology mesh export :" << original_filename.c_str() << endl;
+				
+			}
+		}
+		else
+		{
+			cout << "No save" << endl;
+		}
+		PrintOutInstruction();
 	}
 	else if (key == "F2")
 	{

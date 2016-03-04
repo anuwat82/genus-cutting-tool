@@ -41,7 +41,8 @@ public:
 	//GLuint GetGIImageTextureID();
 	int Sampling(int degree,int resW, int resH, double *data_out);
 	int Parameterize();
-	int IteratedAugmentCut(double *calTime, vtkPolyData* op_mesh);
+	int IteratedAugmentCut(double *calTime, vtkPolyData* op_mesh, bool forNaturalBoundary = false);
+	
 	int IteratedAugmentCutOriginal(double *calTime, vtkPolyData* op_mesh);
 	int GetHighestCurvatureFace();
 	int SquareParameterizationOptimization(unsigned int step_value, unsigned int *testCasesCount,double *calTime, vtkFloatArray *texCoord);   //step_value 1 is bruteforce   
