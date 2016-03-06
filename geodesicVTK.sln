@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geodesicVTK", "geodesicVTK.vcxproj", "{B4B74372-8399-42C6-9744-1912BC91BE4D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UVAtlas_2013", "UVAtlas\UVAtlas_2013.vcxproj", "{10359E70-6A7F-4433-8EF1-B0FB688D830E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,14 @@ Global
 		{B4B74372-8399-42C6-9744-1912BC91BE4D}.Release|Win32.Build.0 = Release|Win32
 		{B4B74372-8399-42C6-9744-1912BC91BE4D}.Release|x64.ActiveCfg = Release|x64
 		{B4B74372-8399-42C6-9744-1912BC91BE4D}.Release|x64.Build.0 = Release|x64
+		{10359E70-6A7F-4433-8EF1-B0FB688D830E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{10359E70-6A7F-4433-8EF1-B0FB688D830E}.Debug|Win32.Build.0 = Debug|Win32
+		{10359E70-6A7F-4433-8EF1-B0FB688D830E}.Debug|x64.ActiveCfg = Debug|x64
+		{10359E70-6A7F-4433-8EF1-B0FB688D830E}.Debug|x64.Build.0 = Debug|x64
+		{10359E70-6A7F-4433-8EF1-B0FB688D830E}.Release|Win32.ActiveCfg = Release|Win32
+		{10359E70-6A7F-4433-8EF1-B0FB688D830E}.Release|Win32.Build.0 = Release|Win32
+		{10359E70-6A7F-4433-8EF1-B0FB688D830E}.Release|x64.ActiveCfg = Release|x64
+		{10359E70-6A7F-4433-8EF1-B0FB688D830E}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

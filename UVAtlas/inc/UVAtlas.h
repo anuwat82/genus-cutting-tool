@@ -61,6 +61,7 @@ namespace DirectX
         UVATLAS_GEODESIC_FAST = 0x01,
         UVATLAS_GEODESIC_QUALITY = 0x02,
         UVATLAS_PARTITIONVALIDBITS = 0x03,
+		UVATLAS_SIMPLE_PARAM = 0x100,//add by anuwat
     };
 
     static const float UVATLAS_DEFAULT_CALLBACK_FREQUENCY = 0.0001f;
@@ -355,4 +356,5 @@ namespace DirectX
         _In_                                    size_t nNewVerts,
         _In_reads_(nNewVerts)                   const uint32_t* vertexRemap,
         _Out_writes_bytes_(nNewVerts*stride)    void* vbout );
+
 }
