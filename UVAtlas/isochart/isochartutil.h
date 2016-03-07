@@ -85,7 +85,7 @@ inline float Cal2DTriangleArea(
     const DirectX::XMFLOAT2& v1,
     const DirectX::XMFLOAT2& v2)
 {
-    return  ((v1.x - v0.x)*(v2.y - v0.y) - (v2.x - v0.x)*(v1.y - v0.y)) / 2;
+	return  fabs (((v1.x - v0.x)*(v2.y - v0.y) - (v2.x - v0.x)*(v1.y - v0.y)) / 2);
 }
 
 

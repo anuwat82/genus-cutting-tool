@@ -57,3 +57,5 @@ void ScreenShot(vtkRenderWindow* renderWindow);
 void AskForSaveSqp(vtkFloatArray *texCoord);
 void AskForSaveParameterizationPLY(vtkPolyData* diskTopology, vtkFloatArray *texCoord);
 vtkSmartPointer<vtkPolyData> CleanForUnrefVertex(vtkSmartPointer<vtkPolyData> input);
+
+float GetL2ErrorMS(vtkPolyData* diskTopology, vtkFloatArray *texCoord);

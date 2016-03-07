@@ -95,8 +95,9 @@ void PointTool::setParametricDt(Point3d *out,Point3d *q1,Point3d *q2,Point3d *q3
 
 double PointTool::getParametricA(double t1,double t2,double t3,double s1,double s2,double s3){
   double da = ((s2-s1)*(t3-t1)-(s3-s1)*(t2-t1))/2.0;
-  if(da==0.0)return 1.0;
-  return da;
+  if(da==0.0)
+	  return 1.0;
+  return fabs(da);
 }  
 double PointTool::Distance(Point3d *in1,Point3d *in2){
   return sqrt(((((in1->x)-(in2->x))*((in1->x)-(in2->x)))

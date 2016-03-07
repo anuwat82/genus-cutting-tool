@@ -563,43 +563,46 @@ HRESULT CIsochartEngine::PartitionByGlobalAvgL2Stretch(
 
         // 3.2 Optimize all charts with right parameterization
         // chart 2d area will be compted in this function
+		
+		FAILURE_RETURN(
+		CIsochartMesh::OptimizeAllL2SquaredStretch(
+			m_finalChartList, 
+			false));
+		
+		// 3.3 
+		// For geometric case, get current optical average L^2 Squared Stretch
+		// For signal case, get max average L^2 Squared stretch around the 
+		// Charts
+		fCurrAvgL2SquaredStretch = GetCurrentStretchCriteria();
+		if (simple)
+			bHasSatisfiedNumber = true;
+		else
+		if (dwExpectChartCount != 0)
+		{
+			// 3.4 Reach the chart number criterion
+			if (bHasSatisfiedNumber && 
+				dwExpectChartCount <= m_finalChartList.size() )
+			{
+				break;
+			}
+			// 3.5 Break the chart number criterion
+			if (dwExpectChartCount < m_finalChartList.size()
+				&& !bHasSatisfiedNumber)
+			{
+				ChartNumberOut = m_finalChartList.size();
+				MaxChartStretchOut =
+					CIsochartMesh::ConvertToExternalStretch(
+						fCurrAvgL2SquaredStretch, false);
+				DPF(0, "maximum chart number is too small to parameterize mesh.");
+				return E_FAIL;
+			}			
+			bHasSatisfiedNumber = true;
+		}
+
+			// 3.6 If we don't reach the expected stretch criteria,
+			// Selete a canidate to parition and parameterize the children.
 		if (!simple)
 		{
-			FAILURE_RETURN(
-			CIsochartMesh::OptimizeAllL2SquaredStretch(
-				m_finalChartList, 
-				false));
-		
-			// 3.3 
-			// For geometric case, get current optical average L^2 Squared Stretch
-			// For signal case, get max average L^2 Squared stretch around the 
-			// Charts
-			fCurrAvgL2SquaredStretch = GetCurrentStretchCriteria();
-    
-			if (dwExpectChartCount != 0)
-			{
-				// 3.4 Reach the chart number criterion
-				if (bHasSatisfiedNumber && 
-					dwExpectChartCount <= m_finalChartList.size() )
-				{
-					break;
-				}
-				// 3.5 Break the chart number criterion
-				if (dwExpectChartCount < m_finalChartList.size()
-					&& !bHasSatisfiedNumber)
-				{
-					ChartNumberOut = m_finalChartList.size();
-					MaxChartStretchOut =
-						CIsochartMesh::ConvertToExternalStretch(
-							fCurrAvgL2SquaredStretch, false);
-					DPF(0, "maximum chart number is too small to parameterize mesh.");
-					return E_FAIL;
-				}			
-				bHasSatisfiedNumber = true;
-			}
-
-			 // 3.6 If we don't reach the expected stretch criteria,
-			 // Selete a canidate to parition and parameterize the children.
 			if (!CIsochartMesh::IsReachExpectedTotalAvgL2SqrStretch(
 					fCurrAvgL2SquaredStretch,
 					fExpectAvgL2SquaredStretch) 
@@ -610,6 +613,8 @@ HRESULT CIsochartEngine::PartitionByGlobalAvgL2Stretch(
 			}
 		}
         // 3.7 Update status
+		
+		
         if (dwExpectChartCount > 0)
         {
             size_t dwCurrentChartNumber (m_finalChartList.size() + m_currentChartHeap.size());

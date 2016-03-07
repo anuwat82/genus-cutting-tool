@@ -1167,8 +1167,7 @@ int CPolygonsData::SquareParameterizationOptimization(unsigned int step_value, u
 	PolarVertex* p_boundarySurfacePolarVertexInfo = m_boundarySurfacePolarVertexInfo;
 	int *p_num_boundarySurfacePolarVertexInfo = &m_num_boundarySurfacePolarVertex;
 	int num_validPolarVertex = numVertex;
-	MyParameterization paramTool;
-		
+	MyParameterization paramTool;	
 	paramTool.SetPolarVertexAndFaceAndBorder(	p_boundarySurfacePolarVertexInfo,
 												p_num_boundarySurfacePolarVertexInfo,
 												num_validPolarVertex,
@@ -1197,7 +1196,8 @@ int CPolygonsData::SquareParameterizationOptimization(unsigned int step_value, u
 
 		texCoord->DeepCopy(tc);
 	}
-	return 0;
+	
+	return ( *p_num_boundarySurfacePolarVertexInfo - num_validPolarVertex);
 }
 int CPolygonsData::SquareParameterizationManual( int mycase,double *op_calTime, vtkFloatArray *texCoord)
 {
@@ -1240,7 +1240,7 @@ int CPolygonsData::SquareParameterizationManual( int mycase,double *op_calTime, 
 
 		texCoord->DeepCopy(tc);
 	}
-	return 0;
+	return ( *p_num_boundarySurfacePolarVertexInfo - num_validPolarVertex);
 }
 
 int CPolygonsData::SquareParameterizationExperiment(double *op_calTime, vtkFloatArray *texCoord)
@@ -1285,7 +1285,7 @@ int CPolygonsData::SquareParameterizationExperiment(double *op_calTime, vtkFloat
 
 		texCoord->DeepCopy(tc);
 	}
-	return 0;
+	return ( *p_num_boundarySurfacePolarVertexInfo - num_validPolarVertex);
 }
 int CPolygonsData::CircleParameterizationOptimization(double *op_calTime, vtkFloatArray *texCoord, vtkDoubleArray *op_face_stretch)
 {
@@ -1345,7 +1345,7 @@ int CPolygonsData::CircleParameterizationOptimization(double *op_calTime, vtkFlo
 	}
 
 
-	return 0;
+	return ( *p_num_boundarySurfacePolarVertexInfo - num_validPolarVertex);
 }
 
 #include "Natural_Param_API.h"
@@ -2181,4 +2181,38 @@ void	CPolygonsData::InitailDiskTopology(vtkSmartPointer<vtkPolyData> diskTopoPol
 
 
 	return;
+}
+
+vtkSmartPointer<vtkPolyData> CPolygonsData::GetPolyData()
+{
+	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+	for (int i = 0; i < m_num_boundarySurfacePolarVertex; i++)
+		points->InsertNextPoint(reinterpret_cast<double *>(m_boundarySurfacePolarVertexInfo[i].p_vertex));
+	vtkSmartPointer<vtkCellArray> polygons = vtkSmartPointer<vtkCellArray>::New();
+		
+
+	for (vtkIdType i = 0; i < m_num_boundarySurfaceFace ;i++)
+	{
+		vtkSmartPointer<vtkTriangle> triangle = vtkSmartPointer<vtkTriangle>::New();
+		triangle->GetPointIds()->SetId(0, m_boundarySurfaceFaceInfo[i*3 +0]);
+		triangle->GetPointIds()->SetId(1, m_boundarySurfaceFaceInfo[i*3 +1]);
+		triangle->GetPointIds()->SetId(2, m_boundarySurfaceFaceInfo[i*3 +2]);
+		vtkIdType newID = polygons->InsertNextCell(triangle);
+
+	}
+	vtkSmartPointer<vtkPolyData> output = vtkSmartPointer<vtkPolyData>::New(); 	
+	output->SetPoints(points);
+	output->SetPolys(polygons);
+	output->BuildLinks();
+	vtkSmartPointer<vtkPolyDataNormals> normal = vtkSmartPointer<vtkPolyDataNormals>::New();
+	normal->SetInputData(output);
+	normal->SetComputeCellNormals(1);
+	normal->SetComputePointNormals(0);
+	normal->SetSplitting(0);
+	normal->SetAutoOrientNormals(1);
+	normal->SetFlipNormals(0);
+	normal->Update();
+
+	output->ShallowCopy(normal->GetOutput());
+	return output;
 }

@@ -7260,7 +7260,7 @@ double    MyParameterization::SqaureParameterizationManualInput_PARALLEL_CPU( st
 	printf("=== Find worst stretch of TEST%d  (worst corner at %f) ===\n",worst_startID,worstStretch);
 
 	
-
+	double e2 = GetStretchError(bestU,bestV);
 	for (int i=0;i<numberV;i++)
 	{				
 		pIPV[i].u = bestU[i];

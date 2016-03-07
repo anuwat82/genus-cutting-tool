@@ -748,7 +748,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		char answer;
 		cout << "Do you want to manually set test case? (y/n):";
 		cin >> answer;
-
+		int structureChanged = 0;
 		if (answer == 'y' ||answer == 'Y')
 		{
 
@@ -766,7 +766,9 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			while (manual_case < 0 );
 			CPolygonsData polygon ;
 			polygon.InitailDiskTopology(inputPolydata);			
-			polygon.SquareParameterizationManual(manual_case,&calTime,texCoord.GetPointer());
+			structureChanged = polygon.SquareParameterizationManual(manual_case,&calTime,texCoord.GetPointer());
+			if (structureChanged)
+				inputPolydata = polygon.GetPolyData();
 		}
 		else
 		{
@@ -775,8 +777,12 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			polygon.InitailDiskTopology(inputPolydata);
 			
 		
-			polygon.SquareParameterizationOptimization(1,&calCount,&calTime,texCoord.GetPointer());
+			structureChanged = polygon.SquareParameterizationOptimization(1,&calCount,&calTime,texCoord.GetPointer());
+			if (structureChanged)
+				inputPolydata = polygon.GetPolyData();
 		}
+		
+		float L2S = GetL2ErrorMS(inputPolydata,texCoord);
 		inputPolydata->GetPointData()->SetTCoords(texCoord);
 		cout << "time consume: " << calTime << " sec" << endl;
 		cout << "total test cases examined: " << calCount << " times" << endl;
@@ -839,13 +845,15 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 			cout << "Use formula step value" << endl;
 		}
 
-
+		int structureChanged = 0;
 		CPolygonsData polygon ;
 		polygon.InitailDiskTopology(inputPolydata);
 		double calTime;
 		unsigned int calCount;
 		vtkSmartPointer<vtkFloatArray> texCoord = vtkSmartPointer<vtkFloatArray>::New();
-		polygon.SquareParameterizationOptimization(step_value,&calCount,&calTime,texCoord.GetPointer());
+		structureChanged = polygon.SquareParameterizationOptimization(step_value,&calCount,&calTime,texCoord.GetPointer());
+		if (structureChanged)
+				inputPolydata = polygon.GetPolyData();
 		inputPolydata->GetPointData()->SetTCoords(texCoord);
 		
 		cout << "consuming time : " << calTime << " sec" << endl;
@@ -879,12 +887,15 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		polygon.InitailDiskTopology(inputPolydata);
 		double calTime;
 		unsigned int calCount;
+		int structureChanged = 0;
 		vtkSmartPointer<vtkDoubleArray> stretch = vtkSmartPointer<vtkDoubleArray>::New();
 		vtkSmartPointer<vtkFloatArray> texCoord = vtkSmartPointer<vtkFloatArray>::New();
-		//polygon.CircleParameterizationOptimization(&calTime,NULL,stretch.GetPointer());
+		structureChanged = polygon.CircleParameterizationOptimization(&calTime,texCoord.GetPointer(),nullptr);
+		if (structureChanged)
+				inputPolydata = polygon.GetPolyData();
 		//ColorMeshFace(stretch);
 		//polygon.CheckBoundaryMapping(NULL);
-		polygon.SquareParameterizationExperiment(&calTime,texCoord.GetPointer());
+		//stuctureChanged = polygon.SquareParameterizationExperiment(&calTime,texCoord.GetPointer());
 		inputPolydata->GetPointData()->SetTCoords(texCoord);
 		//ColorMeshFace(stretch);
 		cout << "time consume: " << calTime << " sec" << endl;		
@@ -922,6 +933,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		//polygon.CheckBoundaryMapping(NULL);
 		CPolygonsData polygon;
 		polygon.NaturalParameterization(&calTime , inputPolydata,texCoord);
+		float L2S = GetL2ErrorMS(inputPolydata,texCoord);
 		inputPolydata->GetPointData()->SetTCoords(texCoord);
 		//ColorMeshFace(stretch);
 		cout << "time consume: " << calTime << " sec" << endl;		
@@ -959,6 +971,7 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 		//polygon.CheckBoundaryMapping(NULL);
 		CPolygonsData polygon;
 		polygon.NaturalParameterizationUVAtlas(&calTime , inputPolydata,texCoord);
+		float L2S = GetL2ErrorMS(inputPolydata,texCoord);
 		inputPolydata->GetPointData()->SetTCoords(texCoord);
 		//ColorMeshFace(stretch);
 		cout << "time consume: " << calTime << " sec" << endl;		

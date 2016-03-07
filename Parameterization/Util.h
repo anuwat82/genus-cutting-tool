@@ -2,6 +2,7 @@
 #define __UTIL_HEADER__
 
 #include <math.h>
+
 static const double epsilon = 1E-08;
 
 inline void endian_swap16(void* _x)
@@ -160,6 +161,8 @@ inline bool isPointInsideTriangle(
 	else
 		return false;
 }
+
+
 
 
 #endif //__UTIL_HEADER__

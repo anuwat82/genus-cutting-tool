@@ -308,3 +308,147 @@ void CutMesh(OmMesh &mesh, OmMesh::HalfedgeHandle &he0 ,OmMesh::HalfedgeHandle &
 	}
 	*/
 }
+
+
+
+const float ISOCHART_ZERO_EPS = 1e-6f;
+const float ISOCHART_ZERO_EPS2 = 1e-12f;
+const float INFINITE_STRETCH = FLT_MAX;
+inline float IsochartSqrtf(float a)
+{
+    if (a < 0)
+    {
+        return 0;
+    }
+    return sqrtf(a);
+}
+
+inline bool IsInZeroRange2(
+    float a)
+{
+    return ((a >= -ISOCHART_ZERO_EPS2) && (a <= ISOCHART_ZERO_EPS2));
+}
+
+
+inline float Cal2DTriangleArea(
+    const DirectX::XMFLOAT2& v0,
+    const DirectX::XMFLOAT2& v1,
+    const DirectX::XMFLOAT2& v2)
+{
+	return  fabs( ((v1.x - v0.x)*(v2.y - v0.y) - (v2.x - v0.x)*(v1.y - v0.y)) / 2 );
+}
+
+float Cal3DTriangleArea(
+    const DirectX::XMFLOAT3* pv0,
+    const DirectX::XMFLOAT3* pv1,
+    const DirectX::XMFLOAT3* pv2)
+{
+    using namespace DirectX;
+
+    XMVECTOR v0 = XMLoadFloat3(pv1) - XMLoadFloat3(pv0);
+    XMVECTOR v1 = XMLoadFloat3(pv2) - XMLoadFloat3(pv0);
+    XMVECTOR n = XMVector3Cross(v0, v1);
+    float area = XMVectorGetX(XMVector3Dot(n, n));
+    return IsochartSqrtf(area) * 0.5f;
+}
+
+inline void Compute2DtoNDPartialDerivatives(
+    float fNew2DArea,
+    const DirectX::XMFLOAT2* pv2D0,
+    const DirectX::XMFLOAT2* pv2D1,
+    const DirectX::XMFLOAT2* pv2D2,
+    __in_ecount(dwDimensonN) const float* pfND0,
+    __in_ecount(dwDimensonN) const float* pfND1,
+    __in_ecount(dwDimensonN) const float* pfND2,
+    size_t dwDimensonN,
+    __out_ecount(dwDimensonN) float* Ss,
+    __out_ecount(dwDimensonN) float* St)
+{
+    assert(!IsInZeroRange2(fNew2DArea));
+
+    float q[3];
+    for (size_t ii=0; ii<dwDimensonN; ii++)
+    {
+        q[0] = pfND0[ii];
+        q[1] = pfND1[ii];
+        q[2] = pfND2[ii];
+
+        if (!IsInZeroRange2(fNew2DArea))
+        {
+            Ss[ii] = (q[0]*(pv2D1->y-pv2D2->y) + 
+                q[1]*(pv2D2->y-pv2D0->y) + 
+                q[2]*(pv2D0->y-pv2D1->y))/(fNew2DArea*2);
+                
+            St[ii] = (q[0]*(pv2D2->x-pv2D1->x) + 
+                q[1]*(pv2D0->x-pv2D2->x) + 
+                q[2]*(pv2D1->x-pv2D0->x))/(fNew2DArea*2);
+            
+        }
+        else
+        {
+            if (q[0] == q[1] && q[0] == q[2])
+            {
+                Ss[ii] = St[ii] = 0;
+            }
+            else
+            {
+                Ss[ii] = St[ii] = FLT_MAX;
+            }
+        }
+    }
+
+    return;
+}
+
+
+float CalFaceGeoL2SquraedStretch(
+    const float f_area3d,
+	const DirectX::XMFLOAT3 *pFace,
+    const DirectX::XMFLOAT2& v0,
+    const DirectX::XMFLOAT2& v1,
+    const DirectX::XMFLOAT2& v2,
+    float& f2D)
+{
+	float f3D = f_area3d;
+    f2D = Cal2DTriangleArea(
+        v0, v1, v2);
+
+    // if original triangle's area is 0, No geodesic stretch.
+    if (f3D == 0)
+    {
+        return 0;
+    }	
+    else if (f2D < 0 || 
+        (f2D < ISOCHART_ZERO_EPS2 && f2D < f3D /2))
+    {
+        return INFINITE_STRETCH;
+    }
+    else if (IsInZeroRange2(f2D) && 
+        IsInZeroRange2(f3D))
+    {
+        return 0;
+    }
+    else
+    {
+        DirectX::XMFLOAT3 Ss, St;
+        Compute2DtoNDPartialDerivatives(
+            f2D,
+            &v0,
+            &v1,
+            &v2,
+            (const float*)(&pFace[0]),
+            (const float*)(&pFace[1]),
+			(const float*)(&pFace[2]),
+            3,
+            (float*)&Ss,
+            (float*)&St);
+
+        DirectX::XMVECTOR vSs = XMLoadFloat3(&Ss);
+        DirectX::XMVECTOR vSt = XMLoadFloat3(&St);
+        float a = DirectX::XMVectorGetX(DirectX::XMVector3Dot(vSs, vSs));
+        float c = DirectX::XMVectorGetX(DirectX::XMVector3Dot(vSt, vSt));
+
+        return (a+c)*f3D / 2.0f;
+    }
+
+}

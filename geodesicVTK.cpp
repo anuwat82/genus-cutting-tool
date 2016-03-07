@@ -1377,3 +1377,55 @@ vtkSmartPointer<vtkPolyData> CleanForUnrefVertex(vtkSmartPointer<vtkPolyData> in
 	}
 	return output;
 }
+
+
+float GetL2ErrorMS(vtkPolyData* diskTopology, vtkFloatArray *texCoord)
+{
+	vtkIdType numOfPoints =diskTopology->GetNumberOfPoints();
+	vtkIdType numOfFaces = diskTopology->GetPolys()->GetNumberOfCells();
+
+	diskTopology->GetPolys()->InitTraversal();
+	vtkIdType npts;
+	vtkIdType *pointID;
+	float TotalArea3D = 0.0f;
+	float TotalFaceStretch = 0.0f;
+	float TotalArea2D = 0.0f;
+	while(diskTopology->GetPolys()->GetNextCell(npts,pointID) != 0)
+	{
+		if (npts != 3)
+			throw;
+
+		double p0[3], p1[3],p2[3]; 
+		diskTopology->GetPoint(pointID[0],p0);
+		diskTopology->GetPoint(pointID[1],p1);
+		diskTopology->GetPoint(pointID[2],p2);
+		
+		float t0[2],t1[2],t2[2];
+		
+		texCoord->GetTupleValue(pointID[0],t0);
+		texCoord->GetTupleValue(pointID[1],t1);
+		texCoord->GetTupleValue(pointID[2],t2);
+
+		DirectX::XMFLOAT3 X[3] = {
+									DirectX::XMFLOAT3 (p0[0],p0[1],p0[2]),
+									DirectX::XMFLOAT3 (p1[0],p1[1],p1[2]),
+									DirectX::XMFLOAT3 (p2[0],p2[1],p2[2])
+								 };
+
+		DirectX::XMFLOAT2 T[3] = {
+									DirectX::XMFLOAT2 (t0[0],t0[1]),
+									DirectX::XMFLOAT2 (t1[0],t1[1]),
+									DirectX::XMFLOAT2 (t2[0],t2[1])
+								 };
+		
+		float area3d = Cal3DTriangleArea(&X[0],&X[1],&X[2]);
+		float area2d = 0.0f;
+		float faceStretch = CalFaceGeoL2SquraedStretch(area3d,X, T[0],T[1],T[2] , area2d);
+		TotalArea2D += area2d;
+		TotalArea3D += area3d;
+		TotalFaceStretch += faceStretch;
+	}
+	float SurfaceStretch =  TotalArea2D*TotalFaceStretch / (TotalArea3D*TotalArea3D);
+	float sqrt_stretch = sqrt(SurfaceStretch);
+	return sqrt_stretch;
+}

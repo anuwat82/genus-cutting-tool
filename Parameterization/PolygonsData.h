@@ -52,6 +52,7 @@ public:
 	int NaturalParameterization(double *calTime,vtkPolyData* mesh, vtkFloatArray *texCoord); 
 	int NaturalParameterizationUVAtlas(double *calTime,vtkPolyData* mesh, vtkFloatArray *texCoord); 
 	int CheckBoundaryMapping(vtkDoubleArray *face_stretch);
+	vtkSmartPointer<vtkPolyData> GetPolyData();
 private:
 	
 protected:
