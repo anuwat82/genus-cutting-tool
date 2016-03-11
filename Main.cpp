@@ -237,7 +237,7 @@ void pickCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata, vo
 	vtkPointPicker* picker = static_cast<vtkPointPicker*>(caller);
 	MouseInteractorStylePP* TrackballStyle = static_cast<MouseInteractorStylePP*>(clientdata);
 
-	if (picker->GetPointId() >= 0 )
+	if (picker->GetPointId() >= 0 &&  picker->GetPointId() < polydata->GetNumberOfPoints())
 	{
 		int vertexID = picker->GetPointId();
 		
@@ -400,6 +400,47 @@ void keyPressCallbackFunc(vtkObject* caller, unsigned long eid, void* clientdata
 				actorPoly1->SetTexture(image_texture);
 			else if (currentTexture == image_texture)
 				actorPoly1->SetTexture(NULL);
+			}
+			break;
+		case 'd':
+			{
+				//decimation
+				cout << "perform decimation"<< endl;
+				vtkSmartPointer<vtkDecimatePro> decimate = vtkSmartPointer<vtkDecimatePro>::New();
+				decimate->SetInputData(polydata);
+				decimate->PreserveTopologyOn();
+				decimate->PreSplitMeshOff();
+				decimate->SetTargetReduction(0.5);
+				decimate->SetSplitting(0);
+				decimate->Update();
+				vtkSmartPointer<vtkPolyData> output = decimate->GetOutput();
+				
+
+				vtkSmartPointer<vtkPolyDataNormals> normal = vtkSmartPointer<vtkPolyDataNormals>::New();
+				normal->SetInputData(output);
+				normal->SetComputeCellNormals(1);
+				normal->SetComputePointNormals(0);
+				normal->SetSplitting(0);
+				normal->SetAutoOrientNormals(1);
+				normal->SetFlipNormals(0);
+				normal->Update();
+
+				output->ShallowCopy(normal->GetOutput());
+
+				int numOldPoint = polydata->GetNumberOfPoints();
+				int numOldFace = polydata->GetNumberOfPolys();
+				int numNewPoint = output->GetNumberOfPoints();
+				int numNewFace = output->GetNumberOfPolys();
+				polydata->DeepCopy(decimate->GetOutput());
+
+				vtkSmartPointer<vtkPLYWriter> plyWriter = vtkSmartPointer<vtkPLYWriter>::New();
+					
+					
+					
+					plyWriter->SetInputData(polydata);
+					plyWriter->SetFileName("decimated_poly.ply");
+					plyWriter->Update();
+
 			}
 			break;
 		case 'c':
