@@ -1448,8 +1448,8 @@ int CPolygonsData::NaturalParameterizationUVAtlas(double *op_calTime,vtkPolyData
 	float output_stretch = 0.0f;
 	HRESULT hr = DirectX::UVAtlasPartition(	pos.get(), (size_t)numOfPoints, 
 											indices.get(), DXGI_FORMAT_R32_UINT, (size_t)numOfFaces,
-											1,1.0,adj.get(), nullptr,nullptr,nullptr,DirectX::UVATLAS_DEFAULT_CALLBACK_FREQUENCY,
-											DirectX::UVATLAS_SIMPLE_PARAM,
+											1,FLT_MAX,adj.get(), nullptr,nullptr,nullptr,DirectX::UVATLAS_DEFAULT_CALLBACK_FREQUENCY,
+											DirectX::UVATLAS_DEFAULT,
 											vb,ib,nullptr,&remap,pa);
 	size_t nTotalVerts = vb.size();
 

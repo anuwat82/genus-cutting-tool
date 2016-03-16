@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geodesicVTK", "geodesicVTK.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UVAtlas_2013", "UVAtlas\UVAtlas_2013.vcxproj", "{10359E70-6A7F-4433-8EF1-B0FB688D830E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SMI", "SMI04CODE\SMI.vcxproj", "{4556C9B4-91FB-481C-834C-D1D23CDE0D59}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -29,6 +31,14 @@ Global
 		{10359E70-6A7F-4433-8EF1-B0FB688D830E}.Release|Win32.Build.0 = Release|Win32
 		{10359E70-6A7F-4433-8EF1-B0FB688D830E}.Release|x64.ActiveCfg = Release|x64
 		{10359E70-6A7F-4433-8EF1-B0FB688D830E}.Release|x64.Build.0 = Release|x64
+		{4556C9B4-91FB-481C-834C-D1D23CDE0D59}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4556C9B4-91FB-481C-834C-D1D23CDE0D59}.Debug|Win32.Build.0 = Debug|Win32
+		{4556C9B4-91FB-481C-834C-D1D23CDE0D59}.Debug|x64.ActiveCfg = Debug-lib|x64
+		{4556C9B4-91FB-481C-834C-D1D23CDE0D59}.Debug|x64.Build.0 = Debug-lib|x64
+		{4556C9B4-91FB-481C-834C-D1D23CDE0D59}.Release|Win32.ActiveCfg = Release|Win32
+		{4556C9B4-91FB-481C-834C-D1D23CDE0D59}.Release|Win32.Build.0 = Release|Win32
+		{4556C9B4-91FB-481C-834C-D1D23CDE0D59}.Release|x64.ActiveCfg = Release-lib|x64
+		{4556C9B4-91FB-481C-834C-D1D23CDE0D59}.Release|x64.Build.0 = Release-lib|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

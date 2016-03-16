@@ -73,11 +73,27 @@ void vtkPolydata2OpenMesh(vtkPolyData *polydata, OmMesh *mesh)
 	polydata->GetPolys()->InitTraversal();
 	vtkIdType npts;
 	vtkIdType *pointID;
+#ifdef _DEBUG
+	int count = 0;
+#endif
 	while(polydata->GetPolys()->GetNextCell(npts,pointID) != 0)
 	{
 		if (npts != 3)
 			throw;
-		mesh->add_face(vh[*pointID],vh[*(pointID+1)],vh[*(pointID+2)]);
+		OmMesh::FaceHandle fh = mesh->add_face(vh[*pointID],vh[*(pointID+1)],vh[*(pointID+2)]);
+		#ifdef _DEBUG
+		count++;
+		if (!fh.is_valid())
+		{
+			double p0[3],p1[3],p2[3];
+			polydata->GetPoint(*pointID,p0);
+			polydata->GetPoint(*(pointID+1),p1);
+			polydata->GetPoint(*(pointID+2),p2);
+			OmMesh::FaceHandle fh = mesh->add_face(vh[*pointID],vh[*(pointID+1)],vh[*(pointID+2)]);
+			throw;
+		}
+		#endif
+
 	}
 
 	if (mesh->n_faces() != numOfFaces)
